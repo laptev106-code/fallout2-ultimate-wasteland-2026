@@ -11,40 +11,45 @@
 
 | Режим | Движок / Стек | Ключевые компоненты | Назначение |
 | :--- | :--- | :--- | :--- |
-| **01: Ultimate Gameplay Edition** | `Fallout2.exe` + `sfall 4.5.1` (DirectX 9) | RPU 2.4.34 + EcCo 1.0.0 hf1 + THAT Patch v2 + MiniRework 2.0.4.3 + FO2Tweaks 15.0 + V.O.C.K. 1.15 + Bunker 21 | **Основное прохождение**: глубокий ребаланс урона, брони, крафт, ловушки, яды, скрытность, новые локации, квесты и озвучка |
-| **02: Ultimate HD Edition** | `Fallout 2 Community Edition` (SDL2) | RPU 2.4.34 + Dustlight HD 0.9.4-beta + AI Upscale 2×/3× + Динамическое цветное освещение | **Визуальное погружение**: максимальная четкость спрайтов, мягкие тени и атмосферные темные ночи |
+| **01: Ultimate Gameplay Edition** | `Fallout2.exe` + `sfall 4.5.1` (DirectX 9) | RPU 2.4.34 + EcCo 1.0.0 hf1 + THAT Patch v2 + MiniRework 2.0.4.3 + FO2Tweaks 14.7 + Lossless Music (WAV 44.1kHz) + Talking Heads 3.7 + THAT 0.4.0 | **Основное проверенное прохождение**: строгий баланс урона и брони EcCo, крафт, ловушки, яды, скрытность, Talking Heads диалоги и аудиофильский саундтрек без риска для скриптов |
+| **02: Ultimate HD Edition** | `Fallout 2 Community Edition` (SDL2) | RPU 2.4.34 + Dustlight HD 0.9.4-beta + AI Upscale 2×/3× + Динамическое цветное освещение | **Визуальное погружение**: максимальная четкость спрайтов, мягкие тени и атмосферные темные ночи на нативном движке |
 
 ---
 
 ## ⚡ Обязательные инженерные параметры совместимости
 
 1. **Fallout Mechanics MiniRework (`mods/F2MechanicsMiniRework.ini`)**:
-   - `[MAIN] RegenMod=0 MedToolsMod=0 StealRebalance=1 FO2_ECCO=1`
-   - Лечение и медицина отдаются EcCo, кражи согласованы, формула урона управляется EcCo.
-2. **FO2Tweaks 15.0 (`mods/fo2tweaks.ini`)**:
-   - `max_knockback=-1 healing_revision=0 molotov_fire=0 damage_mod=0 ap_rollover=0 no_scope_penalty=0 improved_grenades=0 autodoors=1 ammobox=1 highlighting=1 auto_reload=1 modoc_brahmin=1 no_drop_items_on_death=1 carry_weight=0 trunk_space=0 unlimited_party=0 party_level_match=0 speedup=0 run_speed=0`
-   - Полное устранение конфликтов с баллистикой и гранатами EcCo, исключение читерских упрощений (безлимитный вес/багажник), сохранение чистого QoL.
-3. **Движок sfall (Ветка 4.5.x из RPU)**:
+   - `[MAIN] RegenMod=0 MedToolsMod=0 StealRebalance=0`
+   - Полное отключение дублирующих механик лечения, медицинских инструментов и краж для бесконфликтной передачи баланса под управление EcCo.
+2. **FO2Tweaks 14.7 (`mods/fo2tweaks.ini`)**:
+   - Официальный подтвержденный релиз 14.7 (вместо незарелиженного черновика 15.0).
+   - СТРОГО 5 калибровочных параметров, предписанных автором EcCo:
+     `max_knockback=-1 healing_revision=0 molotov_fire=0 damage_mod=0 ap_rollover=0`
+   - Исключение читерских упрощений (безлимитный вес, бесконечный багажник, оверлевел партии) и сохранение чистого QoL (подсветка контейнеров, авто-двери, авто-перезарядка).
+3. **Lossless Music v8.1 (WAV 44.1 kHz)**:
+   - Аудиофильский оригинальный саундтрек Марка Моргана без сжатия ACM.
+   - Включение потокового декодирования DirectShow в `ddraw.ini`: `[Sound] AllowDShowSound=1` и привязка `music_path1=data\sound\music\`.
+4. **Движок sfall (Ветка 4.5.x из RPU)**:
    - **Запрет на sfall 5**: sfall 5 ломает хуки EcCo 1.0.0. Используется стабильная версия, поставляемая с RPU 2.4.34. При распаковке модов встроен фильтр защиты `ddraw.dll`.
    - `AllowUnsafeScripting=2`, `SpeedInterfaceCounterAnims=2`, `ExtraMemory=1`.
-4. **Russian CodePage & Fonts Fix (`ddraw.ini` + `fallout2.cfg`)**:
+5. **Russian CodePage & Fonts Fix (`ddraw.ini` + `fallout2.cfg`)**:
    - Автоматическая установка `Language=russian`, `CodePage=1251`, `UseCustomFont=1` в `ddraw.ini`.
    - Генерация валидного `fallout2.cfg` с путями `master.dat`, `critter.dat`, `sound.dat` (защита от краша при запуске).
-5. **Bunker 21 & Truck Locations 1.00**:
-   - Безопасная маршрутизация `.dat` архива в `mods/` с регистрацией в `mods_order.txt`.
 6. **Патч Large Address Aware (LAA 4GB)**:
    - Автоматический PE-патч флага `0x0020` в заголовке `fallout2.exe` (защита от краша при 2GB лимите памяти).
 7. **Строгий порядок загрузки (`mods/mods_order.txt`)**:
-   - `rpu.dat -> npc_armor.dat -> rpu_russian.dat -> upu_russian_sound.dat -> talking_heads.dat -> talking_heads_that_rpu_map_update_patch.dat -> rpu_y_ecco.dat -> F2MechanicsMiniRework.dat -> bunker21.dat -> vock-fo2.dat -> fo2tweaks.dat`.
+   - `rpu.dat -> npc_armor.dat -> rpu_russian.dat -> upu_russian_sound.dat -> talking_heads.dat -> talking_heads_audio.dat -> talking_heads_that_rpu_map_update_patch.dat -> rpu_y_ecco.dat -> F2MechanicsMiniRework.dat -> fo2tweaks.dat`.
 
 ---
 
-## 🚫 Сознательно исключенные моды (Обоснование)
+## 🚫 Статус спорных и исключенных компонентов
 
+* **Bunker 21 & Truck Locations**: исключен из основного проверенного профиля (перенесен в изолированное тестирование) из-за избытка халявной добычи, нарушающей экономику EcCo, и опасного требования автора удалять `scripts.lst`.
+* **Companion Expansion 0.50.4**: оставлен строго для отдельного тестового профиля. Частичная совместимость с EcCo не гарантирует отсутствие багов напарников.
+* **V.O.C.K. 1.15 & VaultVox 1.1**: опциональные голосовые модули. VOCK содержит английские реплики (требует оценки на слух в русской локализации), VaultVox использует синтез речи (TTS).
 * **MIB88 MegaMod 2.47.8**: отдельная несогласованная тотальная сборка со старыми несовместимыми скриптами.
 * **Inventory Filter 2.3.1**: требует sfall 5 (несовместим с EcCo) и ломает окно бартера SmartBarter.
-* **Companion Expansion 0.50.x**: патч совместимости с EcCo есть только под старую версию 0.9.2, под 1.0.0 не адаптирован.
-* **Lootable Armor / Weapons Redone / Damage Formula Tweak**: разрушают математический баланс брони и оружия EcCo.
+* **Weapons Redone / Lootable Armor / Damage Formula Tweak**: разрушают математический баланс брони и оружия EcCo.
 
 ---
 

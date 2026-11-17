@@ -99,7 +99,7 @@ class FalloutMasterInstaller(tk.Tk):
         p_frame.pack(fill="x")
 
         tk.Radiobutton(
-            p_frame, text="★ Gameplay Ultimate (Рекомендовано: RPU + EcCo + MiniRework + VOCK + sfall 4.5.1)",
+            p_frame, text="★ Gameplay Ultimate (Рекомендовано: RPU + EcCo + MiniRework + FO2Tweaks + Lossless Music + sfall 4.5.1)",
             variable=self.selected_preset, value="gameplay_ultimate",
             command=self.apply_preset_selection,
             bg="#121511", fg="#44ff44", selectcolor="#1c2b1c", activebackground="#121511", activeforeground="#44ff44", font=("Segoe UI", 9, "bold")

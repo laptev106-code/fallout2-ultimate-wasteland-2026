@@ -52,7 +52,7 @@ class MasterLauncher(tk.Tk):
         # Profile 1: Gameplay Ultimate
         btn_gameplay = tk.Button(
             content,
-            text="▶ ЗАПУСК: GAMEPLAY ULTIMATE\n(RPU 2.4.34 + EcCo 1.0.0 + MiniRework + VOCK + sfall 4.5.1)",
+            text="▶ ЗАПУСК: GAMEPLAY ULTIMATE\n(RPU 2.4.34 + EcCo 1.0.0 + MiniRework + FO2Tweaks + Lossless Music + sfall 4.5.1)",
             font=("Segoe UI", 11, "bold"),
             fg="#ffffff",
             bg="#1f441f",

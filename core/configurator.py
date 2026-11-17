@@ -45,13 +45,14 @@ class Configurator:
 
     @classmethod
     def tune_ddraw_ini(cls, ddraw_path: str):
-        """Настраивает sfall 4.5.1 под связку EcCo + MiniRework."""
+        """Настраивает sfall 4.5.1 под связку EcCo + MiniRework + Lossless Music."""
         if not os.path.exists(ddraw_path):
             return
             
         with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
             
+        # Системные настройки и стабильность
         content = cls.patch_ini_key(content, "Misc", "AllowUnsafeScripting", 2)
         content = cls.patch_ini_key(content, "Misc", "SpeedInterfaceCounterAnims", 2)
         content = cls.patch_ini_key(content, "Misc", "ExtraMemory", 1)
@@ -62,12 +63,18 @@ class Configurator:
         content = cls.patch_ini_key(content, "Graphics", "Mode", 4)  # DX9
         content = cls.patch_ini_key(content, "Graphics", "GPUMemory", 1)
         
+        # Поддержка Lossless Music (DirectShow streaming для uncompressed WAV)
+        content = cls.patch_ini_key(content, "Sound", "AllowDShowSound", 1)
+        
         with open(ddraw_path, "w", encoding="utf-8") as f:
             f.write(content)
 
     @classmethod
     def tune_minirework_ini(cls, game_dir: str):
-        """Настраивает MiniRework 2.0.4.3 для идеального симбиоза с EcCo 1.0.0."""
+        """
+        Настраивает MiniRework 2.0.4.3:
+        Отключает модули лечения, медицинских инструментов и краж для бесконфликтной передачи баланса в EcCo.
+        """
         candidates = [
             os.path.join(game_dir, "mods", "F2MechanicsMiniRework.ini"),
             os.path.join(game_dir, "minirework.ini"),
@@ -79,10 +86,10 @@ class Configurator:
                 with open(path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                     
+                # Отключаем конфликтующие с EcCo модули, передавая их под управление EcCo
                 content = cls.patch_ini_key(content, "MAIN", "RegenMod", 0)
                 content = cls.patch_ini_key(content, "MAIN", "MedToolsMod", 0)
-                content = cls.patch_ini_key(content, "MAIN", "StealRebalance", 1)
-                content = cls.patch_ini_key(content, "MAIN", "FO2_ECCO", 1)
+                content = cls.patch_ini_key(content, "MAIN", "StealRebalance", 0)
                 
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(content)
@@ -90,34 +97,21 @@ class Configurator:
     @classmethod
     def tune_fo2tweaks_ini(cls, game_dir: str):
         """
-        Калибровочный профиль FO2Tweaks:
-        Полное устранение конфликтов с EcCo и исключение читов.
+        Калибровочный профиль FO2Tweaks 14.7:
+        СТРОГО 5 проверенных параметров от автора EcCo для защиты баллистики и боевого баланса.
         """
         candidates = [
             os.path.join(game_dir, "mods", "fo2tweaks.ini"),
             os.path.join(game_dir, "fo2tweaks.ini")
         ]
         
+        # Официальный список автора EcCo: отключение конфликтующих расчетов урона и гранат
         ecco_compatibility_params = {
             "max_knockback": -1,
             "healing_revision": 0,
             "molotov_fire": 0,
             "damage_mod": 0,
-            "ap_rollover": 0,
-            "no_scope_penalty": 0,
-            "improved_grenades": 0,
-            "autodoors": 1,
-            "ammobox": 1,
-            "highlighting": 1,
-            "auto_reload": 1,
-            "modoc_brahmin": 1,
-            "no_drop_items_on_death": 1,
-            "carry_weight": 0,
-            "trunk_space": 0,
-            "unlimited_party": 0,
-            "party_level_match": 0,
-            "speedup": 0,
-            "run_speed": 0
+            "ap_rollover": 0
         }
         
         for path in candidates:
@@ -151,12 +145,8 @@ class Configurator:
             "rpu_y_ecco.dat\n\n"
             "; Mechanics MiniRework\n"
             "F2MechanicsMiniRework.dat\n\n"
-            "; Expansions & Addons\n"
-            "bunker21.dat\n"
-            "vock-fo2.dat\n\n"
             "; QoL & Tweaks\n"
             "fo2tweaks.dat\n"
-            "party_orders.dat\n"
         )
         os.makedirs(mods_dir, exist_ok=True)
         with open(order_file, "w", encoding="utf-8") as f:
