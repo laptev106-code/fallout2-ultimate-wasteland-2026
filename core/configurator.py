@@ -126,6 +126,29 @@ class Configurator:
                     f.write(content)
 
     @classmethod
+    def tune_f2_res_ini(cls, f2_res_path: str, screen_width: int = 2560, screen_height: int = 1440):
+        """
+        Настраивает High Resolution Patch (f2_res.ini):
+        DirectX 9 режим, фикс мыши, фикс Alt+Tab и масштабирование интерфейса Scale 2x под 1440p/1080p.
+        """
+        if not os.path.exists(f2_res_path):
+            return
+            
+        with open(f2_res_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+            
+        content = cls.patch_ini_key(content, "MAIN", "GRAPHICS_MODE", 2)  # DX9
+        content = cls.patch_ini_key(content, "MAIN", "SCR_WIDTH", screen_width)
+        content = cls.patch_ini_key(content, "MAIN", "SCR_HEIGHT", screen_height)
+        content = cls.patch_ini_key(content, "MAIN", "COLOUR_BITS", 32)
+        content = cls.patch_ini_key(content, "MAIN", "ALT_MOUSE_INPUT", 1)
+        content = cls.patch_ini_key(content, "MAIN", "EXTRA_WIN_MSG_CHECKS", 1)
+        content = cls.patch_ini_key(content, "MAIN", "SCALE_2X", 1)
+        
+        with open(f2_res_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+    @classmethod
     def write_mods_order(cls, mods_dir: str):
         """Создает детерминированный список приоритетов загрузки в mods_order.txt."""
         order_file = os.path.join(mods_dir, "mods_order.txt")

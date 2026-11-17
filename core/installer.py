@@ -119,11 +119,17 @@ class InstallationEngine:
             if log_callback:
                 log_callback(f"Подготовка компонента: {mod.name} ({mod.version})")
                 
-            self.download_file(mod.download_url, archive_path, progress_callback)
+            if not os.path.exists(archive_path):
+                if not mod.download_url:
+                    if log_callback:
+                        log_callback(f"Пропуск {mod.name}: архив {mod.archive_name} не найден в cache/ (требуется ручная загрузка с Nexus Mods).")
+                    continue
+                self.download_file(mod.download_url, archive_path, progress_callback)
             
-            if log_callback:
-                log_callback(f"Интеграция: {mod.name}...")
-            self.extract_zip(archive_path, target_dir, progress_callback)
+            if os.path.exists(archive_path):
+                if log_callback:
+                    log_callback(f"Интеграция: {mod.name}...")
+                self.extract_zip(archive_path, target_dir, progress_callback)
             
         # 3. Тонкая настройка конфигураций и устранение кракозябр
         if log_callback:
@@ -134,6 +140,9 @@ class InstallationEngine:
 
         ddraw_ini = os.path.join(target_dir, "ddraw.ini")
         Configurator.tune_ddraw_ini(ddraw_ini)
+        
+        f2_res_ini = os.path.join(target_dir, "f2_res.ini")
+        Configurator.tune_f2_res_ini(f2_res_ini)
         
         Configurator.tune_minirework_ini(target_dir)
         Configurator.tune_fo2tweaks_ini(target_dir)

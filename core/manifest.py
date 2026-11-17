@@ -79,12 +79,12 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="THAT + EcCo RPU 2.4.34 Compatibility Patch",
         version="v2",
         category="audio_visual",
-        description="Официальный патч совместимости диалогов EcCo и говорящих голов THAT под RPU 2.4.34.",
+        description="Официальный патч совместимости диалогов EcCo и говорящих голов THAT под RPU 2.4.34 (требует THAT).",
         download_url="https://github.com/phobos2077/fo2_ecco/releases/download/v1.0.0/THAT_rpu_v2.4.34_compatibility_patch_v2.zip",
         archive_name="THAT_rpu_v2.4.34_compatibility_patch_v2.zip",
-        requires=["ecco"],
+        requires=["ecco", "that"],
         is_sfall_only=True,
-        default_enabled_gameplay=True,
+        default_enabled_gameplay=False,
         default_enabled_hd=False
     ),
     "minirework": ModComponent(
@@ -145,12 +145,12 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="Talking Heads Addon",
         version="3.7",
         category="audio_visual",
-        description="Более 100 анимированных говорящих голов для персонажей диалогов.",
-        download_url="https://github.com/BGforgeNet/Fallout2_Restoration_Project/releases/download/v2.4.34/rpu_v2.4.34.zip",
+        description="Более 100 анимированных говорящих голов для персонажей (требует загрузки с Nexus Mods в cache/talking_heads_3.7.zip).",
+        download_url="",
         archive_name="talking_heads_3.7.zip",
         requires=["rpu"],
         is_sfall_only=True,
-        default_enabled_gameplay=True,
+        default_enabled_gameplay=False,
         default_enabled_hd=False
     ),
     "that": ModComponent(
@@ -158,12 +158,12 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="Talking Heads Actually Talk (THAT)",
         version="0.4.0",
         category="audio_visual",
-        description="Озвучка и синхронизация губ (.lip) для персонажей Talking Heads Addon.",
-        download_url="https://github.com/BGforgeNet/Fallout2_Restoration_Project/releases/download/v2.4.34/rpu_v2.4.34.zip",
+        description="Озвучка и синхронизация губ (.lip) для персонажей Talking Heads (требует загрузки с Nexus Mods в cache/THAT_v0.4.0.zip).",
+        download_url="",
         archive_name="THAT_v0.4.0.zip",
         requires=["talking_heads"],
         is_sfall_only=True,
-        default_enabled_gameplay=True,
+        default_enabled_gameplay=False,
         default_enabled_hd=False
     ),
     "vock": ModComponent(
