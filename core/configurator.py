@@ -4,7 +4,7 @@ Surgical Configurator & INI Tuning Engine
 
 import os
 import re
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 class Configurator:
     @staticmethod
@@ -38,7 +38,6 @@ class Configurator:
             new_lines.append(f"{key}={value}")
             key_replaced = True
         elif not in_target_section and not key_replaced:
-            # Секция не найдена — добавляем в конец
             new_lines.append(f"\n[{section}]")
             new_lines.append(f"{key}={value}")
             
@@ -53,7 +52,6 @@ class Configurator:
         with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
             
-        # Критические настройки sfall
         content = cls.patch_ini_key(content, "Misc", "AllowUnsafeScripting", 2)
         content = cls.patch_ini_key(content, "Misc", "SpeedInterfaceCounterAnims", 2)
         content = cls.patch_ini_key(content, "Misc", "ExtraMemory", 1)
@@ -83,19 +81,42 @@ class Configurator:
 
     @classmethod
     def tune_fo2tweaks_ini(cls, fo2tweaks_path: str):
-        """Отключает дублирующие боевые модули в FO2Tweaks."""
+        """
+        Калибровочный профиль FO2Tweaks 14.7:
+        Полное устранение конфликтов с EcCo и исключение читов.
+        """
         if not os.path.exists(fo2tweaks_path):
             return
             
         with open(fo2tweaks_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
             
-        content = cls.patch_ini_key(content, "main", "healing_revision", 0)
-        content = cls.patch_ini_key(content, "main", "damage_mod", 0)
-        content = cls.patch_ini_key(content, "main", "ap_rollover", 0)
-        content = cls.patch_ini_key(content, "main", "max_knockback", -1)
-        content = cls.patch_ini_key(content, "main", "molotov_fire", 0)
+        # Настройки совместимости с балансом EcCo
+        ecco_compatibility_params = {
+            "max_knockback": -1,
+            "healing_revision": 0,
+            "molotov_fire": 0,
+            "damage_mod": 0,
+            "ap_rollover": 0,
+            "no_scope_penalty": 0,
+            "improved_grenades": 0,
+            "autodoors": 1,
+            "ammobox": 1,
+            "highlighting": 1,
+            "auto_reload": 1,
+            "modoc_brahmin": 1,
+            "no_drop_items_on_death": 1,
+            "carry_weight": 0,
+            "trunk_space": 0,
+            "unlimited_party": 0,
+            "party_level_match": 0,
+            "speedup": 0,
+            "run_speed": 0
+        }
         
+        for k, v in ecco_compatibility_params.items():
+            content = cls.patch_ini_key(content, "main", k, v)
+            
         with open(fo2tweaks_path, "w", encoding="utf-8") as f:
             f.write(content)
 
@@ -104,7 +125,7 @@ class Configurator:
         """Создает детерминированный список приоритетов загрузки в mods_order.txt."""
         order_file = os.path.join(mods_dir, "mods_order.txt")
         order_content = (
-            "# Fallout 2 Ultimate Wasteland Edition 2026 - Master Priority Order\n"
+            "# Fallout 2: Ultimate Mega Rework 2026 - Master Priority Order\n"
             "rpu\n"
             "rpu_translations\n"
             "ecco\n"
@@ -113,7 +134,28 @@ class Configurator:
             "talking_heads\n"
             "minirework\n"
             "fo2tweaks\n"
+            "bunker21\n"
             "vock\n"
         )
         with open(order_file, "w", encoding="utf-8") as f:
             f.write(order_content)
+
+    @classmethod
+    def merge_scripts_lst(cls, base_scripts_path: str, add_scripts: List[str]):
+        """Безопасно объединяет список скриптов без затирания таблицы RPU."""
+        if not os.path.exists(base_scripts_path):
+            return
+            
+        with open(base_scripts_path, "r", encoding="utf-8", errors="ignore") as f:
+            existing = [line.strip().lower() for line in f if line.strip()]
+            
+        to_append = []
+        for s in add_scripts:
+            s_clean = s.strip()
+            if s_clean and s_clean.lower() not in existing:
+                to_append.append(s_clean)
+                
+        if to_append:
+            with open(base_scripts_path, "a", encoding="utf-8") as f:
+                for s in to_append:
+                    f.write(f"\n{s}")

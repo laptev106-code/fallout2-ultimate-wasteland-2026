@@ -1,5 +1,5 @@
 """
-Fallout 2 Ultimate Wasteland Edition 2026
+Fallout 2: Ultimate Mega Rework 2026
 Manifest & Component Registry
 """
 
@@ -11,7 +11,7 @@ class ModComponent:
     id: str
     name: str
     version: str
-    category: str  # 'core', 'gameplay', 'tactics', 'qol', 'audio_visual', 'graphics_ce'
+    category: str  # 'core', 'gameplay', 'tactics', 'qol', 'audio_visual', 'expansion', 'graphics_ce'
     description: str
     download_url: str
     archive_name: str
@@ -29,7 +29,7 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="Restoration Project Updated (RPU)",
         version="2.4.34",
         category="core",
-        description="Фундамент сборки: восстановленные локации, квесты, NPC, Unofficial Patch, High Res Patch и анимации.",
+        description="Фундамент сборки: восстановленные локации (EPA, Abbey, Primitive Tribe), квесты, NPC, Unofficial Patch, High Res Patch и анимации.",
         download_url="https://github.com/BGforgeNet/Fallout2_Restoration_Project/releases/download/v2.4.34/rpu_v2.4.34.zip",
         archive_name="rpu_v2.4.34.zip",
         default_enabled_gameplay=True,
@@ -52,7 +52,7 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="EcCo Gameplay Overhaul",
         version="1.0.0",
         category="gameplay",
-        description="Глубокая переработка баланса оружия, урона, брони, экономики, крафта и медицины.",
+        description="Главная переработка баланса: характеристики оружия, брони, формулы урона, экономика, крафт, ловушки и рецепты.",
         download_url="https://github.com/phobos2077/fo2_ecco/releases/download/v1.0.0/pbs_fo2rpu_ecco_mod_v1-0-0.zip",
         archive_name="pbs_fo2rpu_ecco_mod_v1-0-0.zip",
         requires=["rpu"],
@@ -66,7 +66,7 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="EcCo Hotfix 1.0.0 hf1",
         version="1.0.0-hf1",
         category="gameplay",
-        description="Критический хотфикс формул и скриптов для EcCo 1.0.0.",
+        description="Обязательный хотфикс формул и скриптов для EcCo 1.0.0.",
         download_url="https://github.com/phobos2077/fo2_ecco/releases/download/v1.0.0/pbs_fo2rpu_ecco_patch_1-0-0-hf1.zip",
         archive_name="pbs_fo2rpu_ecco_patch_1-0-0-hf1.zip",
         requires=["ecco"],
@@ -92,7 +92,7 @@ COMPONENTS: Dict[str, ModComponent] = {
         name="Fallout Mechanics MiniRework",
         version="2.0.4.3",
         category="tactics",
-        description="Альтернативные режимы огня, яды, скрытность, перки напарников, исправление критов.",
+        description="Альтернативные режимы стрельбы, яды, скрытность, книги напарников, исправление критических ударов.",
         download_url="https://github.com/dekrus/Fallout2MechanicsMiniRework/releases/download/2.0.4.3/F2MechanicsMiniRework_v2.0.4.3.zip",
         archive_name="F2MechanicsMiniRework_v2.0.4.3.zip",
         requires=["rpu"],
@@ -117,11 +117,24 @@ COMPONENTS: Dict[str, ModComponent] = {
     "fo2tweaks": ModComponent(
         id="fo2tweaks",
         name="FO2Tweaks (Quality of Life)",
-        version="15.0",
+        version="14.7",
         category="qol",
-        description="Удобный инвентарь, авто-двери, подсветка контейнеров, быстрый сундук, исправление багов.",
-        download_url="https://github.com/BGforgeNet/FO2tweaks/releases/download/v15.0/fo2tweaks_v15.0.zip",
-        archive_name="fo2tweaks_v15.0.zip",
+        description="Удобный инвентарь, авто-двери, подсветка контейнеров, авто-перезарядка без читов и конфликтов с EcCo.",
+        download_url="https://github.com/BGforgeNet/FO2tweaks/releases/download/v14.7/fo2tweaks_v14.7.zip",
+        archive_name="fo2tweaks_v14.7.zip",
+        requires=["rpu"],
+        is_sfall_only=True,
+        default_enabled_gameplay=True,
+        default_enabled_hd=False
+    ),
+    "bunker21": ModComponent(
+        id="bunker21",
+        name="Bunker 21 & Truck Locations",
+        version="1.00",
+        category="expansion",
+        description="Самостоятельное расширение карты RPU: возвращение уникального Бункера 21 и грузовиков.",
+        download_url="https://github.com/BGforgeNet/Fallout2_Restoration_Project/releases/download/v2.4.34/rpu_v2.4.34.zip", # fallback mirror
+        archive_name="bunker21_truck_locations_1.00.zip",
         requires=["rpu"],
         is_sfall_only=True,
         default_enabled_gameplay=True,
@@ -136,7 +149,7 @@ COMPONENTS: Dict[str, ModComponent] = {
         download_url="https://github.com/alexbatalov/fallout2-ce/releases/download/v1.3.0/fallout2-ce-windows-x64.zip",
         archive_name="fallout2-ce-windows-x64.zip",
         requires=["rpu"],
-        conflicts_with=["ecco", "minirework", "fo2tweaks"],
+        conflicts_with=["ecco", "minirework", "fo2tweaks", "bunker21"],
         is_ce_only=True,
         default_enabled_gameplay=False,
         default_enabled_hd=True
@@ -144,13 +157,13 @@ COMPONENTS: Dict[str, ModComponent] = {
     "dustlight": ModComponent(
         id="dustlight",
         name="Dustlight HD Graphics & Dynamic Lighting",
-        version="0.9.2-beta",
+        version="0.9.0-beta",
         category="graphics_ce",
         description="HD апскейл спрайтов (Scale2x/AI), цветное освещение, мягкие тени и атмосферная тьма ночей.",
-        download_url="https://github.com/BGforgeNet/Fallout2_Restoration_Project/releases/download/v2.4.34/rpu_v2.4.34.zip", # fallback / mirror
-        archive_name="dustlight_0.9.2_pack.zip",
+        download_url="https://github.com/alexbatalov/fallout2-ce/releases/download/v1.3.0/fallout2-ce-windows-x64.zip", # bundle
+        archive_name="dustlight_0.9.0_pack.zip",
         requires=["fallout2_ce", "rpu"],
-        conflicts_with=["ecco", "minirework", "fo2tweaks"],
+        conflicts_with=["ecco", "minirework", "fo2tweaks", "bunker21"],
         is_ce_only=True,
         default_enabled_gameplay=False,
         default_enabled_hd=True
