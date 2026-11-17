@@ -46,12 +46,29 @@ class InstallationEngine:
             raise RuntimeError(f"Ошибка загрузки {url}: {e}")
 
     def extract_zip(self, zip_path: str, dest_dir: str, progress_callback: Optional[Callable[[int, int, str], None]] = None):
-        """Безопасно распаковывает архив с нормализацией путей."""
+        """Безопасно распаковывает архив с защитой от перезаписи sfall 4.5.1 и маршрутизацией dat-модов."""
         with zipfile.ZipFile(zip_path, "r") as zf:
             infolist = zf.infolist()
             total = len(infolist)
             for i, member in enumerate(infolist):
-                zf.extract(member, dest_dir)
+                member_name = member.filename
+                
+                # Защита sfall 4.5.1: если ddraw.dll уже существует в целевой папке (от RPU),
+                # не позволяем сторонним модам (например, FO2tweaks) перезаписывать его версией sfall 5
+                if member_name.lower() == "ddraw.dll" and os.path.exists(os.path.join(dest_dir, "ddraw.dll")):
+                    continue
+                
+                # Если одиночный .dat файл находится в корне архива (например, патч THAT или Bunker 21),
+                # направляем его в папку mods/, чтобы sfall корректно загрузил его
+                if member_name.lower().endswith(".dat") and "/" not in member_name and "\\" not in member_name:
+                    target_mods_dir = os.path.join(dest_dir, "mods")
+                    os.makedirs(target_mods_dir, exist_ok=True)
+                    out_path = os.path.join(target_mods_dir, member_name)
+                    with zf.open(member) as src_f, open(out_path, "wb") as dst_f:
+                        shutil.copyfileobj(src_f, dst_f)
+                else:
+                    zf.extract(member, dest_dir)
+                    
                 if progress_callback and i % 50 == 0:
                     percent = int((i / total) * 100)
                     progress_callback(percent, 100, f"Распаковка {os.path.basename(zip_path)}: {percent}%")
@@ -62,14 +79,14 @@ class InstallationEngine:
         if log_callback:
             log_callback(f"Копирование базовых архивов из {source_dir} в {target_dir}...")
             
-        # Обязательные базовые файлы
+        # Обязательные базовые файлы: master.dat, critter.dat, sound.dat, fallout2.exe, fallout2.cfg, data
+        allowed_files = ["master.dat", "critter.dat", "sound.dat", "fallout2.exe", "fallout2.cfg", "data"]
         for item in os.listdir(source_dir):
             s = os.path.join(source_dir, item)
             d = os.path.join(target_dir, item)
             item_lower = item.lower()
             
-            # Копируем только оригинальную базу, исключая старые моды
-            if item_lower in ["master.dat", "critter.dat", "fallout2.exe", "data"]:
+            if item_lower in allowed_files:
                 if os.path.isdir(s):
                     if not os.path.exists(d):
                         shutil.copytree(s, d)
@@ -108,22 +125,21 @@ class InstallationEngine:
                 log_callback(f"Интеграция: {mod.name}...")
             self.extract_zip(archive_path, target_dir, progress_callback)
             
-        # 3. Тонкая настройка конфигураций
+        # 3. Тонкая настройка конфигураций и устранение кракозябр
         if log_callback:
-            log_callback("Применение инженерных параметров совместимости (INI tuning)...")
+            log_callback("Применение инженерных параметров совместимости (INI tuning & CodePage)...")
             
+        Patcher.ensure_fallout_cfg(target_dir)
+        Patcher.apply_codepage_fix(target_dir)
+
         ddraw_ini = os.path.join(target_dir, "ddraw.ini")
         Configurator.tune_ddraw_ini(ddraw_ini)
         
-        minirework_ini = os.path.join(target_dir, "minirework.ini")
-        Configurator.tune_minirework_ini(minirework_ini)
-        
-        fo2tweaks_ini = os.path.join(target_dir, "fo2tweaks.ini")
-        Configurator.tune_fo2tweaks_ini(fo2tweaks_ini)
+        Configurator.tune_minirework_ini(target_dir)
+        Configurator.tune_fo2tweaks_ini(target_dir)
         
         mods_dir = os.path.join(target_dir, "mods")
-        if os.path.exists(mods_dir):
-            Configurator.write_mods_order(mods_dir)
+        Configurator.write_mods_order(mods_dir)
             
         # 4. Бинарный патчинг LAA 4GB
         exe_path = os.path.join(target_dir, "fallout2.exe")

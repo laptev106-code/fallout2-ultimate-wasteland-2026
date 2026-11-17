@@ -56,6 +56,9 @@ class Configurator:
         content = cls.patch_ini_key(content, "Misc", "SpeedInterfaceCounterAnims", 2)
         content = cls.patch_ini_key(content, "Misc", "ExtraMemory", 1)
         content = cls.patch_ini_key(content, "Misc", "SkipOpeningMovies", 1)
+        content = cls.patch_ini_key(content, "Misc", "Language", "russian")
+        content = cls.patch_ini_key(content, "Misc", "CodePage", 1251)
+        content = cls.patch_ini_key(content, "Misc", "UseCustomFont", 1)
         content = cls.patch_ini_key(content, "Graphics", "Mode", 4)  # DX9
         content = cls.patch_ini_key(content, "Graphics", "GPUMemory", 1)
         
@@ -63,35 +66,38 @@ class Configurator:
             f.write(content)
 
     @classmethod
-    def tune_minirework_ini(cls, minirework_path: str):
+    def tune_minirework_ini(cls, game_dir: str):
         """Настраивает MiniRework 2.0.4.3 для идеального симбиоза с EcCo 1.0.0."""
-        if not os.path.exists(minirework_path):
-            return
-            
-        with open(minirework_path, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read()
-            
-        content = cls.patch_ini_key(content, "MAIN", "RegenMod", 0)
-        content = cls.patch_ini_key(content, "MAIN", "MedToolsMod", 0)
-        content = cls.patch_ini_key(content, "MAIN", "StealRebalance", 1)
-        content = cls.patch_ini_key(content, "MAIN", "FO2_ECCO", 1)
+        candidates = [
+            os.path.join(game_dir, "mods", "F2MechanicsMiniRework.ini"),
+            os.path.join(game_dir, "minirework.ini"),
+            os.path.join(game_dir, "mods", "minirework.ini")
+        ]
         
-        with open(minirework_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        for path in candidates:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                    
+                content = cls.patch_ini_key(content, "MAIN", "RegenMod", 0)
+                content = cls.patch_ini_key(content, "MAIN", "MedToolsMod", 0)
+                content = cls.patch_ini_key(content, "MAIN", "StealRebalance", 1)
+                content = cls.patch_ini_key(content, "MAIN", "FO2_ECCO", 1)
+                
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(content)
 
     @classmethod
-    def tune_fo2tweaks_ini(cls, fo2tweaks_path: str):
+    def tune_fo2tweaks_ini(cls, game_dir: str):
         """
-        Калибровочный профиль FO2Tweaks 14.7:
+        Калибровочный профиль FO2Tweaks:
         Полное устранение конфликтов с EcCo и исключение читов.
         """
-        if not os.path.exists(fo2tweaks_path):
-            return
-            
-        with open(fo2tweaks_path, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read()
-            
-        # Настройки совместимости с балансом EcCo
+        candidates = [
+            os.path.join(game_dir, "mods", "fo2tweaks.ini"),
+            os.path.join(game_dir, "fo2tweaks.ini")
+        ]
+        
         ecco_compatibility_params = {
             "max_knockback": -1,
             "healing_revision": 0,
@@ -114,29 +120,45 @@ class Configurator:
             "run_speed": 0
         }
         
-        for k, v in ecco_compatibility_params.items():
-            content = cls.patch_ini_key(content, "main", k, v)
-            
-        with open(fo2tweaks_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        for path in candidates:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                    
+                for k, v in ecco_compatibility_params.items():
+                    content = cls.patch_ini_key(content, "main", k, v)
+                    
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(content)
 
     @classmethod
     def write_mods_order(cls, mods_dir: str):
         """Создает детерминированный список приоритетов загрузки в mods_order.txt."""
         order_file = os.path.join(mods_dir, "mods_order.txt")
         order_content = (
-            "# Fallout 2: Ultimate Mega Rework 2026 - Master Priority Order\n"
-            "rpu\n"
-            "rpu_translations\n"
-            "ecco\n"
-            "ecco_hf1\n"
-            "that_rpu_patch\n"
-            "talking_heads\n"
-            "minirework\n"
-            "fo2tweaks\n"
-            "bunker21\n"
-            "vock\n"
+            "; Fallout 2: Ultimate Mega Rework 2026 - Master Priority Order\n"
+            "; RPU core & translations\n"
+            "rpu.dat\n"
+            "npc_armor.dat\n"
+            "rpu_russian.dat\n"
+            "upu_russian_sound.dat\n\n"
+            "; Visual and audio overhauls\n"
+            "talking_heads.dat\n"
+            "talking_heads_audio.dat\n\n"
+            "; Map updates & compatibility patches\n"
+            "talking_heads_that_rpu_map_update_patch.dat\n\n"
+            "; Gameplay overhauls\n"
+            "rpu_y_ecco.dat\n\n"
+            "; Mechanics MiniRework\n"
+            "F2MechanicsMiniRework.dat\n\n"
+            "; Expansions & Addons\n"
+            "bunker21.dat\n"
+            "vock-fo2.dat\n\n"
+            "; QoL & Tweaks\n"
+            "fo2tweaks.dat\n"
+            "party_orders.dat\n"
         )
+        os.makedirs(mods_dir, exist_ok=True)
         with open(order_file, "w", encoding="utf-8") as f:
             f.write(order_content)
 
