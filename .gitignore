@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cache and downloaded archives
+cache/
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# Game binaries and data files (do not commit copyrighted game data)
+*.dat
+*.exe
+*.dll
+*.dmg
+*.apk
+
+# Environment & Temporary
+.env
+*.log
+.test_write_perm
+test_config/
