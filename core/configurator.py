@@ -66,6 +66,7 @@ class Configurator:
         # Графика: когда f2_res.ini работает в режиме DirectX 9 (GRAPHICS_MODE=2),
         # в sfall ddraw.ini Mode должен оставаться 0 во избежание конфликта двух DX9 устройств
         content = cls.patch_ini_key(content, "Graphics", "Mode", 0)
+        content = cls.patch_ini_key(content, "Graphics", "TextureFilter", 2)
         
         # Поддержка Lossless Music (DirectShow streaming для uncompressed WAV)
         content = cls.patch_ini_key(content, "Sound", "AllowDShowSound", 1)
