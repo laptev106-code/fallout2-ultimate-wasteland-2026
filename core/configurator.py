@@ -60,6 +60,8 @@ class Configurator:
         content = cls.patch_ini_key(content, "Misc", "Language", "russian")
         content = cls.patch_ini_key(content, "Misc", "CodePage", 1251)
         content = cls.patch_ini_key(content, "Misc", "UseCustomFont", 1)
+        # Разрешаем CRC модифицированного LAA (4GB) исполняемого файла fallout2.exe
+        content = cls.patch_ini_key(content, "Misc", "ExtraCRC", "0xf18aa577")
         # Графика: когда f2_res.ini работает в режиме DirectX 9 (GRAPHICS_MODE=2),
         # в sfall ddraw.ini Mode должен оставаться 0 во избежание конфликта двух DX9 устройств
         content = cls.patch_ini_key(content, "Graphics", "Mode", 0)
