@@ -4,7 +4,7 @@
 #define MyAppName "Fallout 2 - Ultimate Wasteland Edition 2026"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Wasteland 2026 Team"
-#define MyAppExeName "Fallout2_Launcher.exe"
+#define MyAppExeName "Fallout2_PipBoy_Launcher.exe"
 
 [Setup]
 AppId={{5E285641-7FEA-4C2E-8E5A-7C5BD58EA920}
