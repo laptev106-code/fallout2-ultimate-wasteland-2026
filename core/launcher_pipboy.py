@@ -22,19 +22,21 @@ except ImportError:
     HAS_SOUND = False
 
 # ---------------------------------------------------------------------------
-# АУТЕНТИЧНАЯ ПАЛИТРА PIP-BOY 3000 (CRT PHOSPHOR GREEN & OBSIDIAN)
+# АУТЕНТИЧНАЯ ПАЛИТРА PIP-BOY 3000 Mk IV (CRT PHOSPHOR GREEN & RETRO-TERMINAL)
 # ---------------------------------------------------------------------------
-BG_DARK = "#050a05"          # Глубокий черный фон кинескопа
-BG_BEZEL = "#0c150c"         # Внутренний безель экрана
-BG_CARD = "#101d10"          # Карточка/панель блока
-BG_CARD_HOVER = "#162816"    # Фокус карточки
-BORDER_MUTED = "#1e381e"     # Неактивные границы
-BORDER_ACTIVE = "#387038"    # Активные границы
+BG_DARK = "#040804"          # Глубокий черный фон кинескопа
+BG_BEZEL = "#0b140b"         # Металлический корпус/безель терминала RobCo
+BG_CARD = "#0d1a0d"          # Карточка/панель блока с люминофорным оттенком
+BG_CARD_HOVER = "#142814"    # Фокус карточки
+BORDER_MUTED = "#1b361b"     # Неактивные границы
+BORDER_ACTIVE = "#2f662f"    # Активные границы
+BORDER_BRIGHT = "#459945"    # Яркие фокусные границы
 
 PHOSPHOR_MAIN = "#2bf558"    # Основной люминофор P31 (ярко-зеленый)
 PHOSPHOR_BRIGHT = "#66ff88"  # Максимальная яркость / фокус
-TEXT_NORMAL = "#d0ecd0"      # Читаемый светлый текст
-TEXT_DIM = "#5a885a"         # Приглушенный технический текст
+TEXT_NORMAL = "#f0f7f0"      # Обычный чистый светлый текст для высокой читаемости
+TEXT_MUTED = "#9ec29e"       # Вторичный пояснительный текст
+TEXT_DIM = "#4f7a4f"         # Приглушенный технический текст
 AMBER_ALERT = "#ffb833"      # Янтарный предупреждающий люминофор
 BLUE_VAULT = "#3fa9f5"       # Синий цвет Vault-Tec
 
@@ -552,7 +554,7 @@ class PipBoyLauncher(tk.Tk):
                     pass
 
     def setup_ttk_styles(self):
-        """Настройка стилей Ttk в палитре Pip-Boy."""
+        """Настройка стилей Ttk в палитре Pip-Boy (без белых полей, чистая читаемость)."""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure(
@@ -562,52 +564,94 @@ class PipBoyLauncher(tk.Tk):
             bordercolor=BORDER_MUTED,
             arrowcolor=PHOSPHOR_MAIN
         )
+        # Кастомный темный Combobox со стандартным читаемым белым текстом
         style.configure(
             "Pip.TCombobox",
             background=BG_CARD,
-            foreground=PHOSPHOR_MAIN,
-            fieldbackground=BG_CARD,
+            foreground="#ffffff",          # Чистый белый цвет выбранного значения
+            fieldbackground="#070f07",     # Глубокий темный фон поля ввода
             darkcolor=BORDER_MUTED,
             lightcolor=BORDER_MUTED,
-            arrowcolor=PHOSPHOR_MAIN
+            bordercolor=BORDER_ACTIVE,
+            arrowcolor=PHOSPHOR_MAIN,
+            arrowsize=14,
+            padding=6
         )
+        style.map(
+            "Pip.TCombobox",
+            fieldbackground=[
+                ("readonly", "#070f07"),
+                ("active", "#0d1a0d"),
+                ("focus", "#070f07"),
+                ("disabled", BG_DARK)
+            ],
+            foreground=[
+                ("readonly", "#ffffff"),   # Четкий белый читаемый цвет в режиме readonly
+                ("active", "#ffffff"),
+                ("focus", "#ffffff"),
+                ("disabled", TEXT_DIM)
+            ],
+            background=[
+                ("readonly", BG_CARD),
+                ("active", BG_CARD_HOVER)
+            ],
+            bordercolor=[
+                ("focus", PHOSPHOR_MAIN),
+                ("active", BORDER_BRIGHT)
+            ]
+        )
+
+        # Стилизация выпадающего списка Tk Listbox:
+        self.option_add("*TCombobox*Listbox.background", "#070f07")
+        self.option_add("*TCombobox*Listbox.foreground", "#ffffff")
+        self.option_add("*TCombobox*Listbox.selectBackground", PHOSPHOR_MAIN)
+        self.option_add("*TCombobox*Listbox.selectForeground", BG_DARK)
+        self.option_add("*TCombobox*Listbox.font", ("Consolas", 10))
+        self.option_add("*TCombobox*Listbox.relief", "solid")
+        self.option_add("*TCombobox*Listbox.borderWidth", 1)
 
     def build_frame_cockpit(self):
         """Создание внешней рамки ЭЛТ-дисплея Pip-Boy."""
-        # 1. Внешняя металлическая рамка
-        outer_bezel = tk.Frame(self, bg=BG_BEZEL, bd=2, relief="solid", highlightbackground="#1b301b", highlightthickness=2)
+        # 1. Внешняя металлическая рамка шасси терминала
+        outer_bezel = tk.Frame(self, bg=BG_BEZEL, bd=3, relief="raised", highlightbackground="#162916", highlightthickness=2)
         outer_bezel.pack(fill="both", expand=True, padx=8, pady=8)
 
+        # Ретро-винты крепления панели RobCo по 4 углам
+        tk.Label(outer_bezel, text="[ ⊕ ]", font=("Consolas", 8, "bold"), fg="#2f522f", bg=BG_BEZEL).place(x=4, y=4)
+        tk.Label(outer_bezel, text="[ ⊕ ]", font=("Consolas", 8, "bold"), fg="#2f522f", bg=BG_BEZEL).place(relx=1.0, y=4, x=-34)
+        tk.Label(outer_bezel, text="[ ⊕ ]", font=("Consolas", 8, "bold"), fg="#2f522f", bg=BG_BEZEL).place(x=4, rely=1.0, y=-20)
+        tk.Label(outer_bezel, text="[ ⊕ ]", font=("Consolas", 8, "bold"), fg="#2f522f", bg=BG_BEZEL).place(relx=1.0, rely=1.0, x=-34, y=-20)
+
         # 2. Верхний системный бар Pip-Boy
-        top_bar = tk.Frame(outer_bezel, bg=BG_BEZEL, height=48)
-        top_bar.pack(fill="x", padx=14, pady=(8, 4))
+        top_bar = tk.Frame(outer_bezel, bg=BG_BEZEL, height=44)
+        top_bar.pack(fill="x", padx=16, pady=(8, 4))
 
         # Левый блок: Маркировка RobCo
         lbl_robco = tk.Label(
             top_bar,
-            text="ROBCO INDUSTRIES UNIFIED TERMINAL // PIP-BOY 3000 Mk IV",
+            text="ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM // TERMLINK PROTOCOL v3.02",
             font=FONT_MONO_SMALL,
-            fg=TEXT_DIM,
+            fg=PHOSPHOR_MAIN,
             bg=BG_BEZEL
         )
         lbl_robco.pack(side="left", anchor="w")
 
-        # Правый блок: Индикатор питания и статуса
+        # Правый блок: Индикаторы питания и статуса
         status_frame = tk.Frame(top_bar, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE)
         status_frame.pack(side="right")
         tk.Label(
             status_frame,
-            text="● SYSTEM: 100% OPERATIONAL",
+            text="● PWR: ON  |  ● CRT 60Hz  |  ● RAD 0.00 μSv/h  |  ● MEM: 640K OK",
             font=FONT_MONO_SMALL,
             fg=PHOSPHOR_BRIGHT,
             bg=BG_CARD,
-            padx=8,
+            padx=10,
             pady=3
         ).pack()
 
         # 3. Навигационная полоса кнопок терминала (Pip-Boy Tabs)
         nav_container = tk.Frame(outer_bezel, bg=BG_BEZEL)
-        nav_container.pack(fill="x", padx=14, pady=(2, 6))
+        nav_container.pack(fill="x", padx=16, pady=(2, 6))
 
         self.tab_buttons = {}
         tab_defs = [
@@ -624,30 +668,34 @@ class PipBoyLauncher(tk.Tk):
                 nav_container,
                 text=tab_title,
                 font=FONT_MONO_MID,
-                fg=TEXT_DIM,
+                fg=TEXT_MUTED,
                 bg=BG_CARD,
                 activebackground=BG_CARD_HOVER,
                 activeforeground=PHOSPHOR_BRIGHT,
-                bd=1,
-                relief="solid",
+                bd=2,
+                relief="raised",
                 padx=10,
                 pady=6,
                 cursor="hand2",
                 command=lambda tid=tab_id: self.switch_tab(tid)
             )
-            btn.pack(side="left", padx=(0, 5))
+            btn.pack(side="left", padx=(0, 6))
             self.tab_buttons[tab_id] = btn
 
-        # 4. Основной экран ЭЛТ-дисплея
+        # 4. Основной экран ЭЛТ-дисплея (глубокий утопленный кинескоп)
         self.screen_frame = tk.Frame(
             outer_bezel,
             bg=BG_DARK,
-            bd=2,
-            relief="solid",
+            bd=3,
+            relief="sunken",
             highlightbackground=BORDER_ACTIVE,
             highlightthickness=1
         )
-        self.screen_frame.pack(fill="both", expand=True, padx=14, pady=(0, 6))
+        self.screen_frame.pack(fill="both", expand=True, padx=16, pady=(0, 6))
+
+        # Линия сферического блика стекла ЭЛТ-монитора (Curved CRT Screen Glare)
+        glass_glare = tk.Frame(self.screen_frame, bg="#0e240e", height=2)
+        glass_glare.pack(fill="x", padx=4, pady=(2, 0))
 
         # Создание всех экранов
         self.pages = {}
@@ -686,17 +734,17 @@ class PipBoyLauncher(tk.Tk):
         self.show_tab(tab_id)
 
     def show_tab(self, tab_id: str):
-        """Отображение выбранного экрана."""
+        """Отображение выбранного экрана с ретро-подсветкой активной клавиши."""
         for tid, btn in self.tab_buttons.items():
             if tid == tab_id:
-                btn.configure(bg=BG_CARD_HOVER, fg=PHOSPHOR_BRIGHT, relief="sunken", bd=1)
+                btn.configure(bg="#162e16", fg=PHOSPHOR_BRIGHT, relief="sunken", bd=2)
             else:
-                btn.configure(bg=BG_CARD, fg=TEXT_DIM, relief="solid", bd=1)
+                btn.configure(bg=BG_CARD, fg=TEXT_MUTED, relief="raised", bd=2)
 
         for p in self.pages.values():
             p.pack_forget()
 
-        self.pages[tab_id].pack(fill="both", expand=True, padx=12, pady=12)
+        self.pages[tab_id].pack(fill="both", expand=True, padx=12, pady=10)
 
     # -----------------------------------------------------------------------
     # ЭКРАН 1: СТАТУС / ПУЛЬТ ЗАПУСКА (DASHBOARD)
@@ -1042,97 +1090,139 @@ class PipBoyLauncher(tk.Tk):
     def create_config_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
 
-        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
-        header_box.pack(fill="x", pady=(0, 10))
+        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=16, pady=10)
+        header_box.pack(fill="x", pady=(0, 8))
 
-        tk.Label(header_box, text="ГРАФИЧЕСКИЙ И АУДИО КОНФИГУРАТОР FALLOUT 2", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(header_box, text="⚙ ГРАФИЧЕСКИЙ И АУДИО ПУЛЬТ УПРАВЛЕНИЯ FALLOUT 2", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
         tk.Label(
             header_box,
-            text="Изменение параметров напрямую перезаписывает файлы f2_res.ini и fallout2.cfg без необходимости копаться в блокноте.",
+            text="Прямая запись параметров в f2_res.ini и fallout2.cfg. Настройки вступают в силу немедленно.",
             font=FONT_UI_TEXT,
-            fg=TEXT_NORMAL,
+            fg=TEXT_MUTED,
             bg=BG_CARD
         ).pack(anchor="w", pady=(2, 0))
 
-        form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=14)
+        form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=18, pady=10)
         form_frame.pack(fill="both", expand=True)
 
         # 1. Разрешение экрана
-        row1 = tk.Frame(form_frame, bg=BG_CARD)
-        row1.pack(fill="x", pady=5)
-        tk.Label(row1, text="РАЗРЕШЕНИЕ ЭКРАНА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        card1 = tk.Frame(form_frame, bg=BG_CARD)
+        card1.pack(fill="x", pady=4)
+        row1 = tk.Frame(card1, bg=BG_CARD)
+        row1.pack(fill="x")
+        tk.Label(row1, text="1. РАЗРЕШЕНИЕ ЭКРАНА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
         self.combo_res = ttk.Combobox(
             row1,
             values=["1920x1080 (Рекомендуется Full HD)", "2560x1440 (2K QHD)", "3840x2160 (4K UHD)", "1600x900", "1280x720", "1280x960"],
             state="readonly",
-            width=36,
+            width=38,
             style="Pip.TCombobox"
         )
         self.combo_res.set("1920x1080 (Рекомендуется Full HD)")
         self.combo_res.pack(side="left", padx=10)
+        tk.Label(card1, text="   Рекомендуется 1080p или 1440p. Движок автоматически центрирует карту и масштабирует меню.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
         # 2. Режим окна
-        row2 = tk.Frame(form_frame, bg=BG_CARD)
-        row2.pack(fill="x", pady=5)
-        tk.Label(row2, text="РЕЖИМ ОТОБРАЖЕНИЯ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        card2 = tk.Frame(form_frame, bg=BG_CARD)
+        card2.pack(fill="x", pady=4)
+        row2 = tk.Frame(card2, bg=BG_CARD)
+        row2.pack(fill="x")
+        tk.Label(row2, text="2. РЕЖИМ ОТОБРАЖЕНИЯ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
         self.combo_wnd = ttk.Combobox(
             row2,
             values=["Полноэкранный режим (Fullscreen)", "Окно без рамок (Borderless)", "Оконный режим (Windowed)"],
             state="readonly",
-            width=36,
+            width=38,
             style="Pip.TCombobox"
         )
         self.combo_wnd.set("Полноэкранный режим (Fullscreen)")
         self.combo_wnd.pack(side="left", padx=10)
+        tk.Label(card2, text="   Режим 'Окно без рамок' исключает зависания и мерцание при переключении по Alt+Tab.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
-        # 3. Масштаб интерфейса (Scale 2X)
-        row3 = tk.Frame(form_frame, bg=BG_CARD)
-        row3.pack(fill="x", pady=5)
-        tk.Label(row3, text="МАСШТАБ ИНТЕРФЕЙСА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        # 3. Масштаб интерфейса
+        card3 = tk.Frame(form_frame, bg=BG_CARD)
+        card3.pack(fill="x", pady=4)
+        row3 = tk.Frame(card3, bg=BG_CARD)
+        row3.pack(fill="x")
+        tk.Label(row3, text="3. МАСШТАБ ИНТЕРФЕЙСА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
         self.combo_scale = ttk.Combobox(
             row3,
             values=["SCALE 2X (Крупный четкий UI для 1080p/1440p)", "SCALE 1X (Оригинальный мелкий интерфейс)"],
             state="readonly",
-            width=36,
+            width=38,
             style="Pip.TCombobox"
         )
         self.combo_scale.set("SCALE 2X (Крупный четкий UI для 1080p/1440p)")
         self.combo_scale.pack(side="left", padx=10)
+        tk.Label(card3, text="   SCALE 2X увеличивает пиксели интерфейса в 2 раза, предотвращая микроскопический шрифт.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
         # 4. Фильтрация текстур GPU
-        row4 = tk.Frame(form_frame, bg=BG_CARD)
-        row4.pack(fill="x", pady=5)
-        tk.Label(row4, text="СГЛАЖИВАНИЕ СПРАЙТОВ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        card4 = tk.Frame(form_frame, bg=BG_CARD)
+        card4.pack(fill="x", pady=4)
+        row4 = tk.Frame(card4, bg=BG_CARD)
+        row4.pack(fill="x")
+        tk.Label(row4, text="4. СГЛАЖИВАНИЕ СПРАЙТОВ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
         self.combo_filter = ttk.Combobox(
             row4,
             values=["Билинейное сглаживание GPU (Без лесенок)", "Точечное пиксельное (Резкие пиксели)"],
             state="readonly",
-            width=36,
+            width=38,
             style="Pip.TCombobox"
         )
         self.combo_filter.set("Билинейное сглаживание GPU (Без лесенок)")
         self.combo_filter.pack(side="left", padx=10)
+        tk.Label(card4, text="   Аппаратная фильтрация сглаживает ступенчатые края спрайтов на современных мониторах.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
         # 5. Громкость музыки
-        row5 = tk.Frame(form_frame, bg=BG_CARD)
-        row5.pack(fill="x", pady=8)
-        tk.Label(row5, text="ГРОМКОСТЬ САУНДТРЕКА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
-        self.scale_music = tk.Scale(row5, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
+        card5 = tk.Frame(form_frame, bg=BG_CARD)
+        card5.pack(fill="x", pady=4)
+        row5 = tk.Frame(card5, bg=BG_CARD)
+        row5.pack(fill="x")
+        tk.Label(row5, text="5. САУНДТРЕК (МУЗЫКА):", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
+        self.scale_music = tk.Scale(
+            row5,
+            from_=0,
+            to=100,
+            orient="horizontal",
+            length=290,
+            bg=BG_CARD,
+            fg="#ffffff",                 # Чистый белый текст значений для идеальной читаемости!
+            activebackground=PHOSPHOR_MAIN,
+            troughcolor=BG_DARK,
+            highlightthickness=0,
+            font=("Consolas", 9, "bold")
+        )
         self.scale_music.set(80)
         self.scale_music.pack(side="left", padx=10)
+        tk.Label(card5, text="   Громкость несжатого саундтрека Марка Моргана 44.1 кГц Stereo Lossless.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
-        # 6. Громкость звуков и речи
-        row6 = tk.Frame(form_frame, bg=BG_CARD)
-        row6.pack(fill="x", pady=5)
-        tk.Label(row6, text="ГРОМКОСТЬ ЭФФЕКТОВ/РЕЧИ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
-        self.scale_sfx = tk.Scale(row6, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
+        # 6. Громкость эффектов
+        card6 = tk.Frame(form_frame, bg=BG_CARD)
+        card6.pack(fill="x", pady=4)
+        row6 = tk.Frame(card6, bg=BG_CARD)
+        row6.pack(fill="x")
+        tk.Label(row6, text="6. ЭФФЕКТЫ И РЕЧЬ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
+        self.scale_sfx = tk.Scale(
+            row6,
+            from_=0,
+            to=100,
+            orient="horizontal",
+            length=290,
+            bg=BG_CARD,
+            fg="#ffffff",                 # Чистый белый текст значений!
+            activebackground=PHOSPHOR_MAIN,
+            troughcolor=BG_DARK,
+            highlightthickness=0,
+            font=("Consolas", 9, "bold")
+        )
         self.scale_sfx.set(90)
         self.scale_sfx.pack(side="left", padx=10)
+        tk.Label(card6, text="   Громкость выстрелов, взрывов и русской студийной озвучки диалогов.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
         # Кнопка сохранения
         btn_save = tk.Button(
             form_frame,
-            text="💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ",
+            text="💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ В f2_res.ini",
             font=FONT_MONO_MID,
             fg=BG_DARK,
             bg=PHOSPHOR_MAIN,
@@ -1144,7 +1234,7 @@ class PipBoyLauncher(tk.Tk):
             cursor="hand2",
             command=self.save_configuration
         )
-        btn_save.pack(anchor="w", pady=(14, 0))
+        btn_save.pack(anchor="w", pady=(10, 0))
 
         self.read_current_configuration()
         return frame
