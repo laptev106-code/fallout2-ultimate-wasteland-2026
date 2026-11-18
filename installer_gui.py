@@ -281,8 +281,11 @@ class FalloutMasterInstaller(tk.Tk):
                     log_callback=self._log
                 )
                 
-                # Копируем мастер-лаунчер в корень
+                # Копируем мастер-лаунчер в корень и создаем Run_Launcher.bat
                 shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
+                launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
+                with open(launcher_bat, "w", encoding="utf-8") as f:
+                    f.write("@echo off\nstart \"\" py -3 \"%~dp0launcher.py\"\n")
             else:
                 selected_ids = [cid for cid, var in self.component_vars.items() if var.get()]
                 self.engine.install_profile(
@@ -291,6 +294,9 @@ class FalloutMasterInstaller(tk.Tk):
                     log_callback=self._log
                 )
                 shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
+                launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
+                with open(launcher_bat, "w", encoding="utf-8") as f:
+                    f.write("@echo off\nstart \"\" py -3 \"%~dp0launcher.py\"\n")
 
             self._log("🎉 ВСЕ ОПЕРАЦИИ УСПЕШНО ЗАВЕРШЕНЫ!")
             self._update_progress(100, 100, "Установка завершена на 100%")

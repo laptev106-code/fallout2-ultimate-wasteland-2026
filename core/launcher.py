@@ -132,15 +132,15 @@ class MasterLauncher(tk.Tk):
             messagebox.showerror("Ошибка", f"Файл не найден:\n{exe}\nУстановите профиль через Инсталлятор!")
 
     def launch_hd(self):
-        exe = os.path.join(self.hd_dir, "fallout2-ce.exe")
-        if not os.path.exists(exe):
-            exe = os.path.join(self.root_dir, "fallout2-ce.exe")
-            
-        if os.path.exists(exe):
-            self.status_var.set("Запуск HD Dustlight...")
-            subprocess.Popen([exe], cwd=os.path.dirname(exe))
-        else:
-            messagebox.showerror("Ошибка", f"Файл не найден:\n{exe}\nУстановите HD-профиль через Инсталлятор!")
+        for candidate in ["dustlight.exe", "fallout2-ce.exe"]:
+            exe = os.path.join(self.hd_dir, candidate)
+            if not os.path.exists(exe):
+                exe = os.path.join(self.root_dir, candidate)
+            if os.path.exists(exe):
+                self.status_var.set(f"Запуск HD Dustlight ({candidate})...")
+                subprocess.Popen([exe], cwd=os.path.dirname(exe))
+                return
+        messagebox.showerror("Ошибка", f"Файл не найден в:\n{self.hd_dir}\nУстановите HD-профиль через Инсталлятор!")
 
     def open_saves(self):
         target = self.gameplay_dir if os.path.exists(self.gameplay_dir) else self.root_dir
