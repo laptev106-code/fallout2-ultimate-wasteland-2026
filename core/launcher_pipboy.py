@@ -1,7 +1,8 @@
 """
 Fallout 2: Ultimate Wasteland Edition 2026 - Pip-Boy 3000 Master Launcher
 Премиальный автономный лаунчер, стилизованный под экран персонального терминала Pip-Boy 3000.
-Включает встроенный графический конфигуратор, каталог модов, менеджер сохранений и аутентичный визуал.
+Включает полный сводный список изменений (Changelog 2026), графический конфигуратор,
+каталог модификаций с переведенными названиями и менеджер сохранений.
 """
 
 import os
@@ -44,16 +45,185 @@ FONT_MONO_SMALL = ("Consolas", 8)
 FONT_UI_TEXT = ("Segoe UI", 9)
 
 # ---------------------------------------------------------------------------
-# ДЕТАЛЬНЫЙ КАТАЛОГ ВСЕХ УСТАНОВЛЕННЫХ МОДИФИКАЦИЙ
+# ПОЛНЫЙ СВОДНЫЙ СПИСОК ВСЕХ ИЗМЕНЕНИЙ И ОБНОВЛЕНИЙ СБОРКИ (CHANGELOG 2026)
+# ---------------------------------------------------------------------------
+MASTER_CHANGELOG_TEXT = """================================================================================
+ПОЛНЫЙ РАСШИРЕННЫЙ СПИСОК ИЗМЕНЕНИЙ И ОБНОВЛЕНИЙ
+FALLOUT 2: ULTIMATE WASTELAND EDITION (РЕВИЗИЯ 2026)
+================================================================================
+
+[ 1. СИСТЕМНО-ИНЖЕНЕРНЫЙ СЛОЙ (СТАБИЛЬНОСТЬ И ПАМЯТЬ) ]
+--------------------------------------------------------------------------------
+• ПАТЧ 4GB LARGE ADDRESS AWARE (LAA):
+  - Исполняемый файл FALLOUT2.EXE модифицирован системным флагом IMAGE_FILE_LARGE_ADDRESS_AWARE.
+  - Лимит адресуемой виртуальной памяти расширен с 2 ГБ до 4 ГБ.
+  - Полностью исключены внезапные вылеты из-за переполнения адресного пространства при загрузке 
+    сотен мегабайт новых анимаций брони и HD-звуков.
+
+• СИСТЕМНЫЙ ПАТЧЕР SFALL v4.4.5:
+  - ExtraCRC=0xf18aa577 в блоке [Debugging]: навсегда устранено всплывающее окно ошибки 
+    "CRC Mismatch" (несовпадение контрольной суммы пропатченного бинарника RPU).
+  - SkipCompatModeCheck=1: игра стартует напрямую в нативном 64-битном окружении Windows 10/11 
+    без необходимости выставлять режим совместимости Windows 98/XP.
+  - SingleCore=1: принудительная привязка потока к одному физическому ядру CPU. Исключает гонки 
+    потоков и зависания скриптового движка на современных многоядерных процессорах (Intel Core / AMD Ryzen / Xeon).
+  - ProcessorIdle=1: разгрузка процессора в циклах ожидания ввода (игра не грузит ядро на 100%).
+  - CheckLOS=0 в sfall-mods.ini: отключен тяжелый алгоритм покадровой трассировки лучей при подсветке предметов. 
+    Полностью устранены микрофризы и секундные задержки при беге с зажатым Shift и вращении персонажа.
+  - ALT_MOUSE_INPUT=0 в f2_res.ini: управление кликами мыши передано низкоуровневому хуку sfall. 
+    Устранен вылет движка при одновременном зажатии Shift и клике для перемещения.
+  - COLOUR_BITS=32: игра работает в истинном 32-битном цвете (ARGB8888). Устранен черный экран 
+    и зависание курсора на современных видеокартах NVIDIA RTX / Turing, не поддерживающих 16-битный цвет в DirectDraw.
+  - TextureFilter=2: аппаратная билинейная фильтрация на GPU сглаживает пиксельные лесенки при 2X масштабировании.
+
+--------------------------------------------------------------------------------
+[ 2. ГЛОБАЛЬНЫЙ СЮЖЕТ И ЛОКАЦИИ (КАНОН BLACK ISLE STUDIOS) ]
+--------------------------------------------------------------------------------
+• 6 НОВЫХ ПОЛНОРАЗМЕРНЫХ ВОССТАНОВЛЕННЫХ ЛОКАЦИЙ:
+  1. Аббатство Братства Стали (The Abbey):
+     - Уединенный монастырь монахов-переписчиков древних знаний на севере карты.
+     - Новые квесты: расшифровка довоенных баз данных, ремонт генератора, исследование катакомб.
+     - Уникальный внешний торговец, продающий редкую броню и запчасти.
+  2. Исследовательский центр EPA (Environmental Protection Agency):
+     - Заброшенный секретный комплекс правительственного эко-контроля.
+     - Многоуровневые лаборатории, сломанные лифты, головоломки с химикатами и роботами.
+     - Возможность расконсервировать 3 новых спутников из криогенных капсул.
+  3. Деревня Дикарей (Primitive Tribe):
+     - Родное прибрежное поселение племени Сулика.
+     - Сюжетная цепочка шамана, охота на гекконов, восстановление колодца и конфронтация с работорговцами.
+  4. Жилой квартал Дыры (The Den Residential):
+     - Новый жилой район города работорговцев.
+     - Приют матушки Мэгги для беспризорных детей (сироты больше не воруют у Избранного, если им помочь).
+     - Побочные квесты местных жителей и возврат фамильных реликвий.
+  5. Китайская подводная лодка «Ши» в Сан-Франциско:
+     - Затопленный отсек субмарины Императора.
+     - Новые системы наведения ракет, уникальное энергетическое оружие и доступ к терминалам базы Анклава.
+  6. База Вертибердов и посадочные доки:
+     - Охраняемые посадочные площадки винтокрылов Анклава с тяжелыми турелями и патрулями.
+
+• ВОССТАНОВЛЕННЫЕ СЮЖЕТНЫЕ ЦЕПОЧКИ:
+  - Спасение сестры Сулика: полноценная драматичная цепочка по выслеживанию работорговцев Мецгера 
+    и освобождению пленников с триумфальным возвращением в племя.
+  - Заклятый враг Избранного — Кага: отвергнутый старейшиной соплеменник, считающий себя истинным Избранным. 
+    Встречается 5 раз по мере развития сюжета, каждый раз усиливая свое снаряжение от кожанки до силовой брони.
+  - Новые напарники из EPA: харизматичный стрелок Кэт Джулс, ловкая воровка Кицунэ и гениальный химик Декстер.
+  - Расширенные квесты Хабологов и репликаторов в Сан-Франциско.
+  - Тысячи исправлений скриптов оригинала от Killap, debrouxl и BGforge Net.
+
+--------------------------------------------------------------------------------
+[ 3. БОЕВАЯ СИСТЕМА, ПАТРОНЫ И БАЛЛИСТИКА (ECCO + MINIREWORK) ]
+--------------------------------------------------------------------------------
+• ЧЕСТНАЯ ФИЗИКА БРОНЕБОЙНОСТИ ПАТРОНОВ (AP VS JHP):
+  - В оригинале 1998 года формула бронебойности (DR Adjust) содержала математическую ошибку, 
+    из-за чего пули AP почти всегда наносили меньший урон, чем обычные JHP.
+  - В EcCo реализована честная физическая модель: бронебойные патроны реально прошивают силовую, 
+    металлическую и боевую броню, срезая показатель сопротивления урону (DR).
+  - Экспансивные патроны (JHP) сокрушают легкие цели и животных, но вязнут в тяжелой броне.
+
+• АЛЬТЕРНАТИВНЫЕ РЕЖИМЫ СТРЕЛЬБЫ (ПРИЦЕЛЬНЫЙ ВЫСТРЕЛ В КОРПУС):
+  - Винтовки Гаусса: гиперзвуковой бронебойный снаряд прошивает врагов навылет, поражая всех 
+    противников, стоящих на одной линии огня.
+  - Импульсное оружие: электрический импульс бьет цепной молнией по соседним врагам.
+  - Лазерное оружие: сфокусированный луч рассекает нескольких противников в секторе атаки.
+  - Пистолеты и пистолеты-пулеметы: прицельный двойной выстрел (Double Tap) по стоимости одного обычного.
+  - Дробовики: колоссальный останавливающий импульс — отбрасывание цели назад и нокдаун на 1 ход.
+  - Автоматы и пулеметы: управляемая короткая очередь с повышенной кучностью и контролем разлета пуль.
+
+• ДИНАМИЧЕСКИЙ ЯД:
+  - Яд больше не является незаметным дебаффом: он наносит периодический урон каждый раунд 
+    всем существам на поле боя. Радскорпионы и кентавры стали смертоносными противниками.
+
+• БАЛАНС ЭКОНОМИКИ И ПЕРКОВ:
+  - Устранена гиперинфляция крышек: торговцы больше не скупают тонны хлама за миллионы.
+  - Цены на патроны и энергооружие соответствуют суровым реалиям пост-апокалипсиса.
+  - Стимуляторы и наркотики действуют с учетом постепенного привыкания и тактического применения.
+  - Модуль Traits Plus: перебалансированы все стартовые особенности Избранного.
+
+--------------------------------------------------------------------------------
+[ 4. ИНТЕРФЕЙС, ИНВЕНТАРЬ И УДОБСТВО (MR.STALIN & FO2TWEAKS) ]
+--------------------------------------------------------------------------------
+• ВКЛАДКИ КАТЕГОРИЙ В ИНВЕНТАРЕ И БАРТЕРЕ (MR.STALIN FILTER v2.0.4):
+  - Категории: [Все] [Оружие] [Патроны] [Броня] [Медикаменты] [Разное].
+  - Клик средней кнопкой мыши по «Оружию» и «Патронам» открывает их в одном общем списке.
+  - Быстрое переключение категорий Избранного: клавиши 1, 2, 3, 4, 5 или Q.
+  - Быстрое переключение категорий напарника: клавиши 6, 7, 8, 9, 0 или W.
+  - Счетчик чистого веса выбранной категории (позволяет сразу видеть, сколько весит броня или патроны).
+  - Индикатор наличных крышек у торговца в окне бартера.
+  - Быстрое переключение между инвентарями спутников в торговле без выхода из меню.
+
+• КНОПКА «ВЫГРУЗИТЬ ВСЁ»:
+  - Одно нажатие перемещает всю добычу в багажник Хайвеймена или сундук, экономя десятки минут.
+
+• АВТО-ДВЕРИ (AUTODOORS):
+  - Незапертые двери распахиваются перед бегущим персонажем автоматически — никаких сотен лишних кликов.
+
+• ЗАЩИТА ЛУТА ОТ ДЕЗИНТЕГРАЦИИ:
+  - Вещи врагов больше не разлетаются по соседним гексам при взрывах динамита или испепелении плазмой/лазером.
+
+--------------------------------------------------------------------------------
+[ 5. НАПАРНИКИ И ТАКТИКА ОТРЯДА (B-TEAM & PARTY ORDERS) ]
+--------------------------------------------------------------------------------
+• ВИЗУАЛЬНАЯ СМЕНА БРОНИ (82.6 МБ СПРАЙТОВ):
+  - Сулик, Вик, Кэссиди, Майрон, Кицунэ, Кэт Джулс и Мирия физически меняют внешний вид на экране 
+    при надевании брони: кожанка, кожаная броня, металлическая броня, боевая броня, силовая броня T-51b, 
+    улучшенная броня Анклава (APA) и мантии послушника.
+  - Каждый спутник снабжен полным набором спрайтов: ходьба, бег, приседание, удары и стрельба из всех видов оружия.
+
+• ТАКТИЧЕСКИЙ ПУЛЬТ ОТРЯДА (PARTY ORDERS):
+  - Клавиша H: приказать напарникам убрать оружие в кобуру (предотвращает стрельбу охраны в городах).
+  - Клавиша F: приказ раненым спутникам оценить здоровье и полечиться стимуляторами.
+  - Клавиша G: приказ спутникам собрать разбросанный по земле лут в радиусе видимости.
+  - Клавиша R: приказ «Ко мне!» — немедленная перегруппировка спутников вокруг Избранного.
+  - Клавиша X: приказ «Рассредоточиться» — бойцы держат дистанцию в бою, избегая очередей врага.
+  - Ctrl + B: принудительное переключение напарников на бронебойные патроны.
+
+• ОЗВУЧКА И ГОЛОВА ДЖОНА КЭССИДИ:
+  - Полноценная анимированная 3D-голова с богатой мимикой и синхронизацией речи.
+  - Высококачественная озвучка диалогов от профессионального актера Джоуи Брэкена (Joey Bracken).
+
+• РАСШИРЕНИЕ МИРИИ (ИЛИ ДЭВИНА):
+  - Добавлена тактическая реплика «Подожди меня здесь» (спутницу можно безопасно оставить перед штурмом).
+  - Мирия прокачивается по уровням, экипирует любую броню и переведена на русский язык.
+
+• БРОНЯ СУПЕРМУТАНТА МАРКУСА И ЖИЛЕТ ДЛЯ ПСИНЫ:
+  - В Аббатстве продается уникальная тяжелая броня мутанта (Маркус меняет спрайт на бронированного лейтенанта).
+  - Псина экипирует специальный кевларовый бронежилет.
+
+--------------------------------------------------------------------------------
+[ 6. ЗВУКОВАЯ КАРТИНА И РЕМАСТЕР ЛОКАЛИЗАЦИИ ]
+--------------------------------------------------------------------------------
+• СТУДИЙНЫЙ САУНДТРЕК 44.1 КГЦ STEREO LOSSLESS (1 ГБ):
+  - Все 31 музыкальный трек композитора Марка Моргана переведены из моно-сжатия 1998 года (22 кГц) 
+    в кристально чистый несжатый стерео-формат 44.1 кГц.
+  - Глубокие басы, объемная панорама и кинематографичный эмбиент пустоши.
+
+• ПОЛНАЯ РЕСТАВРАЦИЯ РУССКОЙ ОЗВУЧКИ (96.8 МБ):
+  - Полная русская озвучка сюжетных персонажей и сюжетных видеороликов в отреставрированном качестве.
+  - Единый текстовый перевод: гармоничный синтез 1C, Фаргус и Левой Корпорации без отсебятины и цензуры.
+
+--------------------------------------------------------------------------------
+[ 7. ВТОРОЙ ПРОФИЛЬ: COMMUNITY EDITION (DUSTLIGHT HD D3D11) ]
+--------------------------------------------------------------------------------
+• СОВРЕМЕННЫЙ ДВИЖОК НА C++ (SDL2 / DIRECT3D 11):
+  - Полностью переписанный исходный код оригинальной игры на современном компиляторе.
+  - Честный Direct3D 11 с нативной поддержкой мониторов 144–240 Гц и плавным скроллингом.
+  - Динамический свет и тени: факелы, костры, фонари и плазма отбрасывают мягкий теплый свет 
+    с честными динамическими тенями от объектов окружения.
+  - 4K AI-апскейл текстур окружения и интерфейса без мыла и искажений.
+================================================================================
+"""
+
+# ---------------------------------------------------------------------------
+# КАТАЛОГ С ПЕРЕВЕДЕННЫМИ НА РУССКИЙ ЯЗЫК НАЗВАНИЯМИ МОДУЛЕЙ
 # ---------------------------------------------------------------------------
 MODS_DATABASE = [
     {
         "id": "rpu",
         "category": "СЮЖЕТ",
-        "title": "Restoration Project Updated (RPU v2.4.34 / v28)",
+        "title": "Каноничный сюжет Black Isle: 6 новых городов и квесты (RPU v28)",
         "badge": "ГЛОБАЛЬНЫЙ СЮЖЕТ",
         "author": "Killap, BGforge Net, debrouxl",
-        "summary": "Главный фундамент сборки: полная каноничная реставрация вырезанного контента Black Isle Studios.",
+        "summary": "Главный фундамент сборки: полная реставрация вырезанного контента оригинальной команды Black Isle Studios.",
         "details": (
             "Восстанавливает весь массив сюжетного контента, который оригинальные авторы "
             "не успели выпустить к дедлайну 1998 года:\n\n"
@@ -62,7 +232,7 @@ MODS_DATABASE = [
             "  - Исследовательский центр EPA — заброшенный правительственный комплекс со своими тайнами;\n"
             "  - Деревня Дикарей (Primitive Tribe) — родное поселение племени Сулика на побережье;\n"
             "  - Жилой квартал Дыры (The Den Residential) — новые жители, квесты и приют для сирот;\n"
-            "  - Китайская подлодка «Ши» в Сан-Франциско;\n"
+            "  - Китайская подлодка «Ши» в Сан-Франциско — затопленный ракетный отсек;\n"
             "  - База Вертибердов и посадочные площадки Анклава.\n\n"
             "• СЮЖЕТНЫЕ ЛИНИИ И ПЕРСОНАЖИ:\n"
             "  - Спасение сестры Сулика из лап работорговцев Мецгера;\n"
@@ -74,7 +244,7 @@ MODS_DATABASE = [
     {
         "id": "ecco",
         "category": "БОЕВКА",
-        "title": "EcCo — Economy & Combat Overhaul (v0.9.8.3)",
+        "title": "Баллистика патронов AP/JHP и экономика (EcCo v0.9.8.3)",
         "badge": "БАЛАНС И БАЛЛИСТИКА",
         "author": "phobos2077",
         "summary": "Исправление баллистики пуль (AP vs JHP), честное пробитие брони и устранение инфляции крышек.",
@@ -95,7 +265,7 @@ MODS_DATABASE = [
     {
         "id": "minirework",
         "category": "ОРУЖИЕ",
-        "title": "Fallout Mechanics MiniRework (v2.0.4.3)",
+        "title": "Альтернативные режимы стрельбы и физика оружия (MiniRework v2.0.4.3)",
         "badge": "ТАКТИКА СТРЕЛЬБЫ",
         "author": "dekrus",
         "summary": "Альтернативные режимы огня, пробивающий выстрел Гаусса, цепные молнии и динамический яд.",
@@ -117,7 +287,7 @@ MODS_DATABASE = [
     {
         "id": "invenfilter",
         "category": "ИНТЕРФЕЙС",
-        "title": "Inventory Filter (v2.0.4, официальная версия)",
+        "title": "Умный фильтр инвентаря и бартер (Inventory Filter v2.0.4)",
         "badge": "УДОБСТВО И БАРТЕР",
         "author": "Mr.Stalin",
         "summary": "Вкладки категорий [Оружие/Патроны/Броня/Химия], кнопка 'Положить всё' и умный бартер.",
@@ -138,7 +308,7 @@ MODS_DATABASE = [
     {
         "id": "npcarmor",
         "category": "ВИЗУАЛ",
-        "title": "NPC Armor Mod (B-Team, редакция RPU)",
+        "title": "Визуальная смена брони напарников (B-Team Armor, 82.6 МБ)",
         "badge": "ВИЗУАЛ СПУТНИКОВ",
         "author": "BGforge Net, B-Team",
         "summary": "Напарники визуально меняют модельку при надевании любого типа брони (82.6 МБ спрайтов).",
@@ -154,16 +324,16 @@ MODS_DATABASE = [
             "  - Силовая броня (Power Armor и APA Анклава);\n"
             "  - Мантия послушника (Robe).\n\n"
             "• ПОЛНАЯ АНИМАЦИЯ:\n"
-            "  Спутники имеют индивидуальные спрайты бега, ходьбы, приседания и стрельбы из оружия."
+            "  Спутники имеют индивидуальные спрайты бега, ходьбы, приседания и стрельбы из всех видов оружия."
         )
     },
     {
         "id": "partyorders",
         "category": "БОЕВКА",
-        "title": "Party Orders (v1.0.4)",
+        "title": "Тактический пульт приказов отряду (Party Orders v1.0.4)",
         "badge": "ТАКТИКА ОТРЯДА",
         "author": "phobos2077, sfall team",
-        "summary": "Тактический пульт приказов спутникам в бою и на карте по горячим клавишам.",
+        "summary": "Тактический пульт приказов спутникам в бою и на карте по горячим клавишам H, F, G, R, X.",
         "details": (
             "Превращает напарников из хаотичных мишеней в слаженный отряд:\n\n"
             "• БЫСТРЫЕ ПРИКАЗЫ КЛАВИШАМИ:\n"
@@ -178,7 +348,7 @@ MODS_DATABASE = [
     {
         "id": "miria",
         "category": "СЮЖЕТ",
-        "title": "Miria Companion Expansion (Wait Command + RU Dialogs)",
+        "title": "Расширение спутницы Мирии: команда «Жди здесь» и броня",
         "badge": "СПУТНИКИ",
         "author": "innerbytes, debrouxl",
         "summary": "Жена/муж из Модока становится полноценным напарником с командой «Жди здесь» и прокачкой.",
@@ -195,7 +365,7 @@ MODS_DATABASE = [
     {
         "id": "music",
         "category": "ЗВУК",
-        "title": "Lossless Studio Music Remaster (Mark Morgan 44.1 kHz Stereo)",
+        "title": "Студийный саундтрек 44.1 кГц Stereo Lossless (Mark Morgan, 1 ГБ)",
         "badge": "ЗВУК 1 ГБ",
         "author": "BGforge Net, Mark Morgan",
         "summary": "Замена глухого моно 1998 года (22 кГц) на кристально чистый стереозвук 44.1 кГц (31 трек).",
@@ -211,7 +381,7 @@ MODS_DATABASE = [
     {
         "id": "cassidy",
         "category": "ВИЗУАЛ",
-        "title": "Cassidy Talking Head & HQ Voiceover",
+        "title": "Говорящая 3D-голова и студийная озвучка Джона Кэссиди",
         "badge": "ГОЛОВА И ОЗВУЧКА",
         "author": "Joey Bracken, RPU Team",
         "summary": "Живая анимированная 3D-голова Джона Кэссиди с профессиональной студийной озвучкой.",
@@ -225,7 +395,7 @@ MODS_DATABASE = [
     {
         "id": "fo2tweaks",
         "category": "ИНТЕРФЕЙС",
-        "title": "FO2Tweaks (Набор современных удобств)",
+        "title": "Авто-двери (AutoDoors) и защита лута от разлета (FO2Tweaks)",
         "badge": "QOL ТВИКИ",
         "author": "BGforge Net",
         "summary": "Авто-двери (AutoDoors) и защита лута от разлета при взрывах и дезинтеграции.",
@@ -241,7 +411,7 @@ MODS_DATABASE = [
     {
         "id": "marcus_armor",
         "category": "ВИЗУАЛ",
-        "title": "Super Mutant Armor & Dogmeat Kevlar",
+        "title": "Броня супермутанта Маркуса и кевлар для Псины",
         "badge": "СПУТНИКИ",
         "author": "RPU Team, Continuum",
         "summary": "Тяжелая броня для супермутанта Маркуса и кевларовый жилет для Псины.",
@@ -257,7 +427,7 @@ MODS_DATABASE = [
     {
         "id": "anims",
         "category": "ВИЗУАЛ",
-        "title": "Уникальные оружейные анимации и эффекты",
+        "title": "Уникальные оружейные анимации винтовок, вакидзаси и огнемета",
         "badge": "АНИМАЦИИ",
         "author": "RPU Team, Skynet",
         "summary": "Восстановленные анимации винтовок, мечей вакидзаси, улучшенное пламя огнемета и взрывы.",
@@ -272,7 +442,7 @@ MODS_DATABASE = [
     {
         "id": "sfall",
         "category": "ЯДРО",
-        "title": "sfall v4.4.5 + Large Address Aware (4GB Patch)",
+        "title": "Системное ядро sfall v4.4.5 + снятие лимита памяти (4GB LAA)",
         "badge": "СТАБИЛЬНОСТЬ",
         "author": "Timeslip, Crafty, Mr.Stalin",
         "summary": "Снятие ограничений памяти до 4 ГБ, поддержка Windows 10/11, обход CRC и оптимизация CPU.",
@@ -289,7 +459,7 @@ MODS_DATABASE = [
     {
         "id": "dustlight",
         "category": "ГРАФИКА",
-        "title": "Fallout 2 Community Edition + Dustlight (Профиль HD Visual)",
+        "title": "Второй профиль: Direct3D 11 и динамический свет факелов (Dustlight HD)",
         "badge": "HD D3D11 СВЕТ",
         "author": "AlexBatalov, Dustlight Team",
         "summary": "Движок на C++/SDL2 с динамическим мягким освещением факелов/костров и поддержкой 120+ FPS.",
@@ -317,8 +487,8 @@ class PipBoyLauncher(tk.Tk):
         self.assets_dir = os.path.join(root_dir, "assets")
 
         self.title("VAULT-TEC PIP-BOY 3000 Mk IV // REVISION 2026")
-        self.geometry("1060x750")
-        self.minsize(980, 680)
+        self.geometry("1080x760")
+        self.minsize(1000, 700)
         self.configure(bg=BG_DARK)
 
         # Загрузка иконок и ассетов
@@ -351,6 +521,12 @@ class PipBoyLauncher(tk.Tk):
 
     def load_assets(self):
         """Загрузка графических ассетов Pip-Boy."""
+        bundle_dir = getattr(sys, "_MEIPASS", None)
+        if bundle_dir:
+            self.assets_dir = os.path.join(bundle_dir, "assets")
+        elif not os.path.exists(self.assets_dir):
+            self.assets_dir = os.path.join(self.root_dir, "assets")
+
         icon_path = os.path.join(self.assets_dir, "vault_icon.png")
         if os.path.exists(icon_path):
             try:
@@ -398,7 +574,7 @@ class PipBoyLauncher(tk.Tk):
 
     def build_frame_cockpit(self):
         """Создание внешней рамки ЭЛТ-дисплея Pip-Boy."""
-        # 1. Внешняя металлическая рамка с заклепками
+        # 1. Внешняя металлическая рамка
         outer_bezel = tk.Frame(self, bg=BG_BEZEL, bd=2, relief="solid", highlightbackground="#1b301b", highlightthickness=2)
         outer_bezel.pack(fill="both", expand=True, padx=8, pady=8)
 
@@ -409,7 +585,7 @@ class PipBoyLauncher(tk.Tk):
         # Левый блок: Маркировка RobCo
         lbl_robco = tk.Label(
             top_bar,
-            text="ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM // PIP-BOY 3000 Mk IV",
+            text="ROBCO INDUSTRIES UNIFIED TERMINAL // PIP-BOY 3000 Mk IV",
             font=FONT_MONO_SMALL,
             fg=TEXT_DIM,
             bg=BG_BEZEL
@@ -436,6 +612,7 @@ class PipBoyLauncher(tk.Tk):
         self.tab_buttons = {}
         tab_defs = [
             ("dashboard", "⚡ [СТАТУС / ПУЛЬТ]"),
+            ("changelog", "📋 [ВСЕ ИЗМЕНЕНИЯ 2026]"),
             ("catalog", "📚 [КАТАЛОГ МОДОВ]"),
             ("config", "⚙ [НАСТРОЙКИ СИСТЕМЫ]"),
             ("manual", "📖 [ПАМЯТКА ЖИТЕЛЯ]"),
@@ -453,12 +630,12 @@ class PipBoyLauncher(tk.Tk):
                 activeforeground=PHOSPHOR_BRIGHT,
                 bd=1,
                 relief="solid",
-                padx=12,
+                padx=10,
                 pady=6,
                 cursor="hand2",
                 command=lambda tid=tab_id: self.switch_tab(tid)
             )
-            btn.pack(side="left", padx=(0, 6))
+            btn.pack(side="left", padx=(0, 5))
             self.tab_buttons[tab_id] = btn
 
         # 4. Основной экран ЭЛТ-дисплея
@@ -475,12 +652,13 @@ class PipBoyLauncher(tk.Tk):
         # Создание всех экранов
         self.pages = {}
         self.pages["dashboard"] = self.create_dashboard_view(self.screen_frame)
+        self.pages["changelog"] = self.create_changelog_view(self.screen_frame)
         self.pages["catalog"] = self.create_catalog_view(self.screen_frame)
         self.pages["config"] = self.create_config_view(self.screen_frame)
         self.pages["manual"] = self.create_manual_view(self.screen_frame)
         self.pages["saves"] = self.create_saves_view(self.screen_frame)
 
-        # 5. Нижняя панель состояния (S.P.E.C.I.A.L. & HP bar)
+        # 5. Нижняя панель состояния
         bottom_hud = tk.Frame(outer_bezel, bg=BG_BEZEL)
         bottom_hud.pack(fill="x", padx=14, pady=(0, 6))
 
@@ -526,7 +704,6 @@ class PipBoyLauncher(tk.Tk):
     def create_dashboard_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
 
-        # Горизонтальный сплит: Левая колонка (Запуск) / Правая колонка (Волт-Бой и характеристики)
         left_col = tk.Frame(frame, bg=BG_DARK)
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
@@ -534,20 +711,39 @@ class PipBoyLauncher(tk.Tk):
         right_col.pack(side="right", fill="y", padx=(0, 0))
         right_col.pack_propagate(False)
 
-        # --- Левая колонка: Профили запуска ---
+        # Баннер перехода к полному списку изменений
+        promo_banner = tk.Frame(left_col, bg="#0d1f0d", bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=12, pady=8)
+        promo_banner.pack(fill="x", pady=(0, 10))
+
         tk.Label(
-            left_col,
-            text="ВЫБОР ИГРОВОГО ПРОФИЛЯ ПУСТОШИ:",
+            promo_banner,
+            text="МАСТЕР-СБОРКА 2026: БОЛЕЕ 100 СИСТЕМНЫХ И СЮЖЕТНЫХ УЛУЧШЕНИЙ",
+            font=FONT_MONO_SMALL,
+            fg=AMBER_ALERT,
+            bg="#0d1f0d"
+        ).pack(anchor="w")
+
+        btn_show_full = tk.Button(
+            promo_banner,
+            text="📋 ОТКРЫТЬ ПОЛНЫЙ ПОДРОБНЫЙ СПИСОК ИЗМЕНЕНИЙ И ОБНОВЛЕНИЙ ПО ПУНКТАМ",
             font=FONT_MONO_MID,
-            fg=PHOSPHOR_BRIGHT,
-            bg=BG_DARK
-        ).pack(anchor="w", pady=(0, 8))
+            fg=BG_DARK,
+            bg=PHOSPHOR_MAIN,
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=12,
+            pady=6,
+            cursor="hand2",
+            command=lambda: self.switch_tab("changelog")
+        )
+        btn_show_full.pack(anchor="w", pady=(4, 0))
 
         # Карточка 1: Профиль Gameplay Ultimate (Основной)
         card_gp = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=12)
         card_gp.pack(fill="x", pady=(0, 10))
 
-        tk.Label(card_gp, text="[ РЕКОМЕНДУЕМЫЙ ВЫБОР // 100% СТАБИЛЬНОСТЬ ]", font=FONT_MONO_SMALL, fg=AMBER_ALERT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(card_gp, text="[ ОСНОВНАЯ СБОРКА // 100% СТАБИЛЬНОСТЬ ]", font=FONT_MONO_SMALL, fg=AMBER_ALERT, bg=BG_CARD).pack(anchor="w")
         tk.Label(card_gp, text="FALLOUT 2: GAMEPLAY ULTIMATE 2026", font=FONT_MONO_LARGE, fg=PHOSPHOR_MAIN, bg=BG_CARD).pack(anchor="w", pady=(2, 4))
 
         desc_gp = (
@@ -563,7 +759,7 @@ class PipBoyLauncher(tk.Tk):
 
         btn_launch_gp = tk.Button(
             card_gp,
-            text="► ЗАПУСТИТЬ КЛАССИЧЕСКИЙ ULTIMATE",
+            text="► ЗАПУСТИТЬ ОСНОВНУЮ СБОРКУ (ULTIMATE)",
             font=FONT_MONO_MID,
             fg=BG_DARK,
             bg=PHOSPHOR_MAIN,
@@ -578,7 +774,7 @@ class PipBoyLauncher(tk.Tk):
         btn_launch_gp.pack(anchor="w")
 
         # Карточка 2: Профиль HD Visual (Community Edition + Dustlight)
-        card_hd = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=14, pady=12)
+        card_hd = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=14, pady=10)
         card_hd.pack(fill="x")
 
         tk.Label(card_hd, text="[ РЕМАСТЕР // ДИНАМИЧЕСКИЙ СВЕТ И ШЕЙДЕРЫ ]", font=FONT_MONO_SMALL, fg=BLUE_VAULT, bg=BG_CARD).pack(anchor="w")
@@ -591,7 +787,7 @@ class PipBoyLauncher(tk.Tk):
             "• Частота кадров: Поддержка современных мониторов 120–240 Гц со сверхплавным скроллом.\n"
             "• Контент: Полный сюжет RPU v28, Lossless-музыка 44.1 кГц и озвучка."
         )
-        tk.Label(card_hd, text=desc_hd, font=FONT_UI_TEXT, fg=TEXT_NORMAL, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 10))
+        tk.Label(card_hd, text=desc_hd, font=FONT_UI_TEXT, fg=TEXT_NORMAL, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 8))
 
         btn_launch_hd = tk.Button(
             card_hd,
@@ -604,7 +800,7 @@ class PipBoyLauncher(tk.Tk):
             bd=1,
             relief="solid",
             padx=16,
-            pady=8,
+            pady=6,
             cursor="hand2",
             command=self.launch_hd
         )
@@ -617,26 +813,12 @@ class PipBoyLauncher(tk.Tk):
             font=FONT_MONO_SMALL,
             fg=TEXT_DIM,
             bg=BG_CARD
-        ).pack(pady=(12, 4))
+        ).pack(pady=(10, 4))
 
-        # Холст с изображением Волт-Боя
         if self.vault_boy_img:
             lbl_img = tk.Label(right_col, image=self.vault_boy_img, bg=BG_CARD)
             lbl_img.pack(pady=4)
-        else:
-            # Fallback текстовый арт, если картинка не найдена
-            ascii_box = tk.Label(
-                right_col,
-                text="[ VAULT BOY IMAGE OK ]\n\n(•‿•)👍\nVAULT 13 APPROVED",
-                font=FONT_MONO_MID,
-                fg=PHOSPHOR_MAIN,
-                bg=BG_DARK,
-                padx=20,
-                pady=40
-            )
-            ascii_box.pack(pady=10)
 
-        # Характеристики S.P.E.C.I.A.L.
         stats_frame = tk.Frame(right_col, bg=BG_CARD, padx=12, pady=6)
         stats_frame.pack(fill="x")
 
@@ -663,7 +845,57 @@ class PipBoyLauncher(tk.Tk):
         return frame
 
     # -----------------------------------------------------------------------
-    # ЭКРАН 2: КАТАЛОГ МОДОВ (DATA / CATALOG)
+    # ЭКРАН 2: ПОЛНЫЙ СВОДНЫЙ СПИСОК ИЗМЕНЕНИЙ (CHANGELOG 2026)
+    # -----------------------------------------------------------------------
+    def create_changelog_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
+        header_box.pack(fill="x", pady=(0, 8))
+
+        tk.Label(
+            header_box,
+            text="ПОЛНЫЙ СВОДНЫЙ СПИСОК ВСЕХ ИЗМЕНЕНИЙ И ОБНОВЛЕНИЙ ПО ПУНКТАМ",
+            font=FONT_MONO_LARGE,
+            fg=PHOSPHOR_BRIGHT,
+            bg=BG_CARD
+        ).pack(anchor="w")
+
+        tk.Label(
+            header_box,
+            text="Исчерпывающий технический и сюжетный отчет: каждый восстановленный город, физика пуль, броня напарников и системные патчи.",
+            font=FONT_UI_TEXT,
+            fg=TEXT_NORMAL,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(2, 0))
+
+        # Текстовое поле с полным текстом изменений
+        container = tk.Frame(frame, bg=BG_DARK, bd=1, relief="solid", highlightbackground=BORDER_MUTED)
+        container.pack(fill="both", expand=True)
+
+        txt_cl = tk.Text(
+            container,
+            font=FONT_MONO_BODY,
+            fg=TEXT_NORMAL,
+            bg=BG_DARK,
+            bd=0,
+            padx=14,
+            pady=12,
+            wrap="word"
+        )
+        txt_cl.pack(side="left", fill="both", expand=True)
+
+        scroller = ttk.Scrollbar(container, orient="vertical", command=txt_cl.yview)
+        scroller.pack(side="right", fill="y")
+        txt_cl.configure(yscrollcommand=scroller.set)
+
+        txt_cl.insert("1.0", MASTER_CHANGELOG_TEXT)
+        txt_cl.configure(state="disabled")
+
+        return frame
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 3: КАТАЛОГ МОДОВ (DATA / CATALOG)
     # -----------------------------------------------------------------------
     def create_catalog_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
@@ -672,7 +904,7 @@ class PipBoyLauncher(tk.Tk):
         filter_bar = tk.Frame(frame, bg=BG_DARK)
         filter_bar.pack(fill="x", pady=(0, 8))
 
-        tk.Label(filter_bar, text="ФИЛЬТР БАЗЫ:", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_DARK).pack(side="left", padx=(0, 8))
+        tk.Label(filter_bar, text="ФИЛЬТР КАТАЛОГА:", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_DARK).pack(side="left", padx=(0, 8))
 
         self.catalog_filter_var = tk.StringVar(value="ВСЕ")
         categories = ["ВСЕ", "СЮЖЕТ", "БОЕВКА", "ОРУЖИЕ", "ИНТЕРФЕЙС", "ВИЗУАЛ", "ЗВУК", "ЯДРО", "ГРАФИКА"]
@@ -695,12 +927,29 @@ class PipBoyLauncher(tk.Tk):
             )
             btn.pack(side="left", padx=2)
 
+        # Кнопка перехода к полному списку изменений
+        btn_to_full = tk.Button(
+            filter_bar,
+            text="📋 ВЕСЬ СПИСОК ИЗМЕНЕНИЙ",
+            font=FONT_MONO_SMALL,
+            fg=BG_DARK,
+            bg=PHOSPHOR_MAIN,
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=10,
+            pady=2,
+            cursor="hand2",
+            command=lambda: self.switch_tab("changelog")
+        )
+        btn_to_full.pack(side="right")
+
         # Сплит: Список модов слева / Детальная карточка справа
         split_box = tk.Frame(frame, bg=BG_DARK)
         split_box.pack(fill="both", expand=True)
 
         # Левый список
-        list_container = tk.Frame(split_box, bg=BG_CARD, width=340, bd=1, relief="solid", highlightbackground=BORDER_MUTED)
+        list_container = tk.Frame(split_box, bg=BG_CARD, width=380, bd=1, relief="solid", highlightbackground=BORDER_MUTED)
         list_container.pack(side="left", fill="y", padx=(0, 10))
         list_container.pack_propagate(False)
 
@@ -749,7 +998,6 @@ class PipBoyLauncher(tk.Tk):
         )
         self.txt_detail_body.pack(fill="both", expand=True)
 
-        # Первичное заполнение списка
         self.filter_catalog("ВСЕ")
         return frame
 
@@ -789,13 +1037,13 @@ class PipBoyLauncher(tk.Tk):
         self.txt_detail_body.insert("1.0", full_content)
 
     # -----------------------------------------------------------------------
-    # ЭКРАН 3: НАСТРОЙКИ СИСТЕМЫ (CONFIG / HARDWARE)
+    # ЭКРАН 4: НАСТРОЙКИ СИСТЕМЫ (CONFIG / HARDWARE)
     # -----------------------------------------------------------------------
     def create_config_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
 
         header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
-        header_box.pack(fill="x", pady=(0, 12))
+        header_box.pack(fill="x", pady=(0, 10))
 
         tk.Label(header_box, text="ГРАФИЧЕСКИЙ И АУДИО КОНФИГУРАТОР FALLOUT 2", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
         tk.Label(
@@ -804,15 +1052,14 @@ class PipBoyLauncher(tk.Tk):
             font=FONT_UI_TEXT,
             fg=TEXT_NORMAL,
             bg=BG_CARD
-        ).pack(anchor="w", pady=(4, 0))
+        ).pack(anchor="w", pady=(2, 0))
 
-        # Форма настроек
-        form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=16)
+        form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=14)
         form_frame.pack(fill="both", expand=True)
 
         # 1. Разрешение экрана
         row1 = tk.Frame(form_frame, bg=BG_CARD)
-        row1.pack(fill="x", pady=6)
+        row1.pack(fill="x", pady=5)
         tk.Label(row1, text="РАЗРЕШЕНИЕ ЭКРАНА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.combo_res = ttk.Combobox(
             row1,
@@ -826,7 +1073,7 @@ class PipBoyLauncher(tk.Tk):
 
         # 2. Режим окна
         row2 = tk.Frame(form_frame, bg=BG_CARD)
-        row2.pack(fill="x", pady=6)
+        row2.pack(fill="x", pady=5)
         tk.Label(row2, text="РЕЖИМ ОТОБРАЖЕНИЯ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.combo_wnd = ttk.Combobox(
             row2,
@@ -840,7 +1087,7 @@ class PipBoyLauncher(tk.Tk):
 
         # 3. Масштаб интерфейса (Scale 2X)
         row3 = tk.Frame(form_frame, bg=BG_CARD)
-        row3.pack(fill="x", pady=6)
+        row3.pack(fill="x", pady=5)
         tk.Label(row3, text="МАСШТАБ ИНТЕРФЕЙСА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.combo_scale = ttk.Combobox(
             row3,
@@ -854,7 +1101,7 @@ class PipBoyLauncher(tk.Tk):
 
         # 4. Фильтрация текстур GPU
         row4 = tk.Frame(form_frame, bg=BG_CARD)
-        row4.pack(fill="x", pady=6)
+        row4.pack(fill="x", pady=5)
         tk.Label(row4, text="СГЛАЖИВАНИЕ СПРАЙТОВ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.combo_filter = ttk.Combobox(
             row4,
@@ -868,7 +1115,7 @@ class PipBoyLauncher(tk.Tk):
 
         # 5. Громкость музыки
         row5 = tk.Frame(form_frame, bg=BG_CARD)
-        row5.pack(fill="x", pady=10)
+        row5.pack(fill="x", pady=8)
         tk.Label(row5, text="ГРОМКОСТЬ САУНДТРЕКА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.scale_music = tk.Scale(row5, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
         self.scale_music.set(80)
@@ -876,7 +1123,7 @@ class PipBoyLauncher(tk.Tk):
 
         # 6. Громкость звуков и речи
         row6 = tk.Frame(form_frame, bg=BG_CARD)
-        row6.pack(fill="x", pady=6)
+        row6.pack(fill="x", pady=5)
         tk.Label(row6, text="ГРОМКОСТЬ ЭФФЕКТОВ/РЕЧИ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
         self.scale_sfx = tk.Scale(row6, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
         self.scale_sfx.set(90)
@@ -893,15 +1140,13 @@ class PipBoyLauncher(tk.Tk):
             activeforeground=BG_DARK,
             bd=0,
             padx=20,
-            pady=10,
+            pady=8,
             cursor="hand2",
             command=self.save_configuration
         )
-        btn_save.pack(anchor="w", pady=(18, 0))
+        btn_save.pack(anchor="w", pady=(14, 0))
 
-        # Считывание текущих настроек
         self.read_current_configuration()
-
         return frame
 
     def read_current_configuration(self):
@@ -945,7 +1190,6 @@ class PipBoyLauncher(tk.Tk):
         windowed = 1 if "Оконный" in self.combo_wnd.get() else 0
         borderless = 1 if "без рамок" in self.combo_wnd.get() else 0
 
-        # Обновление f2_res.ini
         ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
         if os.path.exists(ini_path):
             try:
@@ -973,7 +1217,6 @@ class PipBoyLauncher(tk.Tk):
                 messagebox.showerror("Ошибка записи", f"Не удалось обновить f2_res.ini: {e}")
                 return
 
-        # Обновление громкости в fallout2.cfg
         cfg_path = os.path.join(self.gameplay_dir, "fallout2.cfg")
         if os.path.exists(cfg_path):
             try:
@@ -1002,7 +1245,7 @@ class PipBoyLauncher(tk.Tk):
         messagebox.showinfo("Конфигурация сохранена", f"Настройки успешно применены:\nРазрешение: {w}x{h}\nМасштабирование: {'2X' if scale_2x else '1X'}")
 
     # -----------------------------------------------------------------------
-    # ЭКРАН 4: ПАМЯТКА ЖИТЕЛЯ УБЕЖИЩА (MANUAL / HOLOTAPE)
+    # ЭКРАН 5: ПАМЯТКА ЖИТЕЛЯ УБЕЖИЩА (MANUAL / HOLOTAPE)
     # -----------------------------------------------------------------------
     def create_manual_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
@@ -1055,7 +1298,7 @@ class PipBoyLauncher(tk.Tk):
         return frame
 
     # -----------------------------------------------------------------------
-    # ЭКРАН 5: СОХРАНЕНИЯ И БЭКАП (SAVEGUARD / BACKUP)
+    # ЭКРАН 6: СОХРАНЕНИЯ И БЭКАП (SAVEGUARD / BACKUP)
     # -----------------------------------------------------------------------
     def create_saves_view(self, parent):
         frame = tk.Frame(parent, bg=BG_DARK)
@@ -1084,7 +1327,6 @@ class PipBoyLauncher(tk.Tk):
         )
         self.lbl_save_status.pack(anchor="w", pady=(0, 14))
 
-        # Кнопки действий
         btn_backup = tk.Button(
             content_box,
             text="📦 СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ (ZIP-АРХИВ)",
@@ -1118,7 +1360,6 @@ class PipBoyLauncher(tk.Tk):
         )
         btn_open_folder.pack(anchor="w", pady=(0, 16))
 
-        # Лог бэкапов
         tk.Label(content_box, text="ИСТОРИЯ СОЗДАННЫХ АРХИВОВ В ПАПКЕ BACKUPS:", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_CARD).pack(anchor="w")
 
         self.txt_backup_log = tk.Text(
@@ -1156,7 +1397,6 @@ class PipBoyLauncher(tk.Tk):
         size_mb = total_size / (1024 * 1024)
         self.lbl_save_status.configure(text=f"АКТИВНЫХ СЛОТОВ СОХРАНЕНИЙ: {slot_count}  |  ОБЩИЙ ОБЪЕМ: {size_mb:.2f} МБ")
 
-        # Сканирование папки бэкапов
         backup_dir = os.path.join(self.root_dir, "Backups")
         self.txt_backup_log.delete("1.0", tk.END)
         if os.path.exists(backup_dir):
@@ -1243,13 +1483,11 @@ class PipBoyLauncher(tk.Tk):
 # ТОЧКА ВХОДА
 # ---------------------------------------------------------------------------
 def main():
-    # Определение корневого каталога
     if getattr(sys, "frozen", False):
         base_dir = os.path.dirname(sys.executable)
     else:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-    # Если запускается прямо из папки E:\Fallout2_Ultimate
     if os.path.exists(os.path.join(base_dir, "Fallout2_Gameplay")):
         root_dir = base_dir
     elif os.path.exists(r"E:\Fallout2_Ultimate\Fallout2_Gameplay"):
