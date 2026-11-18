@@ -163,11 +163,20 @@ class InstallationEngine:
                 log_callback("Патчинг fallout2.exe: Large Address Aware (4GB Virtual Memory)...")
             Patcher.apply_4gb_laa_patch(exe_path)
             
-        # 5. Генерация батника быстрого запуска
-        bat_path = os.path.join(target_dir, "Play_Fallout2.bat")
+        # 5. Генерация батника быстрого запуска под соответствующий движок
         try:
-            with open(bat_path, "w", encoding="utf-8") as f:
-                f.write("@echo off\nstart \"\" \"%~dp0fallout2.exe\"\n")
+            if os.path.exists(os.path.join(target_dir, "dustlight.exe")):
+                bat_path = os.path.join(target_dir, "Play_Dustlight.bat")
+                with open(bat_path, "w", encoding="utf-8") as f:
+                    f.write("@echo off\nstart \"\" \"%~dp0dustlight.exe\"\n")
+            elif os.path.exists(os.path.join(target_dir, "fallout2-ce.exe")):
+                bat_path = os.path.join(target_dir, "Play_Fallout2_CE.bat")
+                with open(bat_path, "w", encoding="utf-8") as f:
+                    f.write("@echo off\nstart \"\" \"%~dp0fallout2-ce.exe\"\n")
+            else:
+                bat_path = os.path.join(target_dir, "Play_Fallout2.bat")
+                with open(bat_path, "w", encoding="utf-8") as f:
+                    f.write("@echo off\nstart \"\" \"%~dp0fallout2.exe\"\n")
         except Exception:
             pass
 
