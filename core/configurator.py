@@ -77,6 +77,7 @@ class Configurator:
         """
         Настраивает MiniRework 2.0.4.3:
         Отключает модули лечения, медицинских инструментов и краж для бесконфликтной передачи баланса в EcCo.
+        Копирует преднастроенные Perks.ini и Drugs.ini, чтобы избежать разового принудительного перезапуска игры.
         """
         candidates = [
             os.path.join(game_dir, "mods", "F2MechanicsMiniRework.ini"),
@@ -96,6 +97,20 @@ class Configurator:
                 
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(content)
+
+        # Обеспечиваем наличие директории mods/sfall и преднастроенных ini
+        mods_dir = os.path.join(game_dir, "mods")
+        if os.path.exists(mods_dir):
+            os.makedirs(os.path.join(mods_dir, "sfall"), exist_ok=True)
+            template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates", "mods")
+            for ini_name in ["Perks.ini", "Drugs.ini"]:
+                src = os.path.join(template_dir, ini_name)
+                dst = os.path.join(mods_dir, ini_name)
+                if os.path.exists(src) and not os.path.exists(dst):
+                    try:
+                        shutil.copy2(src, dst)
+                    except Exception:
+                        pass
 
     @classmethod
     def tune_fo2tweaks_ini(cls, game_dir: str):

@@ -4,6 +4,7 @@ Fallout 2 Ultimate Wasteland Edition 2026 - Master Installer GUI
 
 import os
 import sys
+import shutil
 import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
