@@ -45,6 +45,7 @@ Name: "startmenuicon"; Description: "Создать ярлыки в меню &П
 
 [Files]
 Source: "E:\Fallout2_Ultimate\Fallout2_Launcher.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+Source: "E:\Fallout2_Ultimate\Fallout2_PipBoy_Launcher.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
 Source: "E:\Fallout2_Ultimate\Run_Launcher.bat"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
 
 Source: "E:\Fallout2_Ultimate\Fallout2_Gameplay\*"; DestDir: "{app}\Fallout2_Gameplay"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak"; Components: gameplay
@@ -52,7 +53,8 @@ Source: "E:\Fallout2_Ultimate\Fallout2_Gameplay\*"; DestDir: "{app}\Fallout2_Gam
 Source: "E:\Fallout2_Ultimate\Fallout2_HD\*"; DestDir: "{app}\Fallout2_HD"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak"; Components: hd
 
 [Icons]
-Name: "{autodesktop}\Fallout 2 Launcher"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\Fallout 2 Pip-Boy 3000"; Filename: "{app}\Fallout2_PipBoy_Launcher.exe"; Tasks: desktopicon
+Name: "{autodesktop}\Fallout 2 Launcher (Classic)"; Filename: "{app}\Fallout2_Launcher.exe"; Tasks: desktopicon
 Name: "{group}\{#MyAppName} - Лаунчер"; Filename: "{app}\{#MyAppExeName}"; Tasks: startmenuicon
 Name: "{group}\Fallout 2 (Gameplay Ultimate)"; Filename: "{app}\Fallout2_Gameplay\fallout2.exe"; WorkingDir: "{app}\Fallout2_Gameplay"; Components: gameplay; Tasks: startmenuicon
 Name: "{group}\Fallout 2 (HD Dustlight)"; Filename: "{app}\Fallout2_HD\dustlight.exe"; WorkingDir: "{app}\Fallout2_HD"; Components: hd; Tasks: startmenuicon
