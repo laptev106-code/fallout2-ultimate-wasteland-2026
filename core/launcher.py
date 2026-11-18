@@ -642,7 +642,7 @@ class FalloutLauncherApp(tk.Tk):
         self.txt_mod_detail.configure(state="normal")
         self.txt_mod_detail.delete("1.0", "end")
 
-        full_body = f"{mod['summary']}\n\n{'='*60}\nПОДРОБНЫЙ ТЕХНИЧЕСКИЙ РАЗБОР:\n{'='*60}\n\n{mod['details']}"
+        full_body = f"{mod['summary']}\n\n{'='*60}\nОПИСАНИЕ:\n{'='*60}\n\n{mod['details']}"
         self.txt_mod_detail.insert("1.0", full_body)
         self.txt_mod_detail.configure(state="disabled")
 
