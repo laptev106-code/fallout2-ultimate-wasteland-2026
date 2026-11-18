@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/crt.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="crt-flicker">
+  <div class="crt-container">
+    <!-- Hardware Canvas for Floating Radioactive Ash & Embers -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- CRT Overlay & Vignette -->
+    <div id="crt-overlay" class="crt-overlay"></div>
+    <div class="crt-vignette"></div>
+
+    <div class="app-wrapper">
+      <!-- 1. Header Bar -->
+      <header class="app-header">
+        <div class="brand-section">
+          <span class="brand-logo glow-text">VAULT-TEC</span>
+          <span class="brand-badge">PIP-BOY 3000 MK IV</span>
+          <span style="font-size: 11px; color: var(--phosphor-dim);">// DIRECTORS CUT 2026</span>
+        </div>
+
+        <div class="header-status-pills">
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>ДВИЖОК: SFALL v4.4.8 (DX9)</span>
+          </div>
+          <div class="status-pill">
+            <span class="status-dot" style="background-color: var(--cyan-primary); box-shadow: 0 0 6px rgba(0,229,255,0.5);"></span>
+            <span>ЭКРАН: 2560x1440 2K</span>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button id="btn-toggle-sound" class="ctrl-btn" title="Включение/отключение щелчков реле">SOUND: ON</button>
+          <button id="btn-toggle-crt" class="ctrl-btn" title="Включение/отключение растра кинескопа">CRT: ON</button>
+        </div>
+      </header>
+
+      <!-- 2. Main Body (Sidebar + Viewport) -->
+      <div class="app-body">
+        <!-- Sidebar Navigation -->
+        <nav class="app-sidebar">
+          <button class="nav-item active" data-view="launch">
+            <span class="nav-icon">🚀</span>
+            <span>ЗАПУСК ИГРЫ</span>
+          </button>
+          <button class="nav-item" data-view="catalog">
+            <span class="nav-icon">📋</span>
+            <span>КАТАЛОГ МОДОВ (15)</span>
+          </button>
+          <button class="nav-item" data-view="settings">
+            <span class="nav-icon">⚙️</span>
+            <span>НАСТРОЙКИ ГРАФИКИ</span>
+          </button>
+          <button class="nav-item" data-view="saves">
+            <span class="nav-icon">💾</span>
+            <span>СОХРАНЕНИЯ</span>
+          </button>
+          <button class="nav-item" data-view="feedback">
+            <span class="nav-icon">💬</span>
+            <span>СВЯЗЬ И БАГ-РЕПОРТ</span>
+          </button>
+
+          <div class="sidebar-vaultboy">
+            <img class="vaultboy-preview-img" src="assets/vault_boy_crt.png" alt="Vault Boy">
+            <div class="vaultboy-tag">СИСТЕМА ГОТОВА К ИГРЕ</div>
+          </div>
+        </nav>
+
+        <!-- Viewport Area -->
+        <main class="app-viewport">
+          <!-- VIEW 1: ЗАПУСК -->
+          <section id="view-launch" class="view-page active">
+            <div class="launch-grid">
+              <!-- PROFILE 1: GAMEPLAY ULTIMATE -->
+              <div class="profile-card">
+                <div class="profile-hero">
+                  <img class="profile-poster-img" src="assets/posters/rpu.png" alt="Gameplay Ultimate">
+                  <div class="profile-badge-overlay">РЕКОМЕНДОВАННЫЙ ПРОФИЛЬ</div>
+                </div>
+                <div class="profile-content">
+                  <div class="profile-title">GAMEPLAY ULTIMATE</div>
+                  <div class="profile-subtitle">Оригинальный движок sfall v4.4.8 + RPU v28. Полный пакет 15 авторских модулей без вылетов.</div>
+                  <ul class="feature-list">
+                    <li>Восстановленные города: Аббатство, EPA, Деревня Дикарей</li>
+                    <li>Полная смена брони на напарниках (Сулик, Вик, Мирия)</li>
+                    <li>3D-голова и студийная озвучка бармена Джона Кэссиди</li>
+                    <li>Несжатый саундтрек 44.1 кГц Stereo (1 ГБ Lossless)</li>
+                    <li>Бронебойный баланс YAAM & Glovz + авто-двери</li>
+                  </ul>
+                  <button id="btn-launch-gameplay" class="btn-launch">
+                    <span>▶ ЗАПУСК GAMEPLAY ULTIMATE</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- PROFILE 2: HD COMMUNITY EDITION -->
+              <div class="profile-card">
+                <div class="profile-hero">
+                  <img class="profile-poster-img" src="assets/posters/dustlight.png" alt="HD Visual">
+                  <div class="profile-badge-overlay" style="border-color: var(--amber-primary); color: var(--amber-primary);">ГРАФИЧЕСКИЙ ЭКСПЕРИМЕНТ</div>
+                </div>
+                <div class="profile-content">
+                  <div class="profile-title">HD COMMUNITY EDITION</div>
+                  <div class="profile-subtitle">Открытый C++ движок SDL2 с лучевым освещением Dustlight и субпиксельным скроллингом 144 Гц.</div>
+                  <ul class="feature-list">
+                    <li>Аппаратный рендерер SDL2 с плавной интерполяцией камеры</li>
+                    <li>Объемное лучевое освещение и динамический туман</li>
+                    <li>Нативная поддержка ультрашироких и 2K/4K мониторов</li>
+                    <li>Базовый квестовый контент без комплексных модов sfall</li>
+                  </ul>
+                  <button id="btn-launch-hd" class="btn-launch" style="background: var(--amber-primary); color: #0a0e0a;">
+                    <span>▶ ЗАПУСК COMMUNITY EDITION</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 2: КАТАЛОГ МОДОВ -->
+          <section id="view-catalog" class="view-page">
+            <div class="catalog-filters">
+              <button class="filter-pill active" data-filter="ALL">ВСЕ (15 МОДОВ)</button>
+              <button class="filter-pill" data-filter="КВЕСТЫ">КВЕСТЫ И МИР</button>
+              <button class="filter-pill" data-filter="ВИЗУАЛ">ВИЗУАЛ И АНИМАЦИИ</button>
+              <button class="filter-pill" data-filter="СПУТНИКИ">НАПАРНИКИ</button>
+              <button class="filter-pill" data-filter="ГЕЙМПЛЕЙ">ГЕЙМПЛЕЙ И QOL</button>
+              <button class="filter-pill" data-filter="ЗВУК">ЗВУК 44.1 КГЦ</button>
+              <button class="filter-pill" data-filter="ДВИЖОК">ДВИЖОК И ЯДРО</button>
+            </div>
+            <div id="catalog-cards-container" class="catalog-grid"></div>
+          </section>
+
+          <!-- VIEW 3: НАСТРОЙКИ ГРАФИКИ -->
+          <section id="view-settings" class="view-page">
+            <div class="config-container">
+              <div class="section-box">
+                <div class="section-title">ДИСПЛЕЙ И ВИДЕОРЕЖИМ</div>
+                <div class="section-desc">Прямая запись параметров в f2_res.ini и ddraw.ini. Настройки применяются мгновенно.</div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">1. РАЗРЕШЕНИЕ ЭКРАНА:</span>
+                    <span class="form-hint">Нативное разрешение матрицы монитора для четкой геометрии без размытия.</span>
+                  </div>
+                  <select id="select-res" class="form-select">
+                    <option value="2560x1440" selected>2560x1440 (2K QHD — Рекомендуется)</option>
+                    <option value="1920x1080">1920x1080 (Full HD)</option>
+                    <option value="3840x2160">3840x2160 (4K Ultra HD)</option>
+                    <option value="1600x900">1600x900</option>
+                    <option value="1280x720">1280x720 (720p)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">2. РЕЖИМ ОТОБРАЖЕНИЯ:</span>
+                    <span class="form-hint">«Окно без рамок» идеально для мгновенного Alt+Tab и захвата в Lossless Scaling (LSFG) / OBS.</span>
+                  </div>
+                  <select id="select-mode" class="form-select">
+                    <option value="fullscreen" selected>Полноэкранный режим (Fullscreen)</option>
+                    <option value="borderless">Окно без рамок (Borderless — для Lossless Scaling)</option>
+                    <option value="windowed">Оконный режим (Windowed)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">3. МАСШТАБ ИНТЕРФЕЙСА (SCALE):</span>
+                    <span class="form-hint">SCALE 2X увеличивает элементы интерфейса в 2 раза, предотвращая мелкий шрифт на 1440p/4K.</span>
+                  </div>
+                  <select id="select-scale" class="form-select">
+                    <option value="2x" selected>SCALE 2X (Крупный четкий UI для 1080p/1440p)</option>
+                    <option value="1x">SCALE 1X (Оригинальный мелкий интерфейс 1998 г.)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">4. АППАРАТНОЕ СГЛАЖИВАНИЕ СПРАЙТОВ:</span>
+                    <span class="form-hint">Билинейная фильтрация сглаживает ступенчатый шум на гранях персонажей.</span>
+                  </div>
+                  <select id="select-filter" class="form-select">
+                    <option value="bilinear" selected>Билинейное сглаживание GPU (Мягкие грани без шума)</option>
+                    <option value="point">Точечное пиксельное (Резкий пиксель-арт)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="section-box">
+                <div class="section-title">ЗВУК И МУЗЫКАЛЬНЫЙ БАЛАНС</div>
+                <div class="section-desc">Управление громкостью студийного саундтрека Марка Моргана 44.1 кГц.</div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">МУЗЫКАЛЬНЫЕ КОМПОЗИЦИИ:</span>
+                    <span class="form-hint">Громкость фоновой музыки локаций.</span>
+                  </div>
+                  <div class="slider-container">
+                    <input id="slider-music" type="range" min="0" max="100" value="80" class="form-slider">
+                    <span id="val-music" class="slider-val">80%</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">ЗВУКОВЫЕ ЭФФЕКТЫ (SFX):</span>
+                    <span class="form-hint">Громкость выстрелов, шагов и взрывов.</span>
+                  </div>
+                  <div class="slider-container">
+                    <input id="slider-sfx" type="range" min="0" max="100" value="80" class="form-slider">
+                    <span id="val-sfx" class="slider-val">80%</span>
+                  </div>
+                </div>
+              </div>
+
+              <button id="btn-save-settings" class="btn-primary">💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ</button>
+            </div>
+          </section>
+
+          <!-- VIEW 4: СОХРАНЕНИЯ -->
+          <section id="view-saves" class="view-page">
+            <div class="saves-actions-bar">
+              <button id="btn-backup-saves" class="btn-primary">📦 СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ (ZIP)</button>
+              <button id="btn-open-saves-dir" class="ctrl-btn" style="padding: 10px 18px; font-size: 13px;">📂 ОТКРЫТЬ ПАПКУ СЕЙВОВ В EXPLORER</button>
+            </div>
+            <div id="saves-slots-container" class="save-slot-grid"></div>
+          </section>
+
+          <!-- VIEW 5: СВЯЗЬ И БАГ-РЕПОРТ -->
+          <section id="view-feedback" class="view-page">
+            <div class="feedback-grid">
+              <!-- Left Column: Channel Links -->
+              <div class="social-links-panel">
+                <div class="section-title">СООБЩЕСТВО И ПОДДЕРЖКА</div>
+                <div class="section-desc">Официальные ресурсы проекта для обновлений, обсуждений и финансовой поддержки.</div>
+
+                <a class="channel-card" data-url="https://t.me/fallout2_ultimate_wasteland">
+                  <div class="channel-info">
+                    <h4>📢 TELEGRAM КАНАЛ</h4>
+                    <p>Анонсы патчей, разборы модов, опросы и новости проекта</p>
+                  </div>
+                  <span style="font-size: 18px;">↗</span>
+                </a>
+
+                <a class="channel-card" data-url="https://t.me/fallout2_support_bot">
+                  <div class="channel-info">
+                    <h4>🤖 TELEGRAM SUPPORT BOT</h4>
+                    <p>Прямая отправка логов, вылетов и предложений в бот разработчика</p>
+                  </div>
+                  <span style="font-size: 18px;">↗</span>
+                </a>
+
+                <a class="channel-card" data-url="https://boosty.to/fallout2_ultimate">
+                  <div class="channel-info">
+                    <h4>⭐ BOOSTY АВТОРА</h4>
+                    <p>Ранний доступ к новым билдам, эксклюзивные лонгриды и поддержка</p>
+                  </div>
+                  <span style="font-size: 18px;">↗</span>
+                </a>
+
+                <a class="channel-card" data-url="https://patreon.com/fallout2_ultimate">
+                  <div class="channel-info">
+                    <h4>🌍 PATREON</h4>
+                    <p>Международная подписка и развитие англоязычной версии сборки</p>
+                  </div>
+                  <span style="font-size: 18px;">↗</span>
+                </a>
+              </div>
+
+              <!-- Right Column: Interactive Feedback & Bug Report Form -->
+              <div class="report-form-panel">
+                <div class="section-title">ФОРМА БАГ-РЕПОРТА И ОБРАТНОЙ СВЯЗИ</div>
+                <div class="section-desc">Нашли ошибку или хотите предложить улучшение? Заполните форму — она сформирует готовый диагностический пакет.</div>
+
+                <div>
+                  <label class="form-label" style="margin-bottom: 6px;">КАТЕГОРИЯ ОБРАЩЕНИЯ:</label>
+                  <select id="report-type" class="form-select" style="width: 100%;">
+                    <option value="Баг в квесте / диалоге">Баг в квесте или диалоге</option>
+                    <option value="Вылет / Зависание (Crash)">Вылет или зависание игры (Crash)</option>
+                    <option value="Графика / Разрешение">Проблема с графикой или разрешением</option>
+                    <option value="Предложение / Идея">Предложение новой функции или мода</option>
+                    <option value="Отзыв / Благодарность">Отзыв / Благодарность</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label" style="margin-bottom: 6px;">ПРОФИЛЬ СБОРКИ:</label>
+                  <select id="report-profile" class="form-select" style="width: 100%;">
+                    <option value="Gameplay Ultimate (sfall v4.4.8 + RPU)">Gameplay Ultimate (sfall v4.4.8 + RPU)</option>
+                    <option value="HD Community Edition (SDL2)">HD Community Edition (SDL2)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label" style="margin-bottom: 6px;">ОПИСАНИЕ ПРОБЛЕМЫ ИЛИ ОТЗЫВ:</label>
+                  <textarea id="report-text" class="form-textarea" placeholder="Опишите, в какой локации произошла ошибка, какие действия привели к ней, или поделитесь впечатлениями..."></textarea>
+                </div>
+
+                <label class="diag-checkbox-label">
+                  <input id="report-attach-diag" type="checkbox" checked>
+                  <span>Автоматически прикрепить диагностику экрана (2560x1440) и конфигов</span>
+                </label>
+
+                <div style="display: flex; gap: 12px; margin-top: 8px;">
+                  <button id="btn-submit-report" class="btn-primary" style="flex: 1;">🚀 ОТПРАВИТЬ В TELEGRAM</button>
+                  <button id="btn-copy-report" class="ctrl-btn" style="padding: 10px 16px; font-size: 12px;">📋 СКОПИРОВАТЬ ОТЧЕТ</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- 3. Footer Bar -->
+      <footer class="app-footer">
+        <div>ROBCO PIP-BOY OS v4.4.8 // TELEMETRY: NOMINAL</div>
+        <div>
+          <span>СБОРКА: </span>
+          <span style="color: var(--phosphor-bright);">DIRECTOR'S CUT 2026</span>
+          <span style="margin: 0 10px;">|</span>
+          <a class="footer-link" onclick="window.app.switchView('feedback')">ОБРАТНАЯ СВЯЗЬ</a>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN MOD INSPECTION MODAL -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div id="modal-title-text" class="modal-title">МОДУЛЬ</div>
+        <button id="modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-poster-wrap">
+          <img id="modal-poster-view" class="modal-poster-img" src="" alt="Poster">
+        </div>
+        <div id="modal-desc-view" class="modal-desc-text"></div>
+        <div class="section-title" style="font-size: 14px; margin-bottom: 8px;">КЛЮЧЕВЫЕ ХАРАКТЕРИСТИКИ:</div>
+        <ul id="modal-specs-list" class="feature-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/particles.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -597,10 +597,12 @@ class PipBoyLauncher(tk.Tk):
     def load_assets(self):
         """Загрузка графических ассетов Pip-Boy."""
         bundle_dir = getattr(sys, "_MEIPASS", None)
-        if bundle_dir:
+        if bundle_dir and os.path.exists(os.path.join(bundle_dir, "assets")):
             self.assets_dir = os.path.join(bundle_dir, "assets")
-        elif not os.path.exists(self.assets_dir):
+        elif os.path.exists(os.path.join(self.root_dir, "assets")):
             self.assets_dir = os.path.join(self.root_dir, "assets")
+        elif os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")):
+            self.assets_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets"))
 
         icon_path = os.path.join(self.assets_dir, "vault_icon.png")
         if os.path.exists(icon_path):

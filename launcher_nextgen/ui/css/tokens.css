@@ -1,0 +1,79 @@
+/* Design Tokens: Fallout 2 Ultimate Wasteland 2026 // Pip-Boy 3000 Mk IV OS */
+:root {
+  /* Phosphor Palette */
+  --phosphor-primary: #00ff66;
+  --phosphor-glow: rgba(0, 255, 102, 0.45);
+  --phosphor-bright: #66ffaa;
+  --phosphor-dim: #107738;
+  --phosphor-dark: #0a4020;
+  
+  /* Amber Warning Palette */
+  --amber-primary: #ffb000;
+  --amber-glow: rgba(255, 176, 0, 0.4);
+  --amber-dim: #996a00;
+  
+  /* Cyan Diagnostics */
+  --cyan-primary: #00e5ff;
+  --cyan-dim: #008394;
+  
+  /* Dark Zinc Surfaces */
+  --bg-abyss: #050806;
+  --bg-terminal: #0a0f0c;
+  --bg-panel: #0f1612;
+  --bg-card: #131c17;
+  --bg-card-hover: #18241e;
+  --bg-input: #090e0b;
+  
+  /* Borders */
+  --border-muted: #1b2e22;
+  --border-active: #00ff66;
+  --border-dim: #133820;
+  
+  /* Typography */
+  --font-mono: 'Consolas', 'Courier New', 'Lucida Console', monospace;
+  --font-display: 'Impact', 'Segoe UI Black', 'Arial Black', sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Transitions */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-abyss);
+  color: var(--phosphor-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  text-shadow: 0 0 4px var(--phosphor-glow);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-abyss);
+  border-left: 1px solid var(--border-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--phosphor-dim);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--phosphor-primary);
+  box-shadow: 0 0 8px var(--phosphor-glow);
+}
