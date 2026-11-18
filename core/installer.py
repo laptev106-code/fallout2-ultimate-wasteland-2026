@@ -58,6 +58,12 @@ class InstallationEngine:
                 if member_name.lower() == "ddraw.dll" and os.path.exists(os.path.join(dest_dir, "ddraw.dll")):
                     continue
                 
+                # Фильтр локализации RPU: извлекаем строго русскую локализацию и звук,
+                # пропуская остальные языки (испанский, французский, польский и т.д.)
+                if "translation" in os.path.basename(zip_path).lower():
+                    if member_name.lower().endswith(".dat") and "russian" not in member_name.lower():
+                        continue
+                
                 # Если одиночный .dat файл находится в корне архива (например, патч THAT или Bunker 21),
                 # направляем его в папку mods/, чтобы sfall корректно загрузил его
                 if member_name.lower().endswith(".dat") and "/" not in member_name and "\\" not in member_name:
