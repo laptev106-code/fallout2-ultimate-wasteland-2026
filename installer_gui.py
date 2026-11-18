@@ -23,8 +23,8 @@ class FalloutMasterInstaller(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Fallout 2 Ultimate 2026 - Master Installer & Pipeline")
-        self.geometry("820x720")
-        self.minsize(780, 680)
+        self.geometry("860x880")
+        self.minsize(800, 720)
         self.configure(bg="#121511")
         
         self.cache_dir = os.path.join(PROJECT_ROOT, "cache")
@@ -126,7 +126,28 @@ class FalloutMasterInstaller(tk.Tk):
             bg="#121511", fg="#cccccc", selectcolor="#222222", activebackground="#121511", activeforeground="#ffffff"
         ).pack(anchor="w", pady=2)
 
-        # 3. Список компонентов и чекбоксы
+        # 4. Прогресс, статус и кнопка установки (жестко зафиксированы внизу окна)
+        btn_frame = tk.Frame(main_frame, bg="#121511", pady=6)
+        btn_frame.pack(side="bottom", fill="x")
+
+        self.btn_install = tk.Button(
+            btn_frame, text="⚡ СОБРАТЬ И УСТАНОВИТЬ СБОРКУ",
+            font=("Segoe UI", 13, "bold"),
+            bg="#226622", fg="#ffffff", activebackground="#339933", activeforeground="#ffffff",
+            relief="raised", bd=3, pady=8, command=self.start_installation
+        )
+        self.btn_install.pack(fill="x")
+
+        self.lbl_status = tk.Label(main_frame, text="Готов к установке", fg="#88cc88", bg="#121511", anchor="w")
+        self.lbl_status.pack(side="bottom", fill="x")
+
+        self.progress_bar = ttk.Progressbar(main_frame, mode="determinate")
+        self.progress_bar.pack(side="bottom", fill="x", pady=4)
+
+        self.lbl_validation = tk.Label(main_frame, text="", bg="#121511", wraplength=760, justify="left")
+        self.lbl_validation.pack(side="bottom", fill="x", pady=4)
+
+        # 3. Список компонентов и чекбоксы (занимает все оставшееся место по центру)
         comp_box = ttk.LabelFrame(main_frame, text=" 3. Компоненты сборки (Валидация на лету) ", padding=8)
         comp_box.pack(fill="both", expand=True, pady=4)
 
@@ -160,29 +181,6 @@ class FalloutMasterInstaller(tk.Tk):
             
             lbl_desc = tk.Label(f_row, text=f"— {mod.description}", fg="#777777", bg="#121511", font=("Segoe UI", 8))
             lbl_desc.pack(side="left", padx=5)
-
-        # Индикатор валидации
-        self.lbl_validation = tk.Label(main_frame, text="", bg="#121511", wraplength=760, justify="left")
-        self.lbl_validation.pack(fill="x", pady=4)
-
-        # 4. Прогресс и лог
-        self.progress_bar = ttk.Progressbar(main_frame, mode="determinate")
-        self.progress_bar.pack(fill="x", pady=4)
-
-        self.lbl_status = tk.Label(main_frame, text="Готов к установке", fg="#88cc88", bg="#121511", anchor="w")
-        self.lbl_status.pack(fill="x")
-
-        # Кнопка установки
-        btn_frame = tk.Frame(main_frame, bg="#121511", pady=6)
-        btn_frame.pack(fill="x")
-
-        self.btn_install = tk.Button(
-            btn_frame, text="⚡ СОБРАТЬ И УСТАНОВИТЬ СБОРКУ",
-            font=("Segoe UI", 12, "bold"),
-            bg="#225522", fg="#ffffff", activebackground="#338833", activeforeground="#ffffff",
-            relief="raised", bd=3, pady=6, command=self.start_installation
-        )
-        self.btn_install.pack(fill="x")
 
     def browse_source(self):
         d = filedialog.askdirectory(title="Выберите директорию с чистой Fallout 2")
