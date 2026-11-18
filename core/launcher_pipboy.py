@@ -1264,7 +1264,7 @@ class PipBoyLauncher(tk.Tk):
         )
         self.combo_wnd.set("Полноэкранный режим (Fullscreen)")
         self.combo_wnd.pack(side="left", padx=10)
-        tk.Label(card2, text="   Режим 'Окно без рамок' исключает зависания и мерцание при переключении по Alt+Tab.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
+        tk.Label(card2, text="   'Окно без рамок' идеально для мгновенного Alt+Tab и внешнего захвата Lossless Scaling (LSFG) / OBS.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
         CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
 
@@ -1403,45 +1403,80 @@ class PipBoyLauncher(tk.Tk):
         return frame
 
     def read_current_configuration(self):
-        """Считывание текущих параметров из f2_res.ini."""
+        """Считывание текущих параметров из f2_res.ini и ddraw.ini."""
         ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
-        if not os.path.exists(ini_path):
-            return
+        if os.path.exists(ini_path):
+            try:
+                with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
 
-        try:
-            with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
+                w = 1920
+                h = 1080
+                win_val = 0
+                win_fs = 0
+                for line in content.splitlines():
+                    if line.startswith("SCR_WIDTH="):
+                        w = int(line.split("=")[1].strip())
+                    elif line.startswith("SCR_HEIGHT="):
+                        h = int(line.split("=")[1].strip())
+                    elif line.startswith("SCALE_2X=0"):
+                        self.combo_scale.set("SCALE 1X (Оригинальный мелкий интерфейс)")
+                    elif line.startswith("SCALE_2X=1"):
+                        self.combo_scale.set("SCALE 2X (Крупный четкий UI для 1080p/1440p)")
+                    elif line.startswith("WINDOWED="):
+                        win_val = int(line.split("=")[1].strip())
+                    elif line.startswith("WINDOWED_FULLSCREEN="):
+                        win_fs = int(line.split("=")[1].strip())
 
-            w = 1920
-            h = 1080
-            for line in content.splitlines():
-                if line.startswith("SCR_WIDTH="):
-                    w = int(line.split("=")[1].strip())
-                elif line.startswith("SCR_HEIGHT="):
-                    h = int(line.split("=")[1].strip())
-                elif line.startswith("SCALE_2X=0"):
-                    self.combo_scale.set("SCALE 1X (Оригинальный мелкий интерфейс)")
-                elif line.startswith("WINDOWED=1"):
+                if win_val == 1 and win_fs == 1:
+                    self.combo_wnd.set("Окно без рамок (Borderless)")
+                elif win_val == 1:
                     self.combo_wnd.set("Оконный режим (Windowed)")
+                else:
+                    self.combo_wnd.set("Полноэкранный режим (Fullscreen)")
 
-            res_str = f"{w}x{h}"
-            for val in self.combo_res["values"]:
-                if val.startswith(res_str):
-                    self.combo_res.set(val)
-                    break
-        except Exception:
-            pass
+                res_str = f"{w}x{h}"
+                for val in self.combo_res["values"]:
+                    if val.startswith(res_str):
+                        self.combo_res.set(val)
+                        break
+            except Exception:
+                pass
+
+        ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
+        if os.path.exists(ddraw_path):
+            try:
+                with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
+                    dcontent = f.read()
+                for line in dcontent.splitlines():
+                    if line.strip().startswith("TextureFilter="):
+                        val = line.split("=")[1].strip()
+                        if val == "2":
+                            self.combo_filter.set("Билинейное сглаживание GPU (Без лесенок)")
+                        elif val in ("0", "1"):
+                            self.combo_filter.set("Точечное пиксельное (Резкие пиксели)")
+            except Exception:
+                pass
 
     def save_configuration(self):
-        """Запись выбранных параметров в f2_res.ini и fallout2.cfg."""
+        """Запись выбранных параметров в f2_res.ini, ddraw.ini и fallout2.cfg."""
         self.play_sound_switch()
         res_val = self.combo_res.get().split()[0]
         w, h = res_val.split("x")
         w, h = int(w), int(h)
 
         scale_2x = 1 if "2X" in self.combo_scale.get() else 0
-        windowed = 1 if "Оконный" in self.combo_wnd.get() else 0
-        borderless = 1 if "без рамок" in self.combo_wnd.get() else 0
+        if "без рамок" in self.combo_wnd.get():
+            windowed = 1
+            borderless = 1
+        elif "Оконный" in self.combo_wnd.get():
+            windowed = 1
+            borderless = 0
+        else:
+            windowed = 0
+            borderless = 0
+
+        filter_val = 2 if "Билинейное" in self.combo_filter.get() else 0
 
         ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
         if os.path.exists(ini_path):
@@ -1461,6 +1496,8 @@ class PipBoyLauncher(tk.Tk):
                         new_lines.append(f"WINDOWED={windowed}\n")
                     elif line.startswith("WINDOWED_FULLSCREEN="):
                         new_lines.append(f"WINDOWED_FULLSCREEN={borderless}\n")
+                    elif line.startswith("COLOUR_BITS="):
+                        new_lines.append("COLOUR_BITS=32\n")
                     else:
                         new_lines.append(line)
 
@@ -1469,6 +1506,24 @@ class PipBoyLauncher(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Ошибка записи", f"Не удалось обновить f2_res.ini: {e}")
                 return
+
+        ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
+        if os.path.exists(ddraw_path):
+            try:
+                with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
+                    dlines = f.readlines()
+
+                new_dlines = []
+                for line in dlines:
+                    if line.strip().startswith("TextureFilter="):
+                        new_dlines.append(f"TextureFilter={filter_val}\n")
+                    else:
+                        new_dlines.append(line)
+
+                with open(ddraw_path, "w", encoding="utf-8") as f:
+                    f.writelines(new_dlines)
+            except Exception:
+                pass
 
         cfg_path = os.path.join(self.gameplay_dir, "fallout2.cfg")
         if os.path.exists(cfg_path):
@@ -1495,7 +1550,8 @@ class PipBoyLauncher(tk.Tk):
             except Exception:
                 pass
 
-        messagebox.showinfo("Конфигурация сохранена", f"Настройки успешно применены:\nРазрешение: {w}x{h}\nМасштабирование: {'2X' if scale_2x else '1X'}")
+        mode_desc = "Окно без рамок" if borderless else ("Окно" if windowed else "Полный экран")
+        messagebox.showinfo("Конфигурация сохранена", f"Настройки успешно применены:\nРазрешение: {w}x{h}\nРежим: {mode_desc}\nМасштабирование: {'2X' if scale_2x else '1X'}\nСглаживание: {'Билинейное' if filter_val == 2 else 'Точечное'}")
 
     # -----------------------------------------------------------------------
     # ЭКРАН 5: ПАМЯТКА ЖИТЕЛЯ УБЕЖИЩА (MANUAL / HOLOTAPE)
