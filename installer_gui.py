@@ -283,8 +283,31 @@ class FalloutMasterInstaller(tk.Tk):
                 # Копируем мастер-лаунчер в корень и создаем Run_Launcher.bat
                 shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
                 launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
+                bat_code = (
+                    "@echo off\n"
+                    "chcp 65001 >nul\n"
+                    "cd /d \"%~dp0\"\n"
+                    "where py >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" py -3 \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "where pythonw >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" pythonw \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "where python >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" python \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "echo [ОШИБКА] Python не обнаружен в системе!\n"
+                    "echo Установите Python 3 с python.org и добавьте его в PATH.\n"
+                    "pause\n"
+                )
                 with open(launcher_bat, "w", encoding="utf-8") as f:
-                    f.write("@echo off\nstart \"\" py -3 \"%~dp0launcher.py\"\n")
+                    f.write(bat_code)
             else:
                 selected_ids = [cid for cid, var in self.component_vars.items() if var.get()]
                 self.engine.install_profile(
@@ -294,8 +317,31 @@ class FalloutMasterInstaller(tk.Tk):
                 )
                 shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
                 launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
+                bat_code = (
+                    "@echo off\n"
+                    "chcp 65001 >nul\n"
+                    "cd /d \"%~dp0\"\n"
+                    "where py >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" py -3 \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "where pythonw >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" pythonw \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "where python >nul 2>nul\n"
+                    "if %ERRORLEVEL% equ 0 (\n"
+                    "    start \"\" python \"%~dp0launcher.py\"\n"
+                    "    exit /b\n"
+                    ")\n"
+                    "echo [ОШИБКА] Python не обнаружен в системе!\n"
+                    "echo Установите Python 3 с python.org и добавьте его в PATH.\n"
+                    "pause\n"
+                )
                 with open(launcher_bat, "w", encoding="utf-8") as f:
-                    f.write("@echo off\nstart \"\" py -3 \"%~dp0launcher.py\"\n")
+                    f.write(bat_code)
 
             self._log("🎉 ВСЕ ОПЕРАЦИИ УСПЕШНО ЗАВЕРШЕНЫ!")
             self._update_progress(100, 100, "Установка завершена на 100%")
