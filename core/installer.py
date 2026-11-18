@@ -157,5 +157,13 @@ class InstallationEngine:
                 log_callback("Патчинг fallout2.exe: Large Address Aware (4GB Virtual Memory)...")
             Patcher.apply_4gb_laa_patch(exe_path)
             
+        # 5. Генерация батника быстрого запуска
+        bat_path = os.path.join(target_dir, "Play_Fallout2.bat")
+        try:
+            with open(bat_path, "w", encoding="utf-8") as f:
+                f.write("@echo off\nstart \"\" \"%~dp0fallout2.exe\"\n")
+        except Exception:
+            pass
+
         if log_callback:
             log_callback(f"Профиль '{profile_name}' успешно собран и готов к запуску!")
