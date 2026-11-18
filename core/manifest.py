@@ -127,6 +127,19 @@ COMPONENTS: Dict[str, ModComponent] = {
         default_enabled_gameplay=True,
         default_enabled_hd=False
     ),
+    "inventory_filter": ModComponent(
+        id="inventory_filter",
+        name="Inventory Filter (Фильтр инвентаря Mr.Stalin)",
+        version="2.0.4",
+        category="qol",
+        description="Категории предметов [Оружие / Патроны / Броня / Медикаменты / Хлам], умный бартер, кнопка сбросить всё.",
+        download_url="https://raw.githubusercontent.com/rotators/InventoryFilter/master/archive/F2-InventoryFilter_v2.0.4_ru.rar",
+        archive_name="F2-InventoryFilter_v2.0.4_ru.rar",
+        requires=["rpu"],
+        is_sfall_only=True,
+        default_enabled_gameplay=True,
+        default_enabled_hd=False
+    ),
     "lossless_music": ModComponent(
         id="lossless_music",
         name="Lossless Music (Студийный саундтрек WAV 44.1 кГц)",
