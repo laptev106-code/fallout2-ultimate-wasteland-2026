@@ -22,3 +22,7 @@ cache/
 *.log
 .test_write_perm
 test_config/
+
+build/
+build_pipboy/
+*.spec

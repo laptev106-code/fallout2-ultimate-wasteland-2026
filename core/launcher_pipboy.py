@@ -1,0 +1,1264 @@
+"""
+Fallout 2: Ultimate Wasteland Edition 2026 - Pip-Boy 3000 Master Launcher
+Премиальный автономный лаунчер, стилизованный под экран персонального терминала Pip-Boy 3000.
+Включает встроенный графический конфигуратор, каталог модов, менеджер сохранений и аутентичный визуал.
+"""
+
+import os
+import sys
+import subprocess
+import shutil
+import zipfile
+import datetime
+import tkinter as tk
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+
+try:
+    import winsound
+    HAS_SOUND = True
+except ImportError:
+    HAS_SOUND = False
+
+# ---------------------------------------------------------------------------
+# АУТЕНТИЧНАЯ ПАЛИТРА PIP-BOY 3000 (CRT PHOSPHOR GREEN & OBSIDIAN)
+# ---------------------------------------------------------------------------
+BG_DARK = "#050a05"          # Глубокий черный фон кинескопа
+BG_BEZEL = "#0c150c"         # Внутренний безель экрана
+BG_CARD = "#101d10"          # Карточка/панель блока
+BG_CARD_HOVER = "#162816"    # Фокус карточки
+BORDER_MUTED = "#1e381e"     # Неактивные границы
+BORDER_ACTIVE = "#387038"    # Активные границы
+
+PHOSPHOR_MAIN = "#2bf558"    # Основной люминофор P31 (ярко-зеленый)
+PHOSPHOR_BRIGHT = "#66ff88"  # Максимальная яркость / фокус
+TEXT_NORMAL = "#d0ecd0"      # Читаемый светлый текст
+TEXT_DIM = "#5a885a"         # Приглушенный технический текст
+AMBER_ALERT = "#ffb833"      # Янтарный предупреждающий люминофор
+BLUE_VAULT = "#3fa9f5"       # Синий цвет Vault-Tec
+
+FONT_MONO_LARGE = ("Consolas", 15, "bold")
+FONT_MONO_MID = ("Consolas", 11, "bold")
+FONT_MONO_BODY = ("Consolas", 10)
+FONT_MONO_SMALL = ("Consolas", 8)
+FONT_UI_TEXT = ("Segoe UI", 9)
+
+# ---------------------------------------------------------------------------
+# ДЕТАЛЬНЫЙ КАТАЛОГ ВСЕХ УСТАНОВЛЕННЫХ МОДИФИКАЦИЙ
+# ---------------------------------------------------------------------------
+MODS_DATABASE = [
+    {
+        "id": "rpu",
+        "category": "СЮЖЕТ",
+        "title": "Restoration Project Updated (RPU v2.4.34 / v28)",
+        "badge": "ГЛОБАЛЬНЫЙ СЮЖЕТ",
+        "author": "Killap, BGforge Net, debrouxl",
+        "summary": "Главный фундамент сборки: полная каноничная реставрация вырезанного контента Black Isle Studios.",
+        "details": (
+            "Восстанавливает весь массив сюжетного контента, который оригинальные авторы "
+            "не успели выпустить к дедлайну 1998 года:\n\n"
+            "• 6 НОВЫХ ПОЛНОРАЗМЕРНЫХ ЛОКАЦИЙ:\n"
+            "  - Аббатство Братства Стали (The Abbey) — уединенный монастырь хранителей древних знаний;\n"
+            "  - Исследовательский центр EPA — заброшенный правительственный комплекс со своими тайнами;\n"
+            "  - Деревня Дикарей (Primitive Tribe) — родное поселение племени Сулика на побережье;\n"
+            "  - Жилой квартал Дыры (The Den Residential) — новые жители, квесты и приют для сирот;\n"
+            "  - Китайская подлодка «Ши» в Сан-Франциско;\n"
+            "  - База Вертибердов и посадочные площадки Анклава.\n\n"
+            "• СЮЖЕТНЫЕ ЛИНИИ И ПЕРСОНАЖИ:\n"
+            "  - Спасение сестры Сулика из лап работорговцев Мецгера;\n"
+            "  - Заклятый враг Избранного — отвергнутый соплеменник Кага (5 встреч по ходу прокачки);\n"
+            "  - Новые спутники из комплекса EPA: Кэт Джулс, ловкая воровка Кицунэ и Декстер;\n"
+            "  - Тысячи исправлений скриптового движка от Killap и debrouxl."
+        )
+    },
+    {
+        "id": "ecco",
+        "category": "БОЕВКА",
+        "title": "EcCo — Economy & Combat Overhaul (v0.9.8.3)",
+        "badge": "БАЛАНС И БАЛЛИСТИКА",
+        "author": "phobos2077",
+        "summary": "Исправление баллистики пуль (AP vs JHP), честное пробитие брони и устранение инфляции крышек.",
+        "details": (
+            "Исправляет фундаментальные ошибки боевого движка Fallout 2, существовавшие 25 лет:\n\n"
+            "• РЕМОНТ БРОНЕБОЙНЫХ ПАТРОНОВ (AP):\n"
+            "  В оригинале патроны AP из-за ошибки в формуле наносили меньше урона, чем обычные. "
+            "  В EcCo реализована честная физическая модель: бронебойные пули реально пробивают "
+            "  силовую и металлическую броню, а экспансивные (JHP) рвут незащищенную плоть.\n\n"
+            "• БАЛАНС ЭКОНОМИКИ:\n"
+            "  Устранена проблема, когда к середине игры Избранный становился миллионером с горами "
+            "  бесполезного оружия. Цены, бартер и ценность боеприпасов ощущаются реалистично.\n\n"
+            "• ТАКТИЧЕСКАЯ МЕДИЦИНА И ПЕРКИ:\n"
+            "  Стимуляторы и препараты работают с учетом постепенного действия, а ранее бесполезные "
+            "  перки получили новую ценность в бою."
+        )
+    },
+    {
+        "id": "minirework",
+        "category": "ОРУЖИЕ",
+        "title": "Fallout Mechanics MiniRework (v2.0.4.3)",
+        "badge": "ТАКТИКА СТРЕЛЬБЫ",
+        "author": "dekrus",
+        "summary": "Альтернативные режимы огня, пробивающий выстрел Гаусса, цепные молнии и динамический яд.",
+        "details": (
+            "Превращает перестрелки Fallout 2 в современную тактику:\n\n"
+            "• ВТОРИЧНЫЕ РЕЖИМЫ СТРЕЛЬБЫ (прицельный выстрел в корпус):\n"
+            "  - Винтовки Гаусса: бронебойный гиперзвуковой выстрел, прошивающий строй врагов насквозь;\n"
+            "  - Импульсное оружие: электрический разряд бьет цепной молнией по соседним целям;\n"
+            "  - Лазерное оружие: сфокусированный луч прорезает нескольких врагов на линии огня;\n"
+            "  - Пистолеты и ПП: прицельный двойной выстрел (Double Tap) по цене одного обычного;\n"
+            "  - Дробовики: мощный останавливающий эффект с отбрасыванием и нокдауном;\n"
+            "  - Автоматы и пулеметы: управляемая короткая очередь с кучным разлетом пуль.\n\n"
+            "• ДИНАМИЧЕСКИЙ ЯД:\n"
+            "  Яд наносит урон во времени всем существам, делая радскорпионов смертельно опасными.\n\n"
+            "• МОДУЛЬ TRAITS PLUS:\n"
+            "  Глубокая балансировка всех особенностей персонажа с русскими подсказками."
+        )
+    },
+    {
+        "id": "invenfilter",
+        "category": "ИНТЕРФЕЙС",
+        "title": "Inventory Filter (v2.0.4, официальная версия)",
+        "badge": "УДОБСТВО И БАРТЕР",
+        "author": "Mr.Stalin",
+        "summary": "Вкладки категорий [Оружие/Патроны/Броня/Химия], кнопка 'Положить всё' и умный бартер.",
+        "details": (
+            "Устраняет бесконечный ручной поиск нужной вещи среди сотен предметов:\n\n"
+            "• ВКЛАДКИ КАТЕГОРИЙ В ИНВЕНТАРЕ И БАРТЕРЕ:\n"
+            "  [Все] [Оружие] [Патроны] [Броня] [Медикаменты] [Разное].\n"
+            "  Клик средней кнопкой мыши по «Оружию» и «Патронам» открывает их вместе.\n\n"
+            "• КНОПКА «ВЫГРУЗИТЬ ВСЁ»:\n"
+            "  Мгновенный сброс добычи в багажник Хайвеймена или ящик одним кликом.\n\n"
+            "• ИНФОРМАЦИЯ И БАРТЕР:\n"
+            "  Отображение чистого веса выбранной категории и счетчик наличных крышек у торговца.\n"
+            "  Быстрое переключение между спутниками в окне торговли без выхода из меню.\n\n"
+            "• БЫСТРЫЕ КЛАВИШИ:\n"
+            "  Q, 1, 2, 3, 4, 5 — категории Избранного; W, 6, 7, 8, 9, 0 — категории спутника."
+        )
+    },
+    {
+        "id": "npcarmor",
+        "category": "ВИЗУАЛ",
+        "title": "NPC Armor Mod (B-Team, редакция RPU)",
+        "badge": "ВИЗУАЛ СПУТНИКОВ",
+        "author": "BGforge Net, B-Team",
+        "summary": "Напарники визуально меняют модельку при надевании любого типа брони (82.6 МБ спрайтов).",
+        "details": (
+            "Один из самых долгожданных модов для погружения:\n\n"
+            "• ВИЗУАЛЬНАЯ СМЕНА БРОНИ НА ЭКРАНЕ:\n"
+            "  Сулик, Вик, Кэссиди, Майрон, Кицунэ, Кэт Джулс и Мирия физически меняют модельку "
+            "  при надевании брони:\n"
+            "  - Кожаная куртка (Leather Jacket);\n"
+            "  - Кожаная броня (Leather Armor);\n"
+            "  - Металлическая броня (Metal Armor);\n"
+            "  - Боевая броня (Combat Armor);\n"
+            "  - Силовая броня (Power Armor и APA Анклава);\n"
+            "  - Мантия послушника (Robe).\n\n"
+            "• ПОЛНАЯ АНИМАЦИЯ:\n"
+            "  Спутники имеют индивидуальные спрайты бега, ходьбы, приседания и стрельбы из оружия."
+        )
+    },
+    {
+        "id": "partyorders",
+        "category": "БОЕВКА",
+        "title": "Party Orders (v1.0.4)",
+        "badge": "ТАКТИКА ОТРЯДА",
+        "author": "phobos2077, sfall team",
+        "summary": "Тактический пульт приказов спутникам в бою и на карте по горячим клавишам.",
+        "details": (
+            "Превращает напарников из хаотичных мишеней в слаженный отряд:\n\n"
+            "• БЫСТРЫЕ ПРИКАЗЫ КЛАВИШАМИ:\n"
+            "  - H (Оружие в кобуру): напарники убирают оружие, чтобы не злить охрану городов;\n"
+            "  - F (Лечение): напарники оценивают раны и сами используют стимуляторы;\n"
+            "  - G (Сбор лута): спутники собирают разбросанные по земле вещи вокруг;\n"
+            "  - R (Перегруппировка): все бойцы немедленно бегут к Избранному;\n"
+            "  - X (Рассредоточиться): бойцы занимают дистанцию в бою, избегая очередей врага;\n"
+            "  - Ctrl+B: переключение напарников на бронебойные или экспансивные патроны."
+        )
+    },
+    {
+        "id": "miria",
+        "category": "СЮЖЕТ",
+        "title": "Miria Companion Expansion (Wait Command + RU Dialogs)",
+        "badge": "СПУТНИКИ",
+        "author": "innerbytes, debrouxl",
+        "summary": "Жена/муж из Модока становится полноценным напарником с командой «Жди здесь» и прокачкой.",
+        "details": (
+            "Исправляет несправедливость оригинала по отношению к Мирии (или Дэвину):\n\n"
+            "• ТАКТИКА И БЕЗОПАСНОСТЬ:\n"
+            "  В оригинале Мирия навязывалась после свадьбы и неотвратимо погибала в первом же серьезном бою, "
+            "  так как ей нельзя было приказать остаться в безопасном месте.\n"
+            "  Теперь доступна полноценная реплика «Подожди меня здесь» и возможность взять её снова.\n\n"
+            "• ПОЛНАЯ СОВМЕСТИМОСТЬ:\n"
+            "  Мирия корректно экипирует любую броню благодаря моду NPC Armor и прокачивается по уровням."
+        )
+    },
+    {
+        "id": "music",
+        "category": "ЗВУК",
+        "title": "Lossless Studio Music Remaster (Mark Morgan 44.1 kHz Stereo)",
+        "badge": "ЗВУК 1 ГБ",
+        "author": "BGforge Net, Mark Morgan",
+        "summary": "Замена глухого моно 1998 года (22 кГц) на кристально чистый стереозвук 44.1 кГц (31 трек).",
+        "details": (
+            "Оригинальный Fallout 2 был сжат ради формата CD-ROM: музыка была сжата "
+            "в глухое моно с частотой 22 кГц и фоновым шипением.\n\n"
+            "В нашей сборке установлен отреставрированный саундтрек Марка Моргана:\n"
+            "• Формат 44.1 кГц Stereo без потерь (Lossless ACM);\n"
+            "• Каждый трек локации весит по 15–20 МБ;\n"
+            "• Глубокие басы, объемная панорама и кинематографичный эффект погружения."
+        )
+    },
+    {
+        "id": "cassidy",
+        "category": "ВИЗУАЛ",
+        "title": "Cassidy Talking Head & HQ Voiceover",
+        "badge": "ГОЛОВА И ОЗВУЧКА",
+        "author": "Joey Bracken, RPU Team",
+        "summary": "Живая анимированная 3D-голова Джона Кэссиди с профессиональной студийной озвучкой.",
+        "details": (
+            "Один из самых ярких спутников — бармен Джон Кэссиди из Пригорода Города Убежища — оживает в диалогах:\n\n"
+            "• Анимированная говорящая голова с богатой мимикой и синхронизацией речи;\n"
+            "• Полная озвучка от актера Джоуи Брэкена (Joey Bracken);\n"
+            "• 100% стабильность без рассинхрона реплик."
+        )
+    },
+    {
+        "id": "fo2tweaks",
+        "category": "ИНТЕРФЕЙС",
+        "title": "FO2Tweaks (Набор современных удобств)",
+        "badge": "QOL ТВИКИ",
+        "author": "BGforge Net",
+        "summary": "Авто-двери (AutoDoors) и защита лута от разлета при взрывах и дезинтеграции.",
+        "details": (
+            "Набор умных микро-модулей для комфортного прохождения:\n\n"
+            "• АВТО-ДВЕРИ (AutoDoors):\n"
+            "  Незапертые двери автоматически открываются перед бегущим героем — больше никаких лишних кликов!\n\n"
+            "• ЗАЩИТА ЛУТА ОТ ДЕЗИНТЕГРАЦИИ:\n"
+            "  Когда враг распадается в пепел от лазера или взрывается от плазмы, его вещи больше "
+            "  не разлетаются по окрестным гексам, а остаются доступными в кучке останков."
+        )
+    },
+    {
+        "id": "marcus_armor",
+        "category": "ВИЗУАЛ",
+        "title": "Super Mutant Armor & Dogmeat Kevlar",
+        "badge": "СПУТНИКИ",
+        "author": "RPU Team, Continuum",
+        "summary": "Тяжелая броня для супермутанта Маркуса и кевларовый жилет для Псины.",
+        "details": (
+            "Решает проблему поздней игры оригинала, где Маркус быстро погибал от очередей Анклава:\n\n"
+            "• БРОНЯ СУПЕРМУТАНТА:\n"
+            "  В Аббатстве (The Abbey) у внешнего торговца продается комплект брони мутантов. "
+            "  При надевании Маркус меняет спрайт на бронированного супермутанта и получает защиту от энергооружия.\n\n"
+            "• КЕВЛАР ДЛЯ ПСИНЫ:\n"
+            "  Псина экипирует специальный кевларовый жилет с уникальным внешним видом."
+        )
+    },
+    {
+        "id": "anims",
+        "category": "ВИЗУАЛ",
+        "title": "Уникальные оружейные анимации и эффекты",
+        "badge": "АНИМАЦИИ",
+        "author": "RPU Team, Skynet",
+        "summary": "Восстановленные анимации винтовок, мечей вакидзаси, улучшенное пламя огнемета и взрывы.",
+        "details": (
+            "Восстанавливает вырезанные спрайты движений:\n\n"
+            "• Удары восточным клинком Вакидзаси;\n"
+            "• Стрельба и прицеливание из охотничьих и снайперских винтовок;\n"
+            "• Плавная и реалистичная струя огня для тяжелого огнемета;\n"
+            "• Кинематографичные вспышки взрывов гранат и динамита."
+        )
+    },
+    {
+        "id": "sfall",
+        "category": "ЯДРО",
+        "title": "sfall v4.4.5 + Large Address Aware (4GB Patch)",
+        "badge": "СТАБИЛЬНОСТЬ",
+        "author": "Timeslip, Crafty, Mr.Stalin",
+        "summary": "Снятие ограничений памяти до 4 ГБ, поддержка Windows 10/11, обход CRC и оптимизация CPU.",
+        "details": (
+            "Главный системный мост между игрой 1998 года и современными ПК:\n\n"
+            "• 4GB LAA PATCH:\n"
+            "  Файл fallout2.exe модифицирован флагом Large Address Aware, позволяя адресовать до 4 ГБ "
+            "  виртуальной памяти вместо старых 2 ГБ. Это исключает вылеты при загрузке тяжелых модов.\n\n"
+            "• ИНЖЕНЕРНАЯ КАЛИБРОВКА 2026:\n"
+            "  Встроены параметры `CheckLOS=0` (0 фризов при беге с Shift), `ALT_MOUSE_INPUT=0` (0 вылетов) "
+            "  и `ExtraCRC=0xf18aa577` (отсутствие ошибок CRC)."
+        )
+    },
+    {
+        "id": "dustlight",
+        "category": "ГРАФИКА",
+        "title": "Fallout 2 Community Edition + Dustlight (Профиль HD Visual)",
+        "badge": "HD D3D11 СВЕТ",
+        "author": "AlexBatalov, Dustlight Team",
+        "summary": "Движок на C++/SDL2 с динамическим мягким освещением факелов/костров и поддержкой 120+ FPS.",
+        "details": (
+            "Второй профиль в лаунчере, полностью переписанный на современный C++:\n\n"
+            "• ДИНАМИЧЕСКИЙ СВЕТ И ТЕНИ:\n"
+            "  Факелы, костры, фонари и плазма отбрасывают мягкий теплый свет с честными динамическими тенями.\n\n"
+            "• 4K AI-АПСКЕЙЛ:\n"
+            "  Текстуры окружения и карты обработаны нейросетью UltraSharpV2 без мыла и искажений.\n\n"
+            "• СОВРЕМЕННЫЙ ДВИЖОК:\n"
+            "  Работает на Direct3D 11, поддерживает мониторы 144–240 Гц со сверхплавной прокруткой."
+        )
+    }
+]
+
+# ---------------------------------------------------------------------------
+# ГЛАВНОЕ ОКНО ЛАУНЧЕРА PIP-BOY 3000
+# ---------------------------------------------------------------------------
+class PipBoyLauncher(tk.Tk):
+    def __init__(self, root_dir: str):
+        super().__init__()
+        self.root_dir = root_dir
+        self.gameplay_dir = os.path.join(root_dir, "Fallout2_Gameplay")
+        self.hd_dir = os.path.join(root_dir, "Fallout2_HD")
+        self.assets_dir = os.path.join(root_dir, "assets")
+
+        self.title("VAULT-TEC PIP-BOY 3000 Mk IV // REVISION 2026")
+        self.geometry("1060x750")
+        self.minsize(980, 680)
+        self.configure(bg=BG_DARK)
+
+        # Загрузка иконок и ассетов
+        self.vault_icon = None
+        self.vault_boy_img = None
+        self.load_assets()
+
+        # Инициализация стилей ttk
+        self.setup_ttk_styles()
+
+        # Построение интерфейса
+        self.build_frame_cockpit()
+        self.show_tab("dashboard")
+
+    def play_sound_click(self):
+        """Воспроизведение тихого щелчка реле Pip-Boy."""
+        if HAS_SOUND:
+            try:
+                winsound.Beep(1800, 18)
+            except Exception:
+                pass
+
+    def play_sound_switch(self):
+        """Воспроизведение звука тумблера."""
+        if HAS_SOUND:
+            try:
+                winsound.Beep(950, 25)
+            except Exception:
+                pass
+
+    def load_assets(self):
+        """Загрузка графических ассетов Pip-Boy."""
+        icon_path = os.path.join(self.assets_dir, "vault_icon.png")
+        if os.path.exists(icon_path):
+            try:
+                self.vault_icon = tk.PhotoImage(file=icon_path)
+                self.iconphoto(False, self.vault_icon)
+            except Exception:
+                pass
+
+        # Ищем изображение Волт-Боя
+        img_candidates = [
+            os.path.join(self.assets_dir, "vault_boy_clean.png"),
+            os.path.join(self.assets_dir, "vault_boy_crt.png"),
+            os.path.join(self.assets_dir, "vault_boy_pipboy_clean.jpg"),
+        ]
+        for c in img_candidates:
+            if os.path.exists(c):
+                try:
+                    pil_img = Image.open(c)
+                    pil_img = pil_img.resize((260, 260), Image.Resampling.LANCZOS)
+                    self.vault_boy_img = ImageTk.PhotoImage(pil_img)
+                    break
+                except Exception:
+                    pass
+
+    def setup_ttk_styles(self):
+        """Настройка стилей Ttk в палитре Pip-Boy."""
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure(
+            "TScrollbar",
+            background=BG_CARD,
+            troughcolor=BG_DARK,
+            bordercolor=BORDER_MUTED,
+            arrowcolor=PHOSPHOR_MAIN
+        )
+        style.configure(
+            "Pip.TCombobox",
+            background=BG_CARD,
+            foreground=PHOSPHOR_MAIN,
+            fieldbackground=BG_CARD,
+            darkcolor=BORDER_MUTED,
+            lightcolor=BORDER_MUTED,
+            arrowcolor=PHOSPHOR_MAIN
+        )
+
+    def build_frame_cockpit(self):
+        """Создание внешней рамки ЭЛТ-дисплея Pip-Boy."""
+        # 1. Внешняя металлическая рамка с заклепками
+        outer_bezel = tk.Frame(self, bg=BG_BEZEL, bd=2, relief="solid", highlightbackground="#1b301b", highlightthickness=2)
+        outer_bezel.pack(fill="both", expand=True, padx=8, pady=8)
+
+        # 2. Верхний системный бар Pip-Boy
+        top_bar = tk.Frame(outer_bezel, bg=BG_BEZEL, height=48)
+        top_bar.pack(fill="x", padx=14, pady=(8, 4))
+
+        # Левый блок: Маркировка RobCo
+        lbl_robco = tk.Label(
+            top_bar,
+            text="ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM // PIP-BOY 3000 Mk IV",
+            font=FONT_MONO_SMALL,
+            fg=TEXT_DIM,
+            bg=BG_BEZEL
+        )
+        lbl_robco.pack(side="left", anchor="w")
+
+        # Правый блок: Индикатор питания и статуса
+        status_frame = tk.Frame(top_bar, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE)
+        status_frame.pack(side="right")
+        tk.Label(
+            status_frame,
+            text="● SYSTEM: 100% OPERATIONAL",
+            font=FONT_MONO_SMALL,
+            fg=PHOSPHOR_BRIGHT,
+            bg=BG_CARD,
+            padx=8,
+            pady=3
+        ).pack()
+
+        # 3. Навигационная полоса кнопок терминала (Pip-Boy Tabs)
+        nav_container = tk.Frame(outer_bezel, bg=BG_BEZEL)
+        nav_container.pack(fill="x", padx=14, pady=(2, 6))
+
+        self.tab_buttons = {}
+        tab_defs = [
+            ("dashboard", "⚡ [СТАТУС / ПУЛЬТ]"),
+            ("catalog", "📚 [КАТАЛОГ МОДОВ]"),
+            ("config", "⚙ [НАСТРОЙКИ СИСТЕМЫ]"),
+            ("manual", "📖 [ПАМЯТКА ЖИТЕЛЯ]"),
+            ("saves", "💾 [СЕЙВЫ / БЭКАП]"),
+        ]
+
+        for tab_id, tab_title in tab_defs:
+            btn = tk.Button(
+                nav_container,
+                text=tab_title,
+                font=FONT_MONO_MID,
+                fg=TEXT_DIM,
+                bg=BG_CARD,
+                activebackground=BG_CARD_HOVER,
+                activeforeground=PHOSPHOR_BRIGHT,
+                bd=1,
+                relief="solid",
+                padx=12,
+                pady=6,
+                cursor="hand2",
+                command=lambda tid=tab_id: self.switch_tab(tid)
+            )
+            btn.pack(side="left", padx=(0, 6))
+            self.tab_buttons[tab_id] = btn
+
+        # 4. Основной экран ЭЛТ-дисплея
+        self.screen_frame = tk.Frame(
+            outer_bezel,
+            bg=BG_DARK,
+            bd=2,
+            relief="solid",
+            highlightbackground=BORDER_ACTIVE,
+            highlightthickness=1
+        )
+        self.screen_frame.pack(fill="both", expand=True, padx=14, pady=(0, 6))
+
+        # Создание всех экранов
+        self.pages = {}
+        self.pages["dashboard"] = self.create_dashboard_view(self.screen_frame)
+        self.pages["catalog"] = self.create_catalog_view(self.screen_frame)
+        self.pages["config"] = self.create_config_view(self.screen_frame)
+        self.pages["manual"] = self.create_manual_view(self.screen_frame)
+        self.pages["saves"] = self.create_saves_view(self.screen_frame)
+
+        # 5. Нижняя панель состояния (S.P.E.C.I.A.L. & HP bar)
+        bottom_hud = tk.Frame(outer_bezel, bg=BG_BEZEL)
+        bottom_hud.pack(fill="x", padx=14, pady=(0, 6))
+
+        hud_left = tk.Label(
+            bottom_hud,
+            text="HP 120/120  |  AP 10/10  |  RAD 0  |  КАРМА: СПАСИТЕЛЬ ПУСТОШИ",
+            font=FONT_MONO_SMALL,
+            fg=PHOSPHOR_MAIN,
+            bg=BG_BEZEL
+        )
+        hud_left.pack(side="left")
+
+        hud_right = tk.Label(
+            bottom_hud,
+            text="VAULT 13 ARCHIVE // ULTIMATE EDITION 2026",
+            font=FONT_MONO_SMALL,
+            fg=TEXT_DIM,
+            bg=BG_BEZEL
+        )
+        hud_right.pack(side="right")
+
+    def switch_tab(self, tab_id: str):
+        """Переключение вкладок с воспроизведением звука."""
+        self.play_sound_switch()
+        self.show_tab(tab_id)
+
+    def show_tab(self, tab_id: str):
+        """Отображение выбранного экрана."""
+        for tid, btn in self.tab_buttons.items():
+            if tid == tab_id:
+                btn.configure(bg=BG_CARD_HOVER, fg=PHOSPHOR_BRIGHT, relief="sunken", bd=1)
+            else:
+                btn.configure(bg=BG_CARD, fg=TEXT_DIM, relief="solid", bd=1)
+
+        for p in self.pages.values():
+            p.pack_forget()
+
+        self.pages[tab_id].pack(fill="both", expand=True, padx=12, pady=12)
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 1: СТАТУС / ПУЛЬТ ЗАПУСКА (DASHBOARD)
+    # -----------------------------------------------------------------------
+    def create_dashboard_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        # Горизонтальный сплит: Левая колонка (Запуск) / Правая колонка (Волт-Бой и характеристики)
+        left_col = tk.Frame(frame, bg=BG_DARK)
+        left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
+        right_col = tk.Frame(frame, bg=BG_CARD, width=320, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE)
+        right_col.pack(side="right", fill="y", padx=(0, 0))
+        right_col.pack_propagate(False)
+
+        # --- Левая колонка: Профили запуска ---
+        tk.Label(
+            left_col,
+            text="ВЫБОР ИГРОВОГО ПРОФИЛЯ ПУСТОШИ:",
+            font=FONT_MONO_MID,
+            fg=PHOSPHOR_BRIGHT,
+            bg=BG_DARK
+        ).pack(anchor="w", pady=(0, 8))
+
+        # Карточка 1: Профиль Gameplay Ultimate (Основной)
+        card_gp = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=12)
+        card_gp.pack(fill="x", pady=(0, 10))
+
+        tk.Label(card_gp, text="[ РЕКОМЕНДУЕМЫЙ ВЫБОР // 100% СТАБИЛЬНОСТЬ ]", font=FONT_MONO_SMALL, fg=AMBER_ALERT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(card_gp, text="FALLOUT 2: GAMEPLAY ULTIMATE 2026", font=FONT_MONO_LARGE, fg=PHOSPHOR_MAIN, bg=BG_CARD).pack(anchor="w", pady=(2, 4))
+
+        desc_gp = (
+            "• Движок: sfall v4.4.5 + Large Address Aware (4GB Patch).\n"
+            "• Сюжет: Полный Restoration Project Updated v28 (6 новых городов, Аббатство, EPA).\n"
+            "• Боевка и пули: Честная баллистика EcCo + пробивающий Гаусс MiniRework.\n"
+            "• Интерфейс: Умные вкладки инвентаря от Mr.Stalin, авто-двери и сбор лута.\n"
+            "• Напарники: Смена брони B-Team (82.6 МБ) + тактический пульт Party Orders.\n"
+            "• Графика: Чистый DirectX 9 (Scale 2X) с аппаратным сглаживанием текстур GPU.\n"
+            "• Стабильность: Устранены вылеты при беге с Shift (CheckLOS=0) и 16-битный сбой."
+        )
+        tk.Label(card_gp, text=desc_gp, font=FONT_UI_TEXT, fg=TEXT_NORMAL, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 10))
+
+        btn_launch_gp = tk.Button(
+            card_gp,
+            text="► ЗАПУСТИТЬ КЛАССИЧЕСКИЙ ULTIMATE",
+            font=FONT_MONO_MID,
+            fg=BG_DARK,
+            bg=PHOSPHOR_MAIN,
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=16,
+            pady=8,
+            cursor="hand2",
+            command=self.launch_gameplay
+        )
+        btn_launch_gp.pack(anchor="w")
+
+        # Карточка 2: Профиль HD Visual (Community Edition + Dustlight)
+        card_hd = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=14, pady=12)
+        card_hd.pack(fill="x")
+
+        tk.Label(card_hd, text="[ РЕМАСТЕР // ДИНАМИЧЕСКИЙ СВЕТ И ШЕЙДЕРЫ ]", font=FONT_MONO_SMALL, fg=BLUE_VAULT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(card_hd, text="FALLOUT 2: COMMUNITY EDITION (D3D11 HD)", font=FONT_MONO_LARGE, fg=PHOSPHOR_MAIN, bg=BG_CARD).pack(anchor="w", pady=(2, 4))
+
+        desc_hd = (
+            "• Движок: Переписанный на C++/SDL2 современный движок Dustlight.\n"
+            "• Графика: Честный Direct3D 11 с динамическим теплым освещением факелов и костров.\n"
+            "• Тени и апскейл: Мягкие динамические тени и 4K AI-текстуры окружения.\n"
+            "• Частота кадров: Поддержка современных мониторов 120–240 Гц со сверхплавным скроллом.\n"
+            "• Контент: Полный сюжет RPU v28, Lossless-музыка 44.1 кГц и озвучка."
+        )
+        tk.Label(card_hd, text=desc_hd, font=FONT_UI_TEXT, fg=TEXT_NORMAL, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 10))
+
+        btn_launch_hd = tk.Button(
+            card_hd,
+            text="► ЗАПУСТИТЬ HD D3D11 РЕМАСТЕР",
+            font=FONT_MONO_MID,
+            fg=TEXT_NORMAL,
+            bg="#183418",
+            activebackground=PHOSPHOR_MAIN,
+            activeforeground=BG_DARK,
+            bd=1,
+            relief="solid",
+            padx=16,
+            pady=8,
+            cursor="hand2",
+            command=self.launch_hd
+        )
+        btn_launch_hd.pack(anchor="w")
+
+        # --- Правая колонка: Волт-Бой и Индикатор Состояния ---
+        tk.Label(
+            right_col,
+            text="СИСТЕМНЫЙ ДИАГНОСТ VAULT-TEC",
+            font=FONT_MONO_SMALL,
+            fg=TEXT_DIM,
+            bg=BG_CARD
+        ).pack(pady=(12, 4))
+
+        # Холст с изображением Волт-Боя
+        if self.vault_boy_img:
+            lbl_img = tk.Label(right_col, image=self.vault_boy_img, bg=BG_CARD)
+            lbl_img.pack(pady=4)
+        else:
+            # Fallback текстовый арт, если картинка не найдена
+            ascii_box = tk.Label(
+                right_col,
+                text="[ VAULT BOY IMAGE OK ]\n\n(•‿•)👍\nVAULT 13 APPROVED",
+                font=FONT_MONO_MID,
+                fg=PHOSPHOR_MAIN,
+                bg=BG_DARK,
+                padx=20,
+                pady=40
+            )
+            ascii_box.pack(pady=10)
+
+        # Характеристики S.P.E.C.I.A.L.
+        stats_frame = tk.Frame(right_col, bg=BG_CARD, padx=12, pady=6)
+        stats_frame.pack(fill="x")
+
+        special_text = (
+            "ST: 06    PE: 08    EN: 06\n"
+            "CH: 06    IN: 08    AG: 09\n"
+            "LK: 07    STATUS: EXCELLENT\n"
+            "--------------------------\n"
+            "LAA PATCH:       4GB ACTIVE\n"
+            "SFALL ENGINE:    v4.4.5 OK\n"
+            "EXTRA CRC:       BYPASSED\n"
+            "CHECK LOS:       SAFE (0)\n"
+            "COLOR DEPTH:     32-BIT TRUE"
+        )
+        tk.Label(
+            stats_frame,
+            text=special_text,
+            font=FONT_MONO_SMALL,
+            fg=PHOSPHOR_MAIN,
+            bg=BG_CARD,
+            justify="left"
+        ).pack(anchor="w")
+
+        return frame
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 2: КАТАЛОГ МОДОВ (DATA / CATALOG)
+    # -----------------------------------------------------------------------
+    def create_catalog_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        # Верхняя панель фильтрации
+        filter_bar = tk.Frame(frame, bg=BG_DARK)
+        filter_bar.pack(fill="x", pady=(0, 8))
+
+        tk.Label(filter_bar, text="ФИЛЬТР БАЗЫ:", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_DARK).pack(side="left", padx=(0, 8))
+
+        self.catalog_filter_var = tk.StringVar(value="ВСЕ")
+        categories = ["ВСЕ", "СЮЖЕТ", "БОЕВКА", "ОРУЖИЕ", "ИНТЕРФЕЙС", "ВИЗУАЛ", "ЗВУК", "ЯДРО", "ГРАФИКА"]
+
+        for cat in categories:
+            btn = tk.Button(
+                filter_bar,
+                text=cat,
+                font=FONT_MONO_SMALL,
+                fg=TEXT_NORMAL,
+                bg=BG_CARD,
+                activebackground=PHOSPHOR_MAIN,
+                activeforeground=BG_DARK,
+                bd=1,
+                relief="solid",
+                padx=8,
+                pady=2,
+                cursor="hand2",
+                command=lambda c=cat: self.filter_catalog(c)
+            )
+            btn.pack(side="left", padx=2)
+
+        # Сплит: Список модов слева / Детальная карточка справа
+        split_box = tk.Frame(frame, bg=BG_DARK)
+        split_box.pack(fill="both", expand=True)
+
+        # Левый список
+        list_container = tk.Frame(split_box, bg=BG_CARD, width=340, bd=1, relief="solid", highlightbackground=BORDER_MUTED)
+        list_container.pack(side="left", fill="y", padx=(0, 10))
+        list_container.pack_propagate(False)
+
+        self.mod_listbox = tk.Listbox(
+            list_container,
+            font=FONT_MONO_BODY,
+            fg=PHOSPHOR_MAIN,
+            bg=BG_CARD,
+            selectbackground=PHOSPHOR_MAIN,
+            selectforeground=BG_DARK,
+            bd=0,
+            highlightthickness=0,
+            activestyle="none"
+        )
+        self.mod_listbox.pack(side="left", fill="both", expand=True, padx=4, pady=4)
+        self.mod_listbox.bind("<<ListboxSelect>>", self.on_mod_select)
+
+        scrollbar = ttk.Scrollbar(list_container, orient="vertical", command=self.mod_listbox.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.mod_listbox.configure(yscrollcommand=scrollbar.set)
+
+        # Правая карточка описания
+        self.card_detail = tk.Frame(split_box, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=16, pady=14)
+        self.card_detail.pack(side="right", fill="both", expand=True)
+
+        self.lbl_detail_badge = tk.Label(self.card_detail, text="", font=FONT_MONO_SMALL, fg=AMBER_ALERT, bg=BG_CARD)
+        self.lbl_detail_badge.pack(anchor="w")
+
+        self.lbl_detail_title = tk.Label(self.card_detail, text="ВЫБЕРИТЕ МОДУЛЬ ДЛЯ ИЗУЧЕНИЯ", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD)
+        self.lbl_detail_title.pack(anchor="w", pady=(2, 2))
+
+        self.lbl_detail_author = tk.Label(self.card_detail, text="", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_CARD)
+        self.lbl_detail_author.pack(anchor="w", pady=(0, 8))
+
+        self.txt_detail_body = tk.Text(
+            self.card_detail,
+            font=FONT_UI_TEXT,
+            fg=TEXT_NORMAL,
+            bg=BG_DARK,
+            bd=1,
+            relief="solid",
+            highlightbackground=BORDER_MUTED,
+            padx=12,
+            pady=10,
+            wrap="word"
+        )
+        self.txt_detail_body.pack(fill="both", expand=True)
+
+        # Первичное заполнение списка
+        self.filter_catalog("ВСЕ")
+        return frame
+
+    def filter_catalog(self, category: str):
+        """Фильтрация списка модов по категории."""
+        self.play_sound_click()
+        self.catalog_filter_var.set(category)
+        self.mod_listbox.delete(0, tk.END)
+
+        self.filtered_mods = []
+        for mod in MODS_DATABASE:
+            if category == "ВСЕ" or mod.get("category") == category:
+                self.filtered_mods.append(mod)
+                self.mod_listbox.insert(tk.END, f"  {mod['title']}")
+
+        if self.filtered_mods:
+            self.mod_listbox.select_set(0)
+            self.display_mod_detail(self.filtered_mods[0])
+
+    def on_mod_select(self, event):
+        """Обработка выбора мода в списке."""
+        sel = self.mod_listbox.curselection()
+        if sel:
+            idx = sel[0]
+            if idx < len(self.filtered_mods):
+                self.play_sound_click()
+                self.display_mod_detail(self.filtered_mods[idx])
+
+    def display_mod_detail(self, mod: dict):
+        """Отображение подробной информации о моде."""
+        self.lbl_detail_badge.configure(text=f"[ КАТЕГОРИЯ: {mod['category']}  ::  {mod['badge']} ]")
+        self.lbl_detail_title.configure(text=mod["title"])
+        self.lbl_detail_author.configure(text=f"АВТОРЫ: {mod['author']}")
+
+        full_content = f"{mod['summary']}\n\n{'='*64}\n\n{mod['details']}"
+        self.txt_detail_body.delete("1.0", tk.END)
+        self.txt_detail_body.insert("1.0", full_content)
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 3: НАСТРОЙКИ СИСТЕМЫ (CONFIG / HARDWARE)
+    # -----------------------------------------------------------------------
+    def create_config_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
+        header_box.pack(fill="x", pady=(0, 12))
+
+        tk.Label(header_box, text="ГРАФИЧЕСКИЙ И АУДИО КОНФИГУРАТОР FALLOUT 2", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(
+            header_box,
+            text="Изменение параметров напрямую перезаписывает файлы f2_res.ini и fallout2.cfg без необходимости копаться в блокноте.",
+            font=FONT_UI_TEXT,
+            fg=TEXT_NORMAL,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(4, 0))
+
+        # Форма настроек
+        form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=16)
+        form_frame.pack(fill="both", expand=True)
+
+        # 1. Разрешение экрана
+        row1 = tk.Frame(form_frame, bg=BG_CARD)
+        row1.pack(fill="x", pady=6)
+        tk.Label(row1, text="РАЗРЕШЕНИЕ ЭКРАНА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.combo_res = ttk.Combobox(
+            row1,
+            values=["1920x1080 (Рекомендуется Full HD)", "2560x1440 (2K QHD)", "3840x2160 (4K UHD)", "1600x900", "1280x720", "1280x960"],
+            state="readonly",
+            width=36,
+            style="Pip.TCombobox"
+        )
+        self.combo_res.set("1920x1080 (Рекомендуется Full HD)")
+        self.combo_res.pack(side="left", padx=10)
+
+        # 2. Режим окна
+        row2 = tk.Frame(form_frame, bg=BG_CARD)
+        row2.pack(fill="x", pady=6)
+        tk.Label(row2, text="РЕЖИМ ОТОБРАЖЕНИЯ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.combo_wnd = ttk.Combobox(
+            row2,
+            values=["Полноэкранный режим (Fullscreen)", "Окно без рамок (Borderless)", "Оконный режим (Windowed)"],
+            state="readonly",
+            width=36,
+            style="Pip.TCombobox"
+        )
+        self.combo_wnd.set("Полноэкранный режим (Fullscreen)")
+        self.combo_wnd.pack(side="left", padx=10)
+
+        # 3. Масштаб интерфейса (Scale 2X)
+        row3 = tk.Frame(form_frame, bg=BG_CARD)
+        row3.pack(fill="x", pady=6)
+        tk.Label(row3, text="МАСШТАБ ИНТЕРФЕЙСА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.combo_scale = ttk.Combobox(
+            row3,
+            values=["SCALE 2X (Крупный четкий UI для 1080p/1440p)", "SCALE 1X (Оригинальный мелкий интерфейс)"],
+            state="readonly",
+            width=36,
+            style="Pip.TCombobox"
+        )
+        self.combo_scale.set("SCALE 2X (Крупный четкий UI для 1080p/1440p)")
+        self.combo_scale.pack(side="left", padx=10)
+
+        # 4. Фильтрация текстур GPU
+        row4 = tk.Frame(form_frame, bg=BG_CARD)
+        row4.pack(fill="x", pady=6)
+        tk.Label(row4, text="СГЛАЖИВАНИЕ СПРАЙТОВ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.combo_filter = ttk.Combobox(
+            row4,
+            values=["Билинейное сглаживание GPU (Без лесенок)", "Точечное пиксельное (Резкие пиксели)"],
+            state="readonly",
+            width=36,
+            style="Pip.TCombobox"
+        )
+        self.combo_filter.set("Билинейное сглаживание GPU (Без лесенок)")
+        self.combo_filter.pack(side="left", padx=10)
+
+        # 5. Громкость музыки
+        row5 = tk.Frame(form_frame, bg=BG_CARD)
+        row5.pack(fill="x", pady=10)
+        tk.Label(row5, text="ГРОМКОСТЬ САУНДТРЕКА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.scale_music = tk.Scale(row5, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
+        self.scale_music.set(80)
+        self.scale_music.pack(side="left", padx=10)
+
+        # 6. Громкость звуков и речи
+        row6 = tk.Frame(form_frame, bg=BG_CARD)
+        row6.pack(fill="x", pady=6)
+        tk.Label(row6, text="ГРОМКОСТЬ ЭФФЕКТОВ/РЕЧИ:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=24, anchor="w").pack(side="left")
+        self.scale_sfx = tk.Scale(row6, from_=0, to=100, orient="horizontal", length=280, bg=BG_CARD, fg=TEXT_NORMAL, highlightthickness=0, troughcolor=BG_DARK)
+        self.scale_sfx.set(90)
+        self.scale_sfx.pack(side="left", padx=10)
+
+        # Кнопка сохранения
+        btn_save = tk.Button(
+            form_frame,
+            text="💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ",
+            font=FONT_MONO_MID,
+            fg=BG_DARK,
+            bg=PHOSPHOR_MAIN,
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor="hand2",
+            command=self.save_configuration
+        )
+        btn_save.pack(anchor="w", pady=(18, 0))
+
+        # Считывание текущих настроек
+        self.read_current_configuration()
+
+        return frame
+
+    def read_current_configuration(self):
+        """Считывание текущих параметров из f2_res.ini."""
+        ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
+        if not os.path.exists(ini_path):
+            return
+
+        try:
+            with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+
+            w = 1920
+            h = 1080
+            for line in content.splitlines():
+                if line.startswith("SCR_WIDTH="):
+                    w = int(line.split("=")[1].strip())
+                elif line.startswith("SCR_HEIGHT="):
+                    h = int(line.split("=")[1].strip())
+                elif line.startswith("SCALE_2X=0"):
+                    self.combo_scale.set("SCALE 1X (Оригинальный мелкий интерфейс)")
+                elif line.startswith("WINDOWED=1"):
+                    self.combo_wnd.set("Оконный режим (Windowed)")
+
+            res_str = f"{w}x{h}"
+            for val in self.combo_res["values"]:
+                if val.startswith(res_str):
+                    self.combo_res.set(val)
+                    break
+        except Exception:
+            pass
+
+    def save_configuration(self):
+        """Запись выбранных параметров в f2_res.ini и fallout2.cfg."""
+        self.play_sound_switch()
+        res_val = self.combo_res.get().split()[0]
+        w, h = res_val.split("x")
+        w, h = int(w), int(h)
+
+        scale_2x = 1 if "2X" in self.combo_scale.get() else 0
+        windowed = 1 if "Оконный" in self.combo_wnd.get() else 0
+        borderless = 1 if "без рамок" in self.combo_wnd.get() else 0
+
+        # Обновление f2_res.ini
+        ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
+        if os.path.exists(ini_path):
+            try:
+                with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+
+                new_lines = []
+                for line in lines:
+                    if line.startswith("SCR_WIDTH="):
+                        new_lines.append(f"SCR_WIDTH={w}\n")
+                    elif line.startswith("SCR_HEIGHT="):
+                        new_lines.append(f"SCR_HEIGHT={h}\n")
+                    elif line.startswith("SCALE_2X="):
+                        new_lines.append(f"SCALE_2X={scale_2x}\n")
+                    elif line.startswith("WINDOWED="):
+                        new_lines.append(f"WINDOWED={windowed}\n")
+                    elif line.startswith("WINDOWED_FULLSCREEN="):
+                        new_lines.append(f"WINDOWED_FULLSCREEN={borderless}\n")
+                    else:
+                        new_lines.append(line)
+
+                with open(ini_path, "w", encoding="utf-8") as f:
+                    f.writelines(new_lines)
+            except Exception as e:
+                messagebox.showerror("Ошибка записи", f"Не удалось обновить f2_res.ini: {e}")
+                return
+
+        # Обновление громкости в fallout2.cfg
+        cfg_path = os.path.join(self.gameplay_dir, "fallout2.cfg")
+        if os.path.exists(cfg_path):
+            try:
+                music_vol = int((self.scale_music.get() / 100.0) * 32767)
+                sfx_vol = int((self.scale_sfx.get() / 100.0) * 32767)
+
+                with open(cfg_path, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+
+                new_lines = []
+                for line in lines:
+                    if line.startswith("music_volume="):
+                        new_lines.append(f"music_volume={music_vol}\n")
+                    elif line.startswith("sndfx_volume="):
+                        new_lines.append(f"sndfx_volume={sfx_vol}\n")
+                    elif line.startswith("speech_volume="):
+                        new_lines.append(f"speech_volume={sfx_vol}\n")
+                    else:
+                        new_lines.append(line)
+
+                with open(cfg_path, "w", encoding="utf-8") as f:
+                    f.writelines(new_lines)
+            except Exception:
+                pass
+
+        messagebox.showinfo("Конфигурация сохранена", f"Настройки успешно применены:\nРазрешение: {w}x{h}\nМасштабирование: {'2X' if scale_2x else '1X'}")
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 4: ПАМЯТКА ЖИТЕЛЯ УБЕЖИЩА (MANUAL / HOLOTAPE)
+    # -----------------------------------------------------------------------
+    def create_manual_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
+        header_box.pack(fill="x", pady=(0, 10))
+
+        tk.Label(header_box, text="ГОЛОДИСК ЖИТЕЛЯ УБЕЖИЩА: РЕГЛАМЕНТ УПРАВЛЕНИЯ", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
+
+        txt_manual = tk.Text(
+            frame,
+            font=FONT_UI_TEXT,
+            fg=TEXT_NORMAL,
+            bg=BG_CARD,
+            bd=1,
+            relief="solid",
+            highlightbackground=BORDER_MUTED,
+            padx=16,
+            pady=14,
+            wrap="word"
+        )
+        txt_manual.pack(fill="both", expand=True)
+
+        manual_content = (
+            "1. ПЕРЕМЕЩЕНИЕ И БЕГ (ВАЖНО!):\n"
+            "   • По умолчанию в сборке включен ПОСТОЯННЫЙ БЕГ (running=1). Персонаж бежит сам при обычном клике левой кнопкой мыши. Зажимать Shift для бега не нужно!\n"
+            "   • Клавиша SHIFT — это принудительный ШАГ. Зажимайте Shift только тогда, когда вам нужно идти медленно и аккуратно (например, обходить мины в храме или красться).\n"
+            "   • Клавиша CAPS LOCK — это тумблер переключения постоянного бега. Если вы случайно нажали Caps Lock и персонаж стал ходить пешком, просто нажмите Caps Lock еще раз.\n\n"
+            "2. УПРАВЛЕНИЕ ИНВЕНТАРЕМ И БАРТЕРОМ (MR.STALIN FILTER):\n"
+            "   • Вкладки категорий: [Все] [Оружие] [Патроны] [Броня] [Химия] [Разное].\n"
+            "   • Клик средней кнопкой мыши по «Оружию» и «Патронам» открывает их одновременно.\n"
+            "   • Горячие клавиши переключения категорий Избранного: 1, 2, 3, 4, 5 или Q.\n"
+            "   • Горячие клавиши категорий напарника: 6, 7, 8, 9, 0 или W.\n"
+            "   • Кнопка «Положить всё» позволяет в один клик сгрузить всю тяжелую добычу в багажник Хайвеймена.\n\n"
+            "3. ТАКТИЧЕСКИЙ ПУЛЬТ ОТРЯДА (PARTY ORDERS):\n"
+            "   • Клавиша H — приказать всем напарникам убрать оружие в кобуру (чтобы охрана в городах не стреляла).\n"
+            "   • Клавиша F — приказать раненым напарникам полечиться стимуляторами.\n"
+            "   • Клавиша G — приказать напарникам обыскать гексы и собрать лут вокруг себя.\n"
+            "   • Клавиша R — приказ «Ко мне!»: все напарники немедленно сбегаются к Избранному.\n"
+            "   • Клавиша X — приказ «Рассредоточиться»: напарники держат дистанцию, чтобы их не накрыло одной очередью.\n"
+            "   • Ctrl + B — принудительная смена типа боеприпасов у спутников (бронебойные / обычные).\n\n"
+            "4. ВЫХОД И СОХРАНЕНИЯ:\n"
+            "   • F6 — Быстрое сохранение (Quick Save).\n"
+            "   • F7 — Быстрая загрузка (Quick Load).\n"
+            "   • Для предотвращения повреждения файлов регулярно делайте резервную копию во вкладке «СЕЙВЫ / БЭКАП»."
+        )
+        txt_manual.insert("1.0", manual_content)
+        txt_manual.configure(state="disabled")
+
+        return frame
+
+    # -----------------------------------------------------------------------
+    # ЭКРАН 5: СОХРАНЕНИЯ И БЭКАП (SAVEGUARD / BACKUP)
+    # -----------------------------------------------------------------------
+    def create_saves_view(self, parent):
+        frame = tk.Frame(parent, bg=BG_DARK)
+
+        header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
+        header_box.pack(fill="x", pady=(0, 12))
+
+        tk.Label(header_box, text="МЕНЕДЖЕР СОХРАНЕНИЙ И ЗАЩИТА ПРОГРЕССА (SAVEGUARD)", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
+        tk.Label(
+            header_box,
+            text="Создание резервных копий папки SAVEGAME в один клик. Защищает 50-часовое прохождение от любых сбоев.",
+            font=FONT_UI_TEXT,
+            fg=TEXT_NORMAL,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(4, 0))
+
+        content_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=18)
+        content_box.pack(fill="both", expand=True)
+
+        self.lbl_save_status = tk.Label(
+            content_box,
+            text="СКАНИРОВАНИЕ СОХРАНЕНИЙ...",
+            font=FONT_MONO_MID,
+            fg=PHOSPHOR_MAIN,
+            bg=BG_CARD
+        )
+        self.lbl_save_status.pack(anchor="w", pady=(0, 14))
+
+        # Кнопки действий
+        btn_backup = tk.Button(
+            content_box,
+            text="📦 СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ (ZIP-АРХИВ)",
+            font=FONT_MONO_MID,
+            fg=BG_DARK,
+            bg=PHOSPHOR_MAIN,
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=18,
+            pady=10,
+            cursor="hand2",
+            command=self.create_saves_backup
+        )
+        btn_backup.pack(anchor="w", pady=(0, 10))
+
+        btn_open_folder = tk.Button(
+            content_box,
+            text="📁 ОТКРЫТЬ ДИРЕКТОРИЮ СОХРАНЕНИЙ В ПРОVОДНИКЕ",
+            font=FONT_MONO_MID,
+            fg=TEXT_NORMAL,
+            bg="#183418",
+            activebackground=PHOSPHOR_MAIN,
+            activeforeground=BG_DARK,
+            bd=1,
+            relief="solid",
+            padx=18,
+            pady=8,
+            cursor="hand2",
+            command=self.open_saves_folder
+        )
+        btn_open_folder.pack(anchor="w", pady=(0, 16))
+
+        # Лог бэкапов
+        tk.Label(content_box, text="ИСТОРИЯ СОЗДАННЫХ АРХИВОВ В ПАПКЕ BACKUPS:", font=FONT_MONO_SMALL, fg=TEXT_DIM, bg=BG_CARD).pack(anchor="w")
+
+        self.txt_backup_log = tk.Text(
+            content_box,
+            font=FONT_MONO_BODY,
+            fg=TEXT_NORMAL,
+            bg=BG_DARK,
+            bd=1,
+            relief="solid",
+            highlightbackground=BORDER_MUTED,
+            height=10,
+            padx=10,
+            pady=8
+        )
+        self.txt_backup_log.pack(fill="both", expand=True, pady=(4, 0))
+
+        self.refresh_save_stats()
+        return frame
+
+    def refresh_save_stats(self):
+        """Сканирование слотов сохранений и списка бэкапов."""
+        save_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
+        slot_count = 0
+        total_size = 0
+
+        if os.path.exists(save_dir):
+            for item in os.listdir(save_dir):
+                item_path = os.path.join(save_dir, item)
+                if os.path.isdir(item_path) and item.upper().startswith("SLOT"):
+                    slot_count += 1
+                    for root, _, files in os.walk(item_path):
+                        for f in files:
+                            total_size += os.path.getsize(os.path.join(root, f))
+
+        size_mb = total_size / (1024 * 1024)
+        self.lbl_save_status.configure(text=f"АКТИВНЫХ СЛОТОВ СОХРАНЕНИЙ: {slot_count}  |  ОБЩИЙ ОБЪЕМ: {size_mb:.2f} МБ")
+
+        # Сканирование папки бэкапов
+        backup_dir = os.path.join(self.root_dir, "Backups")
+        self.txt_backup_log.delete("1.0", tk.END)
+        if os.path.exists(backup_dir):
+            zips = [f for f in os.listdir(backup_dir) if f.endswith(".zip")]
+            if zips:
+                for z in sorted(zips, reverse=True):
+                    zpath = os.path.join(backup_dir, z)
+                    zsize = os.path.getsize(zpath) / (1024 * 1024)
+                    mtime = datetime.datetime.fromtimestamp(os.path.getmtime(zpath)).strftime("%Y-%m-%d %H:%M:%S")
+                    self.txt_backup_log.insert(tk.END, f"• {z}  [{zsize:.2f} МБ]  ::  {mtime}\n")
+            else:
+                self.txt_backup_log.insert(tk.END, "Архивов еще не создано. Нажмите кнопку выше для создания первого бэкапа.")
+        else:
+            self.txt_backup_log.insert(tk.END, "Папка Backups пуста. Нажмите кнопку создания бэкапа.")
+
+    def create_saves_backup(self):
+        """Архивирование директории SAVEGAME в zip-файл."""
+        self.play_sound_switch()
+        save_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
+        if not os.path.exists(save_dir):
+            messagebox.showwarning("Внимание", "Папка сохранений DATA\\SAVEGAME не найдена.")
+            return
+
+        backup_dir = os.path.join(self.root_dir, "Backups")
+        os.makedirs(backup_dir, exist_ok=True)
+
+        stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        zip_name = f"Fallout2_Saves_{stamp}.zip"
+        zip_path = os.path.join(backup_dir, zip_name)
+
+        try:
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+                for root, _, files in os.walk(save_dir):
+                    for file in files:
+                        full_p = os.path.join(root, file)
+                        rel_p = os.path.relpath(full_p, save_dir)
+                        zipf.write(full_p, rel_p)
+
+            self.refresh_save_stats()
+            messagebox.showinfo("Бэкап создан", f"Резервная копия сохранений успешно создана:\n{zip_name}\nМесто: {backup_dir}")
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось создать архив: {e}")
+
+    def open_saves_folder(self):
+        """Открытие папки сохранений в Проводнике Windows."""
+        self.play_sound_click()
+        save_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
+        os.makedirs(save_dir, exist_ok=True)
+        os.startfile(save_dir)
+
+    # -----------------------------------------------------------------------
+    # ЗАПУСК ИГРОВЫХ ПРОФИЛЕЙ
+    # -----------------------------------------------------------------------
+    def launch_gameplay(self):
+        """Запуск профиля Gameplay Ultimate."""
+        self.play_sound_switch()
+        exe_path = os.path.join(self.gameplay_dir, "fallout2.exe")
+        if not os.path.exists(exe_path):
+            messagebox.showerror("Ошибка", f"Файл не найден:\n{exe_path}")
+            return
+
+        try:
+            subprocess.Popen([exe_path], cwd=self.gameplay_dir)
+        except Exception as e:
+            messagebox.showerror("Ошибка запуска", f"Не удалось запустить игру:\n{e}")
+
+    def launch_hd(self):
+        """Запуск профиля HD Visual (Community Edition + Dustlight)."""
+        self.play_sound_switch()
+        dustlight_exe = os.path.join(self.hd_dir, "dustlight.exe")
+        ce_exe = os.path.join(self.hd_dir, "fallout2-ce.exe")
+
+        target_exe = dustlight_exe if os.path.exists(dustlight_exe) else ce_exe
+        if not os.path.exists(target_exe):
+            messagebox.showerror("Ошибка", f"Исполняемый файл HD-профиля не найден в:\n{self.hd_dir}")
+            return
+
+        try:
+            subprocess.Popen([target_exe], cwd=self.hd_dir)
+        except Exception as e:
+            messagebox.showerror("Ошибка запуска", f"Не удалось запустить HD-профиль:\n{e}")
+
+# ---------------------------------------------------------------------------
+# ТОЧКА ВХОДА
+# ---------------------------------------------------------------------------
+def main():
+    # Определение корневого каталога
+    if getattr(sys, "frozen", False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+    # Если запускается прямо из папки E:\Fallout2_Ultimate
+    if os.path.exists(os.path.join(base_dir, "Fallout2_Gameplay")):
+        root_dir = base_dir
+    elif os.path.exists(r"E:\Fallout2_Ultimate\Fallout2_Gameplay"):
+        root_dir = r"E:\Fallout2_Ultimate"
+    else:
+        root_dir = base_dir
+
+    app = PipBoyLauncher(root_dir)
+    app.mainloop()
+
+if __name__ == "__main__":
+    main()
