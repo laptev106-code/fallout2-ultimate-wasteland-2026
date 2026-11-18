@@ -825,5 +825,18 @@ class FalloutLauncherApp(tk.Tk):
             messagebox.showinfo("Информация", f"Файл {rel_path} пока не найден. Он создается после первого запуска игры.")
 
 if __name__ == "__main__":
-    app = FalloutLauncherApp(os.path.dirname(os.path.abspath(__file__)))
-    app.mainloop()
+    try:
+        app = FalloutLauncherApp(os.path.dirname(os.path.abspath(__file__)))
+        app.mainloop()
+    except Exception as e:
+        import traceback
+        err = traceback.format_exc()
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+            r = tk.Tk()
+            r.withdraw()
+            messagebox.showerror("Fallout 2 Launcher - Ошибка", f"Критическая ошибка запуска лаунчера:\n\n{err}")
+        except Exception:
+            with open("launcher_crash.log", "w", encoding="utf-8") as f:
+                f.write(err)

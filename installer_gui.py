@@ -280,34 +280,7 @@ class FalloutMasterInstaller(tk.Tk):
                     log_callback=self._log
                 )
                 
-                # Копируем мастер-лаунчер в корень и создаем Run_Launcher.bat
-                shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
-                launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
-                bat_code = (
-                    "@echo off\n"
-                    "chcp 65001 >nul\n"
-                    "cd /d \"%~dp0\"\n"
-                    "where py >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" py -3 \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "where pythonw >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" pythonw \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "where python >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" python \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "echo [ОШИБКА] Python не обнаружен в системе!\n"
-                    "echo Установите Python 3 с python.org и добавьте его в PATH.\n"
-                    "pause\n"
-                )
-                with open(launcher_bat, "w", encoding="utf-8") as f:
-                    f.write(bat_code)
+                self._deploy_launcher_and_shortcuts(tgt)
             else:
                 selected_ids = [cid for cid, var in self.component_vars.items() if var.get()]
                 self.engine.install_profile(
@@ -315,42 +288,61 @@ class FalloutMasterInstaller(tk.Tk):
                     progress_callback=self._update_progress,
                     log_callback=self._log
                 )
-                shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
-                launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
-                bat_code = (
-                    "@echo off\n"
-                    "chcp 65001 >nul\n"
-                    "cd /d \"%~dp0\"\n"
-                    "where py >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" py -3 \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "where pythonw >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" pythonw \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "where python >nul 2>nul\n"
-                    "if %ERRORLEVEL% equ 0 (\n"
-                    "    start \"\" python \"%~dp0launcher.py\"\n"
-                    "    exit /b\n"
-                    ")\n"
-                    "echo [ОШИБКА] Python не обнаружен в системе!\n"
-                    "echo Установите Python 3 с python.org и добавьте его в PATH.\n"
-                    "pause\n"
-                )
-                with open(launcher_bat, "w", encoding="utf-8") as f:
-                    f.write(bat_code)
+                self._deploy_launcher_and_shortcuts(tgt)
 
             self._log("🎉 ВСЕ ОПЕРАЦИИ УСПЕШНО ЗАВЕРШЕНЫ!")
             self._update_progress(100, 100, "Установка завершена на 100%")
-            messagebox.showinfo("Успех", f"Сборка Fallout 2 Ultimate 2026 успешно установлена в:\n{tgt}\n\nДля запуска используйте launcher.py!")
+            messagebox.showinfo("Успех", f"Сборка Fallout 2 Ultimate 2026 успешно установлена в:\n{tgt}\n\nДля запуска используйте ярлык 'Запуск Лаунчера' или Fallout2_Launcher.exe!")
         except Exception as e:
             self._log(f"ОШИБКА: {e}")
             messagebox.showerror("Ошибка установки", str(e))
         finally:
             self.btn_install.config(state="normal")
+
+    def _deploy_launcher_and_shortcuts(self, tgt: str):
+        shutil.copy2(os.path.join(PROJECT_ROOT, "core", "launcher.py"), os.path.join(tgt, "launcher.py"))
+        exe_src = os.path.join(PROJECT_ROOT, "bin", "Fallout2_Launcher.exe")
+        if os.path.exists(exe_src):
+            shutil.copy2(exe_src, os.path.join(tgt, "Fallout2_Launcher.exe"))
+
+        launcher_bat = os.path.join(tgt, "Run_Launcher.bat")
+        bat_code = (
+            "@echo off\r\n"
+            "cd /d \"%~dp0\"\r\n"
+            "if exist \"%~dp0Fallout2_Launcher.exe\" (\r\n"
+            "    start \"\" \"%~dp0Fallout2_Launcher.exe\"\r\n"
+            "    exit /b\r\n"
+            ")\r\n"
+            "py -3 \"%~dp0launcher.py\"\r\n"
+        )
+        with open(launcher_bat, "wb") as f:
+            f.write(bat_code.encode("ascii"))
+
+        try:
+            import win32com.client
+            wsh = win32com.client.Dispatch("WScript.Shell")
+            ico_source = os.path.join(tgt, "Fallout2_Gameplay", "fallout2.exe")
+            target_bin = os.path.join(tgt, "Fallout2_Launcher.exe")
+            if not os.path.exists(target_bin):
+                target_bin = launcher_bat
+            
+            sc1 = wsh.CreateShortcut(os.path.join(tgt, "Запуск Лаунчера.lnk"))
+            sc1.TargetPath = target_bin
+            sc1.WorkingDirectory = tgt
+            if os.path.exists(ico_source):
+                sc1.IconLocation = f"{ico_source}, 0"
+            sc1.Save()
+
+            desktop = wsh.SpecialFolders("Desktop")
+            if desktop and os.path.exists(desktop):
+                sc2 = wsh.CreateShortcut(os.path.join(desktop, "Fallout 2 Launcher.lnk"))
+                sc2.TargetPath = target_bin
+                sc2.WorkingDirectory = tgt
+                if os.path.exists(ico_source):
+                    sc2.IconLocation = f"{ico_source}, 0"
+                sc2.Save()
+        except Exception:
+            pass
 
     def _update_progress(self, current: int, total: int, text: str):
         self.after(0, lambda: self._apply_progress(current, total, text))
