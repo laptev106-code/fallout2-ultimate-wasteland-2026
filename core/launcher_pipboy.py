@@ -478,6 +478,29 @@ MODS_DATABASE = [
 ]
 
 # ---------------------------------------------------------------------------
+# АУТЕНТИЧНЫЙ CRT-РАСТР И ДЕЛИТЕЛИ СТРОК РАЗВЕРТКИ
+# ---------------------------------------------------------------------------
+class CrtScanlineDivider(tk.Canvas):
+    """Аутентичная полоса CRT-растра с физическими строками люминофора и развертки."""
+    def __init__(self, parent, height=6, bg=BG_DARK, **kwargs):
+        super().__init__(parent, height=height, bg=bg, highlightthickness=0, bd=0, **kwargs)
+        self.bind("<Configure>", self._draw)
+        self._draw()
+
+    def _draw(self, event=None):
+        self.delete("all")
+        w = max(self.winfo_width(), 1200)
+        h = max(self.winfo_height(), 6)
+        for y in range(0, h):
+            if y % 3 == 0:
+                self.create_line(0, y, w, y, fill="#010401", width=1)
+            elif y % 3 == 1:
+                self.create_line(0, y, w, y, fill="#245924", width=1)
+            else:
+                self.create_line(0, y, w, y, fill="#0e2b0e", width=1)
+
+
+# ---------------------------------------------------------------------------
 # ГЛАВНОЕ ОКНО ЛАУНЧЕРА PIP-BOY 3000
 # ---------------------------------------------------------------------------
 class PipBoyLauncher(tk.Tk):
@@ -493,9 +516,15 @@ class PipBoyLauncher(tk.Tk):
         self.minsize(1000, 700)
         self.configure(bg=BG_DARK)
 
+        # Состояние звукового отклика
+        self.sound_enabled = True
+        self.btn_sound_top = None
+        self.btn_sound_cfg = None
+
         # Загрузка иконок и ассетов
         self.vault_icon = None
         self.vault_boy_img = None
+        self.crt_bg_img = None
         self.load_assets()
 
         # Инициализация стилей ttk
@@ -507,6 +536,8 @@ class PipBoyLauncher(tk.Tk):
 
     def play_sound_click(self):
         """Воспроизведение тихого щелчка реле Pip-Boy."""
+        if not self.sound_enabled:
+            return
         if HAS_SOUND:
             try:
                 winsound.Beep(1800, 18)
@@ -515,11 +546,53 @@ class PipBoyLauncher(tk.Tk):
 
     def play_sound_switch(self):
         """Воспроизведение звука тумблера."""
+        if not self.sound_enabled:
+            return
         if HAS_SOUND:
             try:
                 winsound.Beep(950, 25)
             except Exception:
                 pass
+
+    def toggle_sound(self):
+        """Включение/отключение тактильных звуков лаунчера."""
+        self.sound_enabled = not self.sound_enabled
+        self.update_sound_ui()
+        if self.sound_enabled:
+            if HAS_SOUND:
+                try:
+                    winsound.Beep(1400, 30)
+                except Exception:
+                    pass
+
+    def update_sound_ui(self):
+        """Синхронизация состояния тумблеров звука в шапке и настройках."""
+        if hasattr(self, "btn_sound_top") and self.btn_sound_top:
+            if self.sound_enabled:
+                self.btn_sound_top.configure(
+                    text="[ 🔊 ЗВУК: ВКЛ ]",
+                    fg=PHOSPHOR_BRIGHT,
+                    bg="#0d240d"
+                )
+            else:
+                self.btn_sound_top.configure(
+                    text="[ 🔇 ЗВУК: ВЫКЛ ]",
+                    fg=TEXT_MUTED,
+                    bg="#161a16"
+                )
+        if hasattr(self, "btn_sound_cfg") and self.btn_sound_cfg:
+            if self.sound_enabled:
+                self.btn_sound_cfg.configure(
+                    text="🔊 ТАКТИЛЬНЫЕ ЗВУКИ: ВКЛЮЧЕНЫ",
+                    fg=BG_DARK,
+                    bg=PHOSPHOR_MAIN
+                )
+            else:
+                self.btn_sound_cfg.configure(
+                    text="🔇 ТАКТИЛЬНЫЕ ЗВУКИ: ВЫКЛЮЧЕНЫ",
+                    fg=TEXT_MUTED,
+                    bg="#222822"
+                )
 
     def load_assets(self):
         """Загрузка графических ассетов Pip-Boy."""
@@ -537,10 +610,10 @@ class PipBoyLauncher(tk.Tk):
             except Exception:
                 pass
 
-        # Ищем изображение Волт-Боя
+        # Ищем изображение Волт-Боя (в первую очередь CRT с люминофором и растром)
         img_candidates = [
-            os.path.join(self.assets_dir, "vault_boy_clean.png"),
             os.path.join(self.assets_dir, "vault_boy_crt.png"),
+            os.path.join(self.assets_dir, "vault_boy_clean.png"),
             os.path.join(self.assets_dir, "vault_boy_pipboy_clean.jpg"),
         ]
         for c in img_candidates:
@@ -552,6 +625,16 @@ class PipBoyLauncher(tk.Tk):
                     break
                 except Exception:
                     pass
+
+        # Загрузка фоновой текстуры ЭЛТ-кинескопа
+        crt_bg_path = os.path.join(self.assets_dir, "crt_screen_bg.png")
+        if os.path.exists(crt_bg_path):
+            try:
+                pil_bg = Image.open(crt_bg_path)
+                pil_bg = pil_bg.resize((1040, 680), Image.Resampling.LANCZOS)
+                self.crt_bg_img = ImageTk.PhotoImage(pil_bg)
+            except Exception:
+                self.crt_bg_img = None
 
     def setup_ttk_styles(self):
         """Настройка стилей Ttk в палитре Pip-Boy (без белых полей, чистая читаемость)."""
@@ -636,7 +719,24 @@ class PipBoyLauncher(tk.Tk):
         )
         lbl_robco.pack(side="left", anchor="w")
 
-        # Правый блок: Индикаторы питания и статуса
+        # Правый блок: Тумблер звука и индикаторы питания/статуса
+        self.btn_sound_top = tk.Button(
+            top_bar,
+            text="[ 🔊 ЗВУК: ВКЛ ]",
+            font=FONT_MONO_SMALL,
+            fg=PHOSPHOR_BRIGHT,
+            bg="#0d240d",
+            activebackground=PHOSPHOR_MAIN,
+            activeforeground=BG_DARK,
+            bd=1,
+            relief="raised",
+            padx=8,
+            pady=2,
+            cursor="hand2",
+            command=self.toggle_sound
+        )
+        self.btn_sound_top.pack(side="right", padx=(10, 0))
+
         status_frame = tk.Frame(top_bar, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE)
         status_frame.pack(side="right")
         tk.Label(
@@ -688,14 +788,20 @@ class PipBoyLauncher(tk.Tk):
             bg=BG_DARK,
             bd=3,
             relief="sunken",
-            highlightbackground=BORDER_ACTIVE,
-            highlightthickness=1
+            highlightbackground=BORDER_BRIGHT,
+            highlightthickness=2
         )
         self.screen_frame.pack(fill="both", expand=True, padx=16, pady=(0, 6))
 
         # Линия сферического блика стекла ЭЛТ-монитора (Curved CRT Screen Glare)
-        glass_glare = tk.Frame(self.screen_frame, bg="#0e240e", height=2)
+        glass_glare = tk.Canvas(self.screen_frame, bg=BG_DARK, height=5, highlightthickness=0, bd=0)
         glass_glare.pack(fill="x", padx=4, pady=(2, 0))
+        glass_glare.create_line(0, 1, 1200, 1, fill="#387a38", width=1)
+        glass_glare.create_line(0, 2, 1200, 2, fill="#245924", width=1)
+        glass_glare.create_line(0, 3, 1200, 3, fill="#0d260d", width=1)
+
+        # Верхняя разделительная полоса растра CRT
+        CrtScanlineDivider(self.screen_frame, height=5, bg=BG_DARK).pack(fill="x", padx=4, pady=(0, 2))
 
         # Создание всех экранов
         self.pages = {}
@@ -787,9 +893,12 @@ class PipBoyLauncher(tk.Tk):
         )
         btn_show_full.pack(anchor="w", pady=(4, 0))
 
+        # Разделитель растра CRT
+        CrtScanlineDivider(left_col, height=6, bg=BG_DARK).pack(fill="x", pady=(0, 8))
+
         # Карточка 1: Профиль Gameplay Ultimate (Основной)
         card_gp = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=12)
-        card_gp.pack(fill="x", pady=(0, 10))
+        card_gp.pack(fill="x", pady=(0, 8))
 
         tk.Label(card_gp, text="[ ОСНОВНАЯ СБОРКА // 100% СТАБИЛЬНОСТЬ ]", font=FONT_MONO_SMALL, fg=AMBER_ALERT, bg=BG_CARD).pack(anchor="w")
         tk.Label(card_gp, text="FALLOUT 2: GAMEPLAY ULTIMATE 2026", font=FONT_MONO_LARGE, fg=PHOSPHOR_MAIN, bg=BG_CARD).pack(anchor="w", pady=(2, 4))
@@ -820,6 +929,9 @@ class PipBoyLauncher(tk.Tk):
             command=self.launch_gameplay
         )
         btn_launch_gp.pack(anchor="w")
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(left_col, height=6, bg=BG_DARK).pack(fill="x", pady=(0, 8))
 
         # Карточка 2: Профиль HD Visual (Community Edition + Dustlight)
         card_hd = tk.Frame(left_col, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=14, pady=10)
@@ -857,15 +969,19 @@ class PipBoyLauncher(tk.Tk):
         # --- Правая колонка: Волт-Бой и Индикатор Состояния ---
         tk.Label(
             right_col,
-            text="СИСТЕМНЫЙ ДИАГНОСТ VAULT-TEC",
+            text="● СИСТЕМНЫЙ ДИАГНОСТ VAULT-TEC",
             font=FONT_MONO_SMALL,
-            fg=TEXT_DIM,
+            fg=PHOSPHOR_MAIN,
             bg=BG_CARD
-        ).pack(pady=(10, 4))
+        ).pack(pady=(8, 2))
+
+        CrtScanlineDivider(right_col, height=5, bg=BG_CARD).pack(fill="x", padx=6, pady=(0, 4))
 
         if self.vault_boy_img:
-            lbl_img = tk.Label(right_col, image=self.vault_boy_img, bg=BG_CARD)
-            lbl_img.pack(pady=4)
+            lbl_img = tk.Label(right_col, image=self.vault_boy_img, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE)
+            lbl_img.pack(pady=2, padx=10)
+
+        CrtScanlineDivider(right_col, height=5, bg=BG_CARD).pack(fill="x", padx=6, pady=(4, 2))
 
         stats_frame = tk.Frame(right_col, bg=BG_CARD, padx=12, pady=6)
         stats_frame.pack(fill="x")
@@ -899,7 +1015,7 @@ class PipBoyLauncher(tk.Tk):
         frame = tk.Frame(parent, bg=BG_DARK)
 
         header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
-        header_box.pack(fill="x", pady=(0, 8))
+        header_box.pack(fill="x", pady=(0, 6))
 
         tk.Label(
             header_box,
@@ -916,6 +1032,9 @@ class PipBoyLauncher(tk.Tk):
             fg=TEXT_NORMAL,
             bg=BG_CARD
         ).pack(anchor="w", pady=(2, 0))
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(frame, height=5, bg=BG_DARK).pack(fill="x", pady=(0, 6))
 
         # Текстовое поле с полным текстом изменений
         container = tk.Frame(frame, bg=BG_DARK, bd=1, relief="solid", highlightbackground=BORDER_MUTED)
@@ -991,6 +1110,9 @@ class PipBoyLauncher(tk.Tk):
             command=lambda: self.switch_tab("changelog")
         )
         btn_to_full.pack(side="right")
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(frame, height=5, bg=BG_DARK).pack(fill="x", pady=(0, 6))
 
         # Сплит: Список модов слева / Детальная карточка справа
         split_box = tk.Frame(frame, bg=BG_DARK)
@@ -1091,7 +1213,7 @@ class PipBoyLauncher(tk.Tk):
         frame = tk.Frame(parent, bg=BG_DARK)
 
         header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=16, pady=10)
-        header_box.pack(fill="x", pady=(0, 8))
+        header_box.pack(fill="x", pady=(0, 6))
 
         tk.Label(header_box, text="⚙ ГРАФИЧЕСКИЙ И АУДИО ПУЛЬТ УПРАВЛЕНИЯ FALLOUT 2", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
         tk.Label(
@@ -1101,6 +1223,9 @@ class PipBoyLauncher(tk.Tk):
             fg=TEXT_MUTED,
             bg=BG_CARD
         ).pack(anchor="w", pady=(2, 0))
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(frame, height=5, bg=BG_DARK).pack(fill="x", pady=(0, 6))
 
         form_frame = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=18, pady=10)
         form_frame.pack(fill="both", expand=True)
@@ -1122,6 +1247,8 @@ class PipBoyLauncher(tk.Tk):
         self.combo_res.pack(side="left", padx=10)
         tk.Label(card1, text="   Рекомендуется 1080p или 1440p. Движок автоматически центрирует карту и масштабирует меню.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
+
         # 2. Режим окна
         card2 = tk.Frame(form_frame, bg=BG_CARD)
         card2.pack(fill="x", pady=4)
@@ -1138,6 +1265,8 @@ class PipBoyLauncher(tk.Tk):
         self.combo_wnd.set("Полноэкранный режим (Fullscreen)")
         self.combo_wnd.pack(side="left", padx=10)
         tk.Label(card2, text="   Режим 'Окно без рамок' исключает зависания и мерцание при переключении по Alt+Tab.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
+
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
 
         # 3. Масштаб интерфейса
         card3 = tk.Frame(form_frame, bg=BG_CARD)
@@ -1156,6 +1285,8 @@ class PipBoyLauncher(tk.Tk):
         self.combo_scale.pack(side="left", padx=10)
         tk.Label(card3, text="   SCALE 2X увеличивает пиксели интерфейса в 2 раза, предотвращая микроскопический шрифт.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
+
         # 4. Фильтрация текстур GPU
         card4 = tk.Frame(form_frame, bg=BG_CARD)
         card4.pack(fill="x", pady=4)
@@ -1172,6 +1303,8 @@ class PipBoyLauncher(tk.Tk):
         self.combo_filter.set("Билинейное сглаживание GPU (Без лесенок)")
         self.combo_filter.pack(side="left", padx=10)
         tk.Label(card4, text="   Аппаратная фильтрация сглаживает ступенчатые края спрайтов на современных мониторах.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
+
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
 
         # 5. Громкость музыки
         card5 = tk.Frame(form_frame, bg=BG_CARD)
@@ -1196,6 +1329,8 @@ class PipBoyLauncher(tk.Tk):
         self.scale_music.pack(side="left", padx=10)
         tk.Label(card5, text="   Громкость несжатого саундтрека Марка Моргана 44.1 кГц Stereo Lossless.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
 
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
+
         # 6. Громкость эффектов
         card6 = tk.Frame(form_frame, bg=BG_CARD)
         card6.pack(fill="x", pady=4)
@@ -1218,6 +1353,34 @@ class PipBoyLauncher(tk.Tk):
         self.scale_sfx.set(90)
         self.scale_sfx.pack(side="left", padx=10)
         tk.Label(card6, text="   Громкость выстрелов, взрывов и русской студийной озвучки диалогов.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
+
+        CrtScanlineDivider(form_frame, height=4, bg=BG_CARD).pack(fill="x", pady=2)
+
+        # 7. Звуковой отклик лаунчера (отключаемые звуки щелчков реле)
+        card7 = tk.Frame(form_frame, bg=BG_CARD)
+        card7.pack(fill="x", pady=4)
+        row7 = tk.Frame(card7, bg=BG_CARD)
+        row7.pack(fill="x")
+        tk.Label(row7, text="7. ЗВУКОВОЙ ОТКЛИК ЛАУНЧЕРА:", font=FONT_MONO_MID, fg=PHOSPHOR_MAIN, bg=BG_CARD, width=25, anchor="w").pack(side="left")
+        self.btn_sound_cfg = tk.Button(
+            row7,
+            text="🔊 ТАКТИЛЬНЫЕ ЗВУКИ: ВКЛЮЧЕНЫ" if self.sound_enabled else "🔇 ТАКТИЛЬНЫЕ ЗВУКИ: ВЫКЛЮЧЕНЫ",
+            font=FONT_MONO_MID,
+            fg=BG_DARK if self.sound_enabled else TEXT_MUTED,
+            bg=PHOSPHOR_MAIN if self.sound_enabled else "#222822",
+            activebackground=PHOSPHOR_BRIGHT,
+            activeforeground=BG_DARK,
+            bd=0,
+            padx=16,
+            pady=6,
+            cursor="hand2",
+            command=self.toggle_sound
+        )
+        self.btn_sound_cfg.pack(side="left", padx=10)
+        tk.Label(card7, text="   Включение и отключение аппаратных звуков реле при переключении вкладок и кликах по кнопкам.", font=FONT_MONO_SMALL, fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(1, 0))
+
+        # Разделитель перед кнопкой сохранения
+        CrtScanlineDivider(form_frame, height=5, bg=BG_CARD).pack(fill="x", pady=(6, 4))
 
         # Кнопка сохранения
         btn_save = tk.Button(
@@ -1341,9 +1504,12 @@ class PipBoyLauncher(tk.Tk):
         frame = tk.Frame(parent, bg=BG_DARK)
 
         header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
-        header_box.pack(fill="x", pady=(0, 10))
+        header_box.pack(fill="x", pady=(0, 6))
 
         tk.Label(header_box, text="ГОЛОДИСК ЖИТЕЛЯ УБЕЖИЩА: РЕГЛАМЕНТ УПРАВЛЕНИЯ", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(frame, height=5, bg=BG_DARK).pack(fill="x", pady=(0, 6))
 
         txt_manual = tk.Text(
             frame,
@@ -1394,7 +1560,7 @@ class PipBoyLauncher(tk.Tk):
         frame = tk.Frame(parent, bg=BG_DARK)
 
         header_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_ACTIVE, padx=14, pady=10)
-        header_box.pack(fill="x", pady=(0, 12))
+        header_box.pack(fill="x", pady=(0, 6))
 
         tk.Label(header_box, text="МЕНЕДЖЕР СОХРАНЕНИЙ И ЗАЩИТА ПРОГРЕССА (SAVEGUARD)", font=FONT_MONO_LARGE, fg=PHOSPHOR_BRIGHT, bg=BG_CARD).pack(anchor="w")
         tk.Label(
@@ -1404,6 +1570,9 @@ class PipBoyLauncher(tk.Tk):
             fg=TEXT_NORMAL,
             bg=BG_CARD
         ).pack(anchor="w", pady=(4, 0))
+
+        # Разделитель растра CRT
+        CrtScanlineDivider(frame, height=5, bg=BG_DARK).pack(fill="x", pady=(0, 8))
 
         content_box = tk.Frame(frame, bg=BG_CARD, bd=1, relief="solid", highlightbackground=BORDER_MUTED, padx=20, pady=18)
         content_box.pack(fill="both", expand=True)
