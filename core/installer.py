@@ -152,6 +152,7 @@ class InstallationEngine:
         
         Configurator.tune_minirework_ini(target_dir)
         Configurator.tune_fo2tweaks_ini(target_dir)
+        Configurator.deploy_miria_mod(target_dir)
         
         mods_dir = os.path.join(target_dir, "mods")
         Configurator.write_mods_order(mods_dir)

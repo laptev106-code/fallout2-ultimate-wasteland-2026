@@ -113,6 +113,30 @@ class Configurator:
                         pass
 
     @classmethod
+    def deploy_miria_mod(cls, game_dir: str):
+        """Интегрирует проверенный патч расширения спутницы Мирии (Miria Can Wait + русские диалоги)."""
+        template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates", "miria")
+        if os.path.exists(template_dir):
+            for root, dirs, files in os.walk(template_dir):
+                for f in files:
+                    src = os.path.join(root, f)
+                    rel = os.path.relpath(src, template_dir)
+                    dst = os.path.join(game_dir, rel)
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    try:
+                        shutil.copy2(src, dst)
+                    except Exception:
+                        pass
+        rpu_ini = os.path.join(game_dir, "mods", "rpu.ini")
+        if os.path.exists(rpu_ini):
+            with open(rpu_ini, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            if "miria_can_wait" not in content:
+                content += "\n; Miria Can Wait patch\nmiria_can_wait=1\n"
+                with open(rpu_ini, "w", encoding="utf-8") as f:
+                    f.write(content)
+
+    @classmethod
     def tune_fo2tweaks_ini(cls, game_dir: str):
         """
         Калибровочный профиль FO2Tweaks 14.7:
