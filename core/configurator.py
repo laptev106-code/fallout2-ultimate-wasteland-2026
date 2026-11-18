@@ -12,7 +12,7 @@ class Configurator:
         """Безопасно обновляет или добавляет ключ в INI файл."""
         lines = content.splitlines()
         section_pattern = re.compile(rf"^\s*\[{re.escape(section)}\]\s*$", re.IGNORECASE)
-        key_pattern = re.compile(rf"^\s*{re.escape(key)}\s*=.*$", re.IGNORECASE)
+        key_pattern = re.compile(rf"^\s*;?\s*{re.escape(key)}\s*=.*$", re.IGNORECASE)
         
         in_target_section = False
         key_replaced = False
@@ -61,7 +61,8 @@ class Configurator:
         content = cls.patch_ini_key(content, "Misc", "CodePage", 1251)
         content = cls.patch_ini_key(content, "Misc", "UseCustomFont", 1)
         # Разрешаем CRC модифицированного LAA (4GB) исполняемого файла fallout2.exe
-        content = cls.patch_ini_key(content, "Misc", "ExtraCRC", "0xf18aa577")
+        content = cls.patch_ini_key(content, "Debugging", "ExtraCRC", "0xf18aa577")
+        content = cls.patch_ini_key(content, "Debugging", "SkipCompatModeCheck", 1)
         # Графика: когда f2_res.ini работает в режиме DirectX 9 (GRAPHICS_MODE=2),
         # в sfall ddraw.ini Mode должен оставаться 0 во избежание конфликта двух DX9 устройств
         content = cls.patch_ini_key(content, "Graphics", "Mode", 0)
