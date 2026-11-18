@@ -15,6 +15,11 @@ COMMON_STEAM_PATHS = [
 ]
 
 COMMON_GOG_PATHS = [
+    r"E:\Fallout 2",
+    r"D:\Fallout 2",
+    r"C:\Fallout 2",
+    r"E:\Games\Fallout 2",
+    r"E:\Games\Fallout2",
     r"C:\GOG Games\Fallout 2",
     r"D:\GOG Games\Fallout 2",
     r"E:\GOG Games\Fallout 2",
