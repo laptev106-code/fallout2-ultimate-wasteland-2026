@@ -87,7 +87,7 @@ const MODS_DATABASE = [
     id: "doors",
     title: "AUTODOORS & LOOT PROTECTION",
     category: "ГЕЙМПЛЕЙ",
-    badge: "QOL ТВЕРДО",
+    badge: "АВТО-ДВЕРИ",
     version: "v2.4",
     author: "BGforge Net, sfall team",
     desc: "Автоматическое открытие дверей перед бегущим героем и сохранение лута в кучке праха при дезинтеграции врага из энергооружия.",

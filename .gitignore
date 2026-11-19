@@ -25,4 +25,5 @@ test_config/
 
 build/
 build_pipboy/
+build_nextgen/
 *.spec
