@@ -269,15 +269,18 @@ class LauncherApp {
     });
 
     // Catalog Filter Pills
-    document.querySelectorAll('.filter-pill').forEach(pill => {
+    document.querySelectorAll('.filter-pill:not(#btn-toggle-thumbs)').forEach(pill => {
       pill.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.filter-pill:not(#btn-toggle-thumbs)').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         this.currentFilter = pill.dataset.filter;
         this.renderCatalog();
         if (window.pipAudio) window.pipAudio.playRelayClick();
       });
     });
+
+    // Catalog View Toggle (Compact vs Thumbnails)
+    this.setupCatalogViewToggle();
 
     // Settings Save Button
     document.getElementById('btn-save-settings')?.addEventListener('click', () => {
@@ -329,6 +332,27 @@ class LauncherApp {
         const url = card.dataset.url;
         if (url) this.openExternal(url);
       });
+    });
+  }
+
+  setupCatalogViewToggle() {
+    const btn = document.getElementById('btn-toggle-thumbs');
+    const container = document.getElementById('catalog-cards-container');
+    if (!btn || !container) return;
+
+    let isCompact = localStorage.getItem('nextgen_catalog_compact') === 'true';
+    const updateUI = () => {
+      container.classList.toggle('compact-view', isCompact);
+      btn.textContent = isCompact ? '☰ БЕЗ КАРТИНОК (КОМПАКТ)' : '📷 СО СКРИНШОТАМИ';
+      btn.classList.toggle('active', !isCompact);
+    };
+
+    updateUI();
+    btn.addEventListener('click', () => {
+      isCompact = !isCompact;
+      localStorage.setItem('nextgen_catalog_compact', isCompact);
+      updateUI();
+      if (window.pipAudio) window.pipAudio.playRelayClick();
     });
   }
 

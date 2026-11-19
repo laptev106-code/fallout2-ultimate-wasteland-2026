@@ -295,13 +295,18 @@ def main():
             break
 
     bridge = LauncherBridge(root_dir)
+    external_ui = os.path.abspath(os.path.join(root_dir, "launcher_nextgen", "ui"))
+    local_ui = os.path.join(current_dir, "ui")
     bundle_dir = getattr(sys, "_MEIPASS", None)
-    if bundle_dir and os.path.exists(os.path.join(bundle_dir, "ui")):
+
+    if os.path.exists(os.path.join(external_ui, "index.html")):
+        ui_dir = external_ui
+    elif os.path.exists(os.path.join(local_ui, "index.html")):
+        ui_dir = local_ui
+    elif bundle_dir and os.path.exists(os.path.join(bundle_dir, "ui")):
         ui_dir = os.path.join(bundle_dir, "ui")
-    elif os.path.exists(os.path.join(current_dir, "ui")):
-        ui_dir = os.path.join(current_dir, "ui")
     else:
-        ui_dir = os.path.abspath(os.path.join(root_dir, "launcher_nextgen", "ui"))
+        ui_dir = external_ui
 
     index_path = os.path.join(ui_dir, "index.html")
 

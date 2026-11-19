@@ -167,6 +167,28 @@
   gap: 20px;
 }
 
+.catalog-grid.compact-view {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 12px;
+}
+
+.catalog-grid.compact-view .mod-thumb-container {
+  display: none !important;
+}
+
+.catalog-grid.compact-view .mod-card {
+  min-height: 130px;
+}
+
+.view-toggle-btn {
+  border-color: var(--phosphor-primary) !important;
+  color: var(--phosphor-primary) !important;
+}
+
+.view-toggle-btn:hover {
+  background: rgba(0, 255, 102, 0.15) !important;
+}
+
 .mod-card {
   background: var(--bg-card);
   border: 1px solid var(--border-muted);
