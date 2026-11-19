@@ -1,0 +1,8 @@
+🆙 Сборка Fallout 2 (Expansion Version) обновлена 🆙
+
+✅Обновлен sFall v.5.1.1.2 (Fix Version) 
+✅Увеличен игровой лимит до 50 лет. 
+✅Возвращен Glasses Mod, но отключен по умолчанию (если не умеете пользоваться, не подключайте).
+-----------------------------------------------------------------------------------------
+📜Все исправления: https://drive.google.com/file/d/1UgWjizQb-Ivig60tq13WDNcTQF_sY1OB/view?usp=drive_link
+💾Скачать: https://rutracker.org/forum/viewtopic.php?t=6547829

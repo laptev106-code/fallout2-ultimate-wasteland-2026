@@ -1,0 +1,34 @@
+﻿@vom 1
+@view 656x557
+@layers 1 focus=L1
+L1 page
+  RootWebArea "Поиск сборки Fallout Foxx"
+    @e14 link "Перейти к контенту"
+    main "Поиск сборки Fallout Foxx Это копия общего чата ChatGPT. Она не будет добавлена в память. ChatGPT может допускать ошибки. Проверяйте важную информацию. Последний ответ Загрузка разговора ChatGPT"
+      sectionheader "Поиск сборки Fallout Foxx"
+        @e15 button "Показать боковую панель"
+        StaticText "Поиск сборки Fallout Foxx"
+        @e16 button "Поделиться"
+        @e17 button "Временный чат"
+      region "Разговор"
+        StaticText "Это копия общего чата ChatGPT. Она не будет добавлена в память."
+        @e18 button "Пожаловаться на разговор"
+        StaticText "ChatGPT может допускать ошибки. Проверяйте важную информацию."
+        heading "Последний ответ"
+        status
+        form
+          group
+            @e19 button "Добавить файлы и другое"
+            @e20 textbox "Спросить ChatGPT" [empty]
+              paragraph "Спросить ChatGPT"
+                StaticText "Спросить ChatGPT"
+            @e21 button "Размышление"
+            @e22 button "Диктовать"
+            @e23 button "Отправить" [disabled]
+          status
+      status "Загрузка разговора ChatGPT"
+    status
+    @e24 button "Чат"
+    @e25 button "Чат"
+    @e26 button "Чат"
+@warning geometry incomplete: some page or frame content has no top-level coordinates.

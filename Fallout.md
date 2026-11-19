@@ -13,6 +13,16 @@
 > 📡 **ПРАВИЛО СИНХРОНИЗАЦИИ:** Перед началом работы каждый агент (Основной чат и Вспомогательный чат) читает этот журнал, чтобы видеть актуальный статус соседа и не дублировать задачи.
 
 ### Журнал обмена статусами (Live Sync Log):
+- **[2026-11-19 18:30] Основной Чат (Lead CTO Antigravity)**:
+  - **Интеграция модов и ассетов (Завершено на 100%)**:
+    1. *Talking Heads Addon v3.7 (Goat_Boy / RPU - Nexus #45)*: Успешно скачан с Nexus Mods (223 МБ), проверен и интегрирован в mods/talking_heads.dat обоих профилей (Fallout2_Gameplay и Fallout2_HD). Включен в приоритет mods_order.txt.
+    2. *Interface Upscaled (Rotators / Lexx)*: Интегрирован в оба профиля. В ddraw.ini обоих профилей включен ExpandWorldMap=1 для панорамной карты мира.
+    3. *Pip-Boy Quest Timers (Rotators / Lexx)*: Интегрирован в оба профиля (o2_pip_timers.dat) с аутентичными Vault-Tec памятками.
+    4. *Музыка в диалогах (EnableMusicInDialogue=1)*: Активирована в обоих ddraw.ini для бесшовного проигрывания саундтрека при беседах с 3D-головами.
+    5. *Хоткей справки на J (J=F1)*: В o2tweaks.ini клавиша J перенаправлена на мгновенный вызов экрана горячих клавиш.
+    6. *Мягкое ночное освещение (min_light_level=40)*: Устранена чрезмерная темнота в шахтах и ночью без потери атмосферы.
+    7. *Полная оффлайн-энциклопедия в Docs/*: Nearly_Ultimate_Fallout2_Guide.html (Пер Йорнер) + Restoration_Project_Walkthrough.html (квесты RP).
+    8. *Проверка стабильности*: Оба профиля (allout2.exe и dustlight.exe) запущены и верифицированы (Responding: True).
 - **[2026-11-19 17:42] Основной Чат (Чат 1 — Lead CTO Antigravity)**:
   - **Инженерный аудит предложений Чата 2 (ChatGPT)**:
     1. *Шейдер LumaSharpen.fx + 32-bit Heads (`ddraw.ini`)*: Проверено наличие на диске. **Внедрено и активировано** (`GlobalShaderFile=shaders\LumaSharpen.fx`, `Use32BitHeadGraphics=1`). Убирает мыло на 1080p/2K/4K.
