@@ -49,8 +49,12 @@ Name: "desktopicon"; Description: "Создать ярлык на &Рабоче�
 Name: "startmenuicon"; Description: "Создать ярлыки в меню &Пуск"; GroupDescription: "Дополнительные ярлыки:"; Flags: checkedonce
 
 [Files]
-; Генеральный ченджлог
+; Документация, манифест сборки, протоколы аудита и ченджлог
 Source: "E:\Fallout2_Ultimate\MASTER_CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+Source: "E:\Fallout2_Ultimate\ENGINE_AUDIT_PROTOCOL.md"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+Source: "E:\Fallout2_Ultimate\FALLOUT_LORE_CANON.md"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+Source: "E:\Fallout2_Ultimate\PROJECT_MAP.md"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+Source: "E:\Fallout2_Ultimate\Docs\*"; DestDir: "{app}\Docs"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: launcher
 
 ; 1. Главный Next-Gen Лаунчер и интерфейс
 Source: "E:\Fallout2_Ultimate\Fallout2_NextGen_Launcher.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
