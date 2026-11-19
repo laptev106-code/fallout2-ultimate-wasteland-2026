@@ -1,8 +1,11 @@
 # PRODUCT BLUEPRINT & MASTER ROADMAP
 # Fallout 2: Ultimate Wasteland Edition (2026)
 
+> 🧭 **ГЕНЕРАЛЬНАЯ КАРТА ПРОЕКТА И ФИЛОСОФИЯ СБОРКИ:** [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md)  
+> ⚠️ **ОБЯЗАТЕЛЬНАЯ ДИРЕКТИВА АГЕНТА:** При любой разработке, добавлении модов, правке диалогов, скриптов и сборке инсталлятора агент ОБЯЗАН строго ссылаться и руководствоваться принципами и каталогом из [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md). Никакого наваливания мусора, строгий канон, баланс и закрытый цикл проверки.
+
 > Статус: **Active Blueprint / Production Grade**  
-> Версия сборки: **v2.026.4**  
+> Версия сборки: **Director's Cut 2026 (v4.4.8 / RPU v28.0)**  
 > Архитектурный стандарт: **Clean Architecture / Dual-Engine Runtime / Zero-Dependency**  
 > Лицензия: **Freeware / Non-Commercial Fan Project (Commercial-Grade Polish)**
 
