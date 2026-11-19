@@ -42,12 +42,16 @@ Name: "custom"; Description: "Выборочная установка"; Flags: i
 Name: "launcher"; Description: "Мастер-лаунчер Pip-Boy Next-Gen и конфигуратор графики"; Types: full gameplay hd custom; Flags: fixed
 Name: "gameplay"; Description: "Профиль 'Gameplay Ultimate' (Восстановленные города, броня напарников, 3D-голова Кэссиди, звук 44.1 кГц, баллистика, фиксы сюжетных дыр)"; Types: full gameplay custom
 Name: "hd"; Description: "Профиль 'Rework HD' (Открытый C++ движок SDL2, динамический свет Dustlight, субпиксельная камера, 2K/4K)"; Types: full hd custom
+Name: "survival"; Description: "Режим хардкорного выживания (Голод, жажда, усталость/сон и готовка у костров)"; Flags: dontinheritcheck
 
 [Tasks]
 Name: "desktopicon"; Description: "Создать ярлык на &Рабочем столе"; GroupDescription: "Дополнительные ярлыки:"; Flags: checkedonce
 Name: "startmenuicon"; Description: "Создать ярлыки в меню &Пуск"; GroupDescription: "Дополнительные ярлыки:"; Flags: checkedonce
 
 [Files]
+; Генеральный ченджлог
+Source: "E:\Fallout2_Ultimate\MASTER_CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
+
 ; 1. Главный Next-Gen Лаунчер и интерфейс
 Source: "E:\Fallout2_Ultimate\Fallout2_NextGen_Launcher.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
 Source: "E:\Fallout2_Ultimate\Run_NextGen_Launcher.bat"; DestDir: "{app}"; Flags: ignoreversion; Components: launcher
@@ -70,6 +74,7 @@ Name: "{autodesktop}\Fallout 2 Ultimate 2026"; Filename: "{app}\{#MyAppExeName}"
 
 ; Ярлыки в меню Пуск
 Name: "{group}\{#MyAppName} (Мастер-Лаунчер)"; Filename: "{app}\{#MyAppExeName}"; Tasks: startmenuicon
+Name: "{group}\Список изменений (Changelog)"; Filename: "{app}\MASTER_CHANGELOG.md"; Tasks: startmenuicon
 Name: "{group}\Запуск Gameplay Ultimate (sfall)"; Filename: "{app}\Fallout2_Gameplay\fallout2.exe"; WorkingDir: "{app}\Fallout2_Gameplay"; Components: gameplay; Tasks: startmenuicon
 Name: "{group}\Запуск Rework HD (Dustlight SDL2)"; Filename: "{app}\Fallout2_HD\dustlight.exe"; WorkingDir: "{app}\Fallout2_HD"; Components: hd; Tasks: startmenuicon
 Name: "{group}\Удалить {#MyAppName}"; Filename: "{uninstallexe}"; Tasks: startmenuicon
