@@ -1,0 +1,91 @@
+/*
+    Fallout 2 Ultimate Wasteland 2026 - Anti-Softlock Temple Door Fix
+    Script: AIBKDOR.SSL
+*/
+
+#define SCRIPT_REALNAME "aibkdor"
+#include "define.h"
+#define NAME 35
+#include "command.h"
+
+procedure start;
+procedure damage_p_proc;
+procedure use_p_proc;
+procedure use_skill_on_p_proc;
+procedure use_obj_on_p_proc;
+procedure look_at_p_proc;
+procedure description_p_proc;
+
+procedure start begin
+end
+
+procedure damage_p_proc begin
+   variable Door;
+   if (metarule(49, target_obj) == 6) then begin
+      Door := create_object_sid(33555365, tile_num(self_obj), elevation(self_obj), -1);
+      destroy_object(self_obj);
+   end
+end
+
+procedure use_p_proc begin
+   variable Door;
+   script_overrides;
+   if (get_critter_stat(dude_obj, 0) >= 8) then begin
+      display_msg("Напрягши все силы, вы мощным ударом высаживаете заклинившую дверь!");
+      give_exp_points(50);
+      Door := create_object_sid(33555365, tile_num(self_obj), elevation(self_obj), -1);
+      destroy_object(self_obj);
+   end else begin
+      display_msg("Дверь заклинило без ручки. Попробуйте взломать засов, применить копье как рычаг или взорвать.");
+   end
+end
+
+procedure use_skill_on_p_proc begin
+   variable skill;
+   variable Door;
+   skill := action_being_used;
+   script_overrides;
+   if (skill == 9) then begin
+      if ((has_skill(dude_obj, 9) >= 25) or (is_success(roll_vs_skill(dude_obj, 9, 0)))) then begin
+         display_msg("Вам удается нащупать и отжать скрытый каменный засов двери!");
+         give_exp_points(50);
+         Door := create_object_sid(33555365, tile_num(self_obj), elevation(self_obj), -1);
+         destroy_object(self_obj);
+      end else begin
+         display_msg("Вам не удается вскрыть заклинивший засов двери.");
+      end
+   end else begin
+      display_msg("Этот навык здесь бесполезен.");
+   end
+end
+
+procedure use_obj_on_p_proc begin
+   variable tool;
+   variable Door;
+   tool := obj_pid(obj_being_used_with);
+   script_overrides;
+   if ((tool == 7) or (tool == 280) or (tool == 20)) then begin
+      if (get_critter_stat(dude_obj, 0) >= 6) then begin
+         display_msg("Используя древко как рычаг, вы выламываете заклинившую дверь!");
+         give_exp_points(50);
+         Door := create_object_sid(33555365, tile_num(self_obj), elevation(self_obj), -1);
+         destroy_object(self_obj);
+      end else begin
+         display_msg("Вам не хватает силы (нужно 6+), чтобы выломать эту тяжелую дверь рычагом.");
+      end
+   end else if ((tool == 85) or (tool == 51)) then begin
+      display_msg("Установите таймер на взрывчатке в инвентаре и положите её на пол рядом с дверью.");
+   end else begin
+      display_msg("Этот предмет не подходит для открытия двери.");
+   end
+end
+
+procedure look_at_p_proc begin
+   script_overrides;
+   display_msg(message_str(13, 101));
+end
+
+procedure description_p_proc begin
+   script_overrides;
+   display_msg(message_str(130, 900));
+end
