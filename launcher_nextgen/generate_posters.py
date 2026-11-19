@@ -189,6 +189,54 @@ MODS_DATA = [
         "tagline": "Объемное лучевое освещение, атмосферный туман войны, мягкие тени факелов и динамические источники света",
         "specs": ["LIGHTING: VOLUMETRIC RAYMARCH", "FOG OF WAR: DYNAMIC", "ENGINE: SDL2 COMPATIBLE", "PROFILE: HD VISUAL ONLY"],
         "icon_type": "sun"
+    },
+    {
+        "id": "crafting",
+        "title": "WASTELAND CRAFT & PIPE WEAPONS",
+        "category": "КУСТАРНОЕ ОРУЖИЕ",
+        "badge": "САМОПАЛЫ И КРАФТ",
+        "version": "v2.0 EXPANDED",
+        "author": "phobos2077, EcCo Team",
+        "theme": "amber",
+        "tagline": "Трубчатые самопалы (Pipe Rifle), кустарные гранаты, арбалеты и капканы у рейдеров и бродяг (Храм и Арройо не затронуты)",
+        "specs": ["PIPE WEAPONS: VIABLE EARLY GAME", "TRAPS: EPA SPIKES & BEAR TRAPS", "WORLD DISTRIBUTION: LORE COMPLIANT", "ARROYO/TEMPLE: 100% CANON"],
+        "icon_type": "crosshair"
+    },
+    {
+        "id": "hunting",
+        "title": "HUNTING, HARVESTING & FIELD SURVIVAL",
+        "category": "ОХОТА И ВЫЖИВАНИЕ",
+        "badge": "РАЗДЕЛКА ДИЧИ",
+        "version": "v2.0 SURVIVAL",
+        "author": "EcCo Team, RPU",
+        "theme": "green",
+        "tagline": "Свежевание ножом: шкуры гекконов, мясо, хвосты скорпионов для противоядий и жарка мяса на кострах деревни",
+        "specs": ["HARVESTING: MEAT, SKINS, TAILS", "CAMPFIRE COOKING: RESTORES HP", "SKILL SCALING: OUTDOORSMAN", "EARLY SURVIVAL: IMMERSIVE"],
+        "icon_type": "shield"
+    },
+    {
+        "id": "highwayman",
+        "title": "HIGHWAYMAN OVERHAUL & TRUNK FIX",
+        "category": "ТРАНСПОРТ",
+        "badge": "АВТО ХАЙВЕЙМЕН",
+        "version": "v3.2 OVERHAUL",
+        "author": "phobos2077, sfall team",
+        "theme": "cyan",
+        "tagline": "Защита багажника от исчезновения вещей, оптимизация расхода ядерных батарей и тюнинг нагнетателя у Смитти",
+        "specs": ["TRUNK BUG: COMPLETELY ELIMINATED", "FUEL CONSUMPTION: -30% REGULATOR", "SPEED BOOST: SMITTY BLOWER", "SAVE INTEGRITY: PROTECTED"],
+        "icon_type": "engine"
+    },
+    {
+        "id": "encounters",
+        "title": "CURATED ENCOUNTERS & WORLD ENGINE",
+        "category": "ГЛОБАЛЬНАЯ КАРТА",
+        "badge": "БАЛАНС ВСТРЕЧ",
+        "version": "v4.4.8 ENGINE FIX",
+        "author": "Ray, sfall team, RPU",
+        "theme": "blue",
+        "tagline": "Полное устранение спама случайных встреч на современных процессорах: редкие, атмосферные встречи вместо засад каждые 2 секунды",
+        "specs": ["ENCOUNTER SPAM: ELIMINATED (FIX=1)", "SPACING: CALIBRATED (RATE=7)", "OUTDOORSMAN CHECK: FULL CONTROL", "EXPANDED MAP: 890x720 NATIVE"],
+        "icon_type": "worldmap"
     }
 ]
 
