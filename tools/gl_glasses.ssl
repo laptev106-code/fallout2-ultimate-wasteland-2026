@@ -1,0 +1,120 @@
+/*
+   Glasses Mod for Fallout 2 (Ultimate Wasteland Edition 2026)
+   Allows wearing Mirrored Shades (+1 CH) and Spectacles (+1 PE)
+   by dragging them onto the player paperdoll/portrait or using from inventory.
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_glasses"
+#include "define.h"
+#include "sfall/sfall.h"
+
+#define PID_SPECTACLES       (415)
+#define PID_MIRROR_SHADES    (433)
+
+#define SGVAR_WORN_GLASSES   "WORN_GLASSES_PID"
+
+procedure start;
+procedure invenmove_handler;
+procedure useobjon_handler;
+procedure removeinven_handler;
+procedure toggle_glasses(variable pid);
+procedure apply_glasses(variable pid);
+procedure remove_glasses(variable pid);
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      register_hook_proc(HOOK_INVENTORYMOVE, invenmove_handler);
+      register_hook_proc(HOOK_USEOBJON, useobjon_handler);
+      register_hook_proc(HOOK_REMOVEINVENOBJ, removeinven_handler);
+   end
+end
+
+procedure apply_glasses(variable pid) begin
+   if (pid == PID_MIRROR_SHADES) then begin
+      set_critter_stat(dude_obj, STAT_ch, 1);
+      set_sfall_global(SGVAR_WORN_GLASSES, PID_MIRROR_SHADES);
+      display_msg("Вы надели темные очки (+1 к Харизме).");
+   end
+   else if (pid == PID_SPECTACLES) then begin
+      set_critter_stat(dude_obj, STAT_pe, 1);
+      set_sfall_global(SGVAR_WORN_GLASSES, PID_SPECTACLES);
+      display_msg("Вы надели очки (+1 к Восприятию).");
+   end
+end
+
+procedure remove_glasses(variable pid) begin
+   if (pid == PID_MIRROR_SHADES) then begin
+      set_critter_stat(dude_obj, STAT_ch, -1);
+   end
+   else if (pid == PID_SPECTACLES) then begin
+      set_critter_stat(dude_obj, STAT_pe, -1);
+   end
+   set_sfall_global(SGVAR_WORN_GLASSES, 0);
+end
+
+procedure toggle_glasses(variable pid) begin
+   variable current_worn;
+   current_worn := get_sfall_global_int(SGVAR_WORN_GLASSES);
+
+   if (current_worn == pid) then begin
+      call remove_glasses(current_worn);
+      display_msg("Вы сняли очки.");
+   end
+   else if (current_worn != 0) then begin
+      call remove_glasses(current_worn);
+      call apply_glasses(pid);
+   end
+   else begin
+      call apply_glasses(pid);
+   end
+end
+
+procedure invenmove_handler begin
+   variable slot, item, pid;
+   slot := get_sfall_arg;
+   item := get_sfall_arg;
+
+   // slot 8 = drop item on character portrait / paperdoll
+   if (slot == 8 and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0); // prevent moving/dropping item
+      end
+   end
+end
+
+procedure useobjon_handler begin
+   variable target, user, item, pid;
+   target := get_sfall_arg;
+   user := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (target == dude_obj and user == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0); // prevent consuming item
+      end
+   end
+end
+
+procedure removeinven_handler begin
+   variable owner, item, pid, current_worn, remaining;
+   owner := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (owner == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      current_worn := get_sfall_global_int(SGVAR_WORN_GLASSES);
+      if (current_worn == pid) then begin
+         remaining := obj_is_carrying_obj_pid(dude_obj, pid);
+         if (remaining <= 1) then begin
+            call remove_glasses(current_worn);
+            display_msg("Вы сняли очки.");
+         end
+      end
+   end
+end

@@ -106,12 +106,12 @@ const MODS_DATABASE = [
     id: "angela",
     title: "ANGELA BISHOP COMPANION",
     category: "СПУТНИКИ",
-    badge: "СПУТНИК НЬЮ-РЕНО",
-    version: "v1.0",
+    badge: "В РАЗРАБОТКЕ",
+    version: "В РАЗРАБОТКЕ",
     author: "RP-CE Team, Antigravity Adapt",
-    desc: "Дочь мафиозного дона Джона Бишопа в роли полноценного спутника Избранного. Собственная ветка диалогов на русском языке, реакции на криминальные семьи Нью-Рено, смена брони и подчинение тактическим командам Party Orders.",
+    desc: "[В РАЗРАБОТКЕ] Дочь мафиозного дона Джона Бишопа в роли полноценного спутника Избранного. Планируется собственная ветка диалогов на русском языке, реакции на криминальные семьи Нью-Рено, смена брони и интеграция с Party Orders.",
     cancels: "Статичность семьи Бишоп, превращая авантюрную дочь криминального босса в опасного и дерзкого стрелка команды.",
-    specs: ["Локализация: Литературный русский", "Оружие: Пистолеты и ПП", "Экипировка брони: Полная", "Команды Party Orders: Поддерживаются"]
+    specs: ["Статус: В активной разработке", "Локализация: Литературный русский", "Оружие: Пистолеты и ПП", "Экипировка брони: В процессе интеграции"]
   },
   {
     id: "miria",
@@ -308,6 +308,12 @@ class LauncherApp {
     this.crtToggleBtn = document.getElementById('btn-toggle-crt');
     this.audioToggleBtn = document.getElementById('btn-toggle-sound');
     this.modalOverlay = document.getElementById('modal-overlay');
+
+    // Dynamic catalog counter
+    const navCatalog = document.getElementById('nav-catalog-label');
+    if (navCatalog) {
+      navCatalog.textContent = `КАТАЛОГ МОДОВ (${MODS_DATABASE.length})`;
+    }
   }
 
   bindEvents() {
