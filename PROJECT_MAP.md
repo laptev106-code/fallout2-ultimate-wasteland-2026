@@ -2,7 +2,8 @@
 # FALLOUT 2: ULTIMATE WASTELAND EDITION (2026)
 
 > **Статус:** Генеральный документ архитектуры и философии проекта  
-> **Версия:** Director's Cut 2026 (Ядро: RPU v28.0 / sfall v4.4.8 / SDL2 CE)  
+> **Версия:** Director's Cut 2026 (Ядро: RPU v28.0 / sfall v5.1.x / SDL2 CE)  
+> **Полный подробный реестр изменений (Changelog):** [MASTER_CHANGELOG.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/MASTER_CHANGELOG.md)  
 > **Главный разработчик (Lead/CTO):** Antigravity  
 > **Заказчик и Product Owner:** Геннадий Лаптев  
 > **Рабочая директория:** `D:\AG games mods\fallout2-ultimate-wasteland-2026\`  

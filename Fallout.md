@@ -2,6 +2,7 @@
 # Fallout 2: Ultimate Wasteland Edition (2026)
 
 > 🧭 **ГЕНЕРАЛЬНАЯ КАРТА ПРОЕКТА И ФИЛОСОФИЯ СБОРКИ:** [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md)  
+> 📜 **ПОЛНЫЙ ПОДРОБНЫЙ ЧЕНДЖЛОГ (ДОБАВЛЕНО / ИСПРАВЛЕНО):** [MASTER_CHANGELOG.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/MASTER_CHANGELOG.md)  
 > ⚠️ **ОБЯЗАТЕЛЬНАЯ ДИРЕКТИВА АГЕНТА:** При любой разработке, добавлении модов, правке диалогов, скриптов и сборке инсталлятора агент ОБЯЗАН строго ссылаться и руководствоваться принципами и каталогом из [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md). Никакого наваливания мусора, строгий канон, баланс и закрытый цикл проверки.
 
 ---
