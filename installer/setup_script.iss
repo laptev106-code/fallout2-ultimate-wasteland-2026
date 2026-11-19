@@ -24,6 +24,9 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 InternalCompressLevel=ultra64
 LZMAUseSeparateProcess=yes
+DiskSpanning=yes
+DiskSliceSize=max
+SlicesPerDisk=1
 WizardStyle=modern
 DisableWelcomePage=no
 PrivilegesRequired=lowest
@@ -67,10 +70,10 @@ Source: "E:\Fallout2_Ultimate\Run_Launcher.bat"; DestDir: "{app}"; Flags: ignore
 Source: "E:\Fallout2_Ultimate\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: launcher
 
 ; 3. Профиль Gameplay Ultimate (полный рабочий билд с модами и фиксами)
-Source: "E:\Fallout2_Ultimate\Fallout2_Gameplay\*"; DestDir: "{app}\Fallout2_Gameplay"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak"; Components: gameplay
+Source: "E:\Fallout2_Ultimate\Fallout2_Gameplay\*"; DestDir: "{app}\Fallout2_Gameplay"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak,DATA\SAVEGAME\SLOT*"; Components: gameplay
 
 ; 4. Профиль HD Community Edition (C++ движок и шейдеры)
-Source: "E:\Fallout2_Ultimate\Fallout2_HD\*"; DestDir: "{app}\Fallout2_HD"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak"; Components: hd
+Source: "E:\Fallout2_Ultimate\Fallout2_HD\*"; DestDir: "{app}\Fallout2_HD"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.tmp,*.bak,DATA\SAVEGAME\SLOT*"; Components: hd
 
 [Icons]
 ; Ярлык на Рабочем столе для запуска главного лаунчера
