@@ -1,0 +1,77 @@
+/*
+   Inventory Action Cost Balance Mod
+   Fallout 2: Ultimate Wasteland Edition (2026)
+   - Opening inventory: FREE (0 AP) to inspect items and weight.
+   - Using items / drugs in inventory costs 2 AP (1 AP with Quick Pockets).
+   - Blocks usage if not enough AP remaining.
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_itemapcost"
+
+#include "define.h"
+#include "command.h"
+#include "sfall/sfall.h"
+#include "sfall/define_extra.h"
+
+procedure start;
+procedure apcost_handler;
+procedure useobjon_handler;
+procedure get_item_cost;
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      register_hook_proc(HOOK_CALCAPCOST, apcost_handler);
+      register_hook_proc(HOOK_USEOBJON, useobjon_handler);
+   end
+end
+
+procedure get_item_cost begin
+   if (has_trait(TRAIT_PERK, dude_obj, PERK_quick_pockets)) then
+      return 1;
+   return 2;
+end
+
+procedure item_by_attack_type(variable critter, variable type) begin
+   variable slot;
+   if (type > 3 and type != ATKTYPE_LWEP_RELOAD and type != ATKTYPE_RWEP_RELOAD) then
+      return 0;
+   if (type < 2 or type == ATKTYPE_LWEP_RELOAD) then
+      slot := INVEN_TYPE_LEFT_HAND;
+   else
+      slot := INVEN_TYPE_RIGHT_HAND;
+   return critter_inven_obj(critter, slot);
+end
+
+procedure apcost_handler begin
+   variable critter, attackType, item, cost;
+   critter := get_sfall_arg;
+   attackType := get_sfall_arg;
+
+   item := item_by_attack_type(critter, attackType);
+   if (item != 0 and obj_item_subtype(item) != item_type_weapon) then begin
+      cost := get_item_cost;
+      set_sfall_return(cost);
+   end
+end
+
+procedure useobjon_handler begin
+   variable target, critter, item, ap, cost;
+   target := get_sfall_arg;
+   critter := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (combat_is_initialized and critter == dude_obj) then begin
+      if (get_game_mode bwand INVENTORY) then begin
+         cost := get_item_cost;
+         ap := get_critter_current_ap(critter);
+         if (ap >= cost) then begin
+            set_critter_current_ap(critter, ap - cost);
+         end else begin
+            display_msg("Недостаточно очков действия!");
+            set_sfall_return(0); // block item use
+         end
+      end
+   end
+end

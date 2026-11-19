@@ -1,0 +1,49 @@
+/*
+   Molotov Fire Damage Mod for Fallout 2 (Ultimate Wasteland Edition 2026)
+   Inflicts genuine fire damage to critters and checks fire resistance (DT/DR).
+   Scenery objects/doors can still be blown up as before.
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_molotov"
+
+#include "define.h"
+#include "command.h"
+#include "sfall/sfall.h"
+#include "sfall/define_extra.h"
+
+procedure start;
+procedure afterhitroll_handler;
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      register_hook_proc(HOOK_AFTERHITROLL, afterhitroll_handler);
+   end
+end
+
+procedure afterhitroll_handler begin
+   variable hitType, attacker, target, slot, item;
+   hitType := get_sfall_arg;
+   attacker := get_sfall_arg;
+   target := get_sfall_arg;
+
+   if (target != 0 and attacker != 0) then begin
+      if (attacker == dude_obj and active_hand == 0) then begin
+         slot := INVEN_TYPE_LEFT_HAND;
+      end else begin
+         slot := INVEN_TYPE_RIGHT_HAND;
+      end
+      item := critter_inven_obj(attacker, slot);
+
+      if (item != 0 and obj_pid(item) == PID_MOLOTOV_COCKTAIL) then begin
+         if (obj_type(target) == OBJ_TYPE_SCENERY and hitType > 1) then begin
+            set_proto_data(PID_MOLOTOV_COCKTAIL, PROTO_WP_DMG_TYPE, DMG_explosion);
+         end else begin
+            set_proto_data(PID_MOLOTOV_COCKTAIL, PROTO_WP_DMG_TYPE, DMG_fire);
+            set_attack_explosion_radius(2);
+            set_attack_is_explosion_fire;
+         end
+      end
+   end
+end

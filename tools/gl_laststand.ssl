@@ -6,11 +6,11 @@
 #pragma sce
 #define SCRIPT_REALNAME "gl_laststand"
 
-#include "define.h"
-#include "command.h"
-#include "sfall/sfall.h"
-#include "sfall/define_extra.h"
-#include "sfall/lib.arrays.h"
+#include "headers/define.h"
+#include "headers/command.h"
+#include "headers/sfall/sfall.h"
+#include "headers/sfall/define_extra.h"
+#include "headers/sfall/lib.arrays.h"
 
 variable enraged_list;
 
@@ -30,18 +30,18 @@ end
 procedure get_last_stand_phrase begin
    variable r;
    r := random(1, 12);
-   if (r == 1) then return "Р–РёРІС‹Рј РЅРµ СЃРґР°РјСЃСЏ! РЇ Р·Р°Р±РµСЂСѓ С‚РµР±СЏ СЃ СЃРѕР±РѕР№!";
-   if (r == 2) then return "Рљ С‡РµСЂС‚Сѓ РІСЃРµ! РЎРґРѕС…РЅРµРј РІРјРµСЃС‚Рµ!";
-   if (r == 3) then return "РњРЅРµ СѓР¶Рµ РЅРµС‡РµРіРѕ С‚РµСЂСЏС‚СЊ! РќР° РєСѓСЃРєРё СЂР°Р·РѕСЂРІСѓ!";
-   if (r == 4) then return "Р”СѓРјР°РµС€СЊ, СЏ РїРѕР±РµРіСѓ?! РЈРјСЂРё, С‚РІР°СЂСЊ!";
-   if (r == 5) then return "РўС‹ Р»СЏР¶РµС€СЊ РІ СЌС‚Сѓ Р·РµРјР»СЋ СЂР°РЅСЊС€Рµ РјРµРЅСЏ!";
-   if (r == 6) then return "Р’СЃРµС… РЅРµ РїРµСЂРµР±СЊРµС€СЊ! РџРѕР»СѓС‡Р°Р№, СѓР±Р»СЋРґРѕРє!";
-   if (r == 7) then return "Р—Р° РџСѓСЃС‚РѕС€СЊ! РЎРґРѕС…РЅРё!";
-   if (r == 8) then return "РЇ РІС‹СЂРІСѓ С‚РІРѕРµ СЃРµСЂРґС†Рµ РїРµСЂРµРґ СЃРјРµСЂС‚СЊСЋ!";
-   if (r == 9) then return "Р­С‚Рѕ РјРѕР№ РїРѕСЃР»РµРґРЅРёР№ Р±РѕР№, РЅРѕ С‚С‹ РїРѕР№РґРµС€СЊ СЃРѕ РјРЅРѕР№!";
-   if (r == 10) then return "Рђ-Р°-Р°-Р°! РЎРґРѕС…РЅРё-Рё-Рё!";
-   if (r == 11) then return "РќРё С€Р°РіСѓ РЅР°Р·Р°Рґ! РЈР±СЊСЋ!";
-   return "Р”Р°РІР°Р№, СЃС‚СЂРµР»СЏР№! РЇ РІСЃРµ СЂР°РІРЅРѕ РґРѕР±РµСЂСѓСЃСЊ РґРѕ С‚РІРѕРµР№ РіР»РѕС‚РєРё!";
+   if (r == 1) then return "Живым не сдамся! Я заберу тебя с собой!";
+   if (r == 2) then return "К черту все! Сдохнем вместе!";
+   if (r == 3) then return "Мне уже нечего терять! На куски разорву!";
+   if (r == 4) then return "Думаешь, я побегу?! Умри, тварь!";
+   if (r == 5) then return "Ты ляжешь в эту землю раньше меня!";
+   if (r == 6) then return "Всех не перебьешь! Получай, ублюдок!";
+   if (r == 7) then return "За Пустошь! Сдохни!";
+   if (r == 8) then return "Я вырву твое сердце перед смертью!";
+   if (r == 9) then return "Это мой последний бой, но ты пойдешь со мной!";
+   if (r == 10) then return "А-а-а-а! Сдохни-и-и!";
+   if (r == 11) then return "Ни шагу назад! Убью!";
+   return "Давай, стреляй! Я все равно доберусь до твоей глотки!";
 end
 
 procedure trigger_last_stand(variable cr) begin
