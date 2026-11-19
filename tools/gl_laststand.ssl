@@ -1,0 +1,131 @@
+/*
+   Tactical Combat AI: Desperation Last Stand & Cautious Retreat
+   Fallout 2: Ultimate Wasteland Edition (2026)
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_laststand"
+
+#include "define.h"
+#include "command.h"
+#include "sfall/sfall.h"
+#include "sfall/define_extra.h"
+#include "sfall/lib.arrays.h"
+
+variable enraged_list;
+
+procedure start;
+procedure combatturn_handler;
+procedure trigger_last_stand(variable cr);
+procedure get_last_stand_phrase;
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      enraged_list := 0;
+      register_hook_proc(HOOK_COMBATTURN, combatturn_handler);
+   end
+end
+
+procedure get_last_stand_phrase begin
+   variable r;
+   r := random(1, 12);
+   if (r == 1) then return "Живым не сдамся! Я заберу тебя с собой!";
+   if (r == 2) then return "К черту все! Сдохнем вместе!";
+   if (r == 3) then return "Мне уже нечего терять! На куски разорву!";
+   if (r == 4) then return "Думаешь, я побегу?! Умри, тварь!";
+   if (r == 5) then return "Ты ляжешь в эту землю раньше меня!";
+   if (r == 6) then return "Всех не перебьешь! Получай, ублюдок!";
+   if (r == 7) then return "За Пустошь! Сдохни!";
+   if (r == 8) then return "Я вырву твое сердце перед смертью!";
+   if (r == 9) then return "Это мой последний бой, но ты пойдешь со мной!";
+   if (r == 10) then return "А-а-а-а! Сдохни-и-и!";
+   if (r == 11) then return "Ни шагу назад! Убью!";
+   return "Давай, стреляй! Я все равно доберусь до твоей глотки!";
+end
+
+procedure trigger_last_stand(variable cr) begin
+   variable phrase;
+   // Cancel panic/flee state immediately
+   critter_set_flee_state(cr, 0);
+
+   // Float red desperate battle cry above enemy's head
+   phrase := get_last_stand_phrase;
+   float_msg(cr, phrase, FLOAT_MSG_RED);
+
+   // Charge into desperate counter-attack
+   attack(dude_obj);
+end
+
+procedure combatturn_handler begin
+   variable event_type, cr, ktype, cur_hp, max_hp, hp_percent, dist, roll, chance;
+   event_type := get_sfall_arg;
+   cr := get_sfall_arg;
+
+   // Combat ends (-1 or -2): clean up memory
+   if (event_type < 0) then begin
+      if (enraged_list != 0) then begin
+         free_array(enraged_list);
+         enraged_list := 0;
+      end
+      return;
+   end
+
+   // Only evaluate at the start of a critter's turn (event_type == 1)
+   if (event_type != 1 or cr == 0 or cr == dude_obj) then return;
+
+   // Ignore player party members
+   if (party_member_obj(obj_pid(cr)) != 0) then return;
+
+   // Get critter species/kill type
+   ktype := get_proto_data(obj_pid(cr), PROTO_CR_KILL_TYPE);
+
+   // Fearless entities: Super Mutants (3), Robots (10), Deathclaws (13), Aliens (16) NEVER flee
+   if (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16) then begin
+      if (critter_is_fleeing(cr)) then begin
+         critter_set_flee_state(cr, 0);
+         attack(dude_obj);
+      end
+      return;
+   end
+
+   // Humanoid combatants: men (0), women (1), ghouls (4)
+   if (ktype == 0 or ktype == 1 or ktype == 4) then begin
+      // Exclude mindless creatures/children
+      if (get_critter_stat(cr, STAT_iq) < 4) then return;
+
+      cur_hp := get_critter_stat(cr, STAT_current_hp);
+      max_hp := get_critter_stat(cr, STAT_max_hp);
+      if (max_hp <= 0) then return;
+      hp_percent := (cur_hp * 100) / max_hp;
+
+      // Only applies when critically injured (HP <= 22% or cur_hp <= 15)
+      if (hp_percent <= 22 or cur_hp <= 15) then begin
+         dist := tile_distance_objs(cr, dude_obj);
+
+         // CAUTIOUS RETREAT: If enemy already retreated to safe firing distance (>= 12 hexes),
+         // stop fleeing endlessly across the map; take position and fight from a distance!
+         if (dist >= 12 and critter_is_fleeing(cr)) then begin
+            critter_set_flee_state(cr, 0);
+            attack(dude_obj);
+            return;
+         end
+
+         // LAST STAND (BERZERK / DESPERATION COUNTER-ATTACK):
+         // Ensure each critter can only trigger Last Stand once per combat
+         if (enraged_list == 0) then enraged_list := create_array(0, 0);
+         if (scan_array(enraged_list, cr) != -1) then return;
+
+         // Rare chance: Base 8%
+         chance := 8;
+         if (get_critter_stat(cr, STAT_st) >= 7) then chance := chance + 2;
+         if (get_critter_stat(cr, STAT_en) >= 7) then chance := chance + 2;
+
+         roll := random(1, 100);
+         if (roll <= chance) then begin
+            call array_push(enraged_list, cr);
+            call trigger_last_stand(cr);
+         end
+      end
+   end
+end

@@ -139,79 +139,90 @@ class LauncherBridge:
             if mode == "borderless":
                 windowed = 1
                 borderless = 1
+                ddraw_mode = 6
             elif mode == "windowed":
                 windowed = 1
                 borderless = 0
+                ddraw_mode = 5
             else:
+                # Fullscreen: Mode=6 (borderless match) or Mode=4
                 windowed = 0
                 borderless = 0
+                ddraw_mode = 6
 
             filter_val = 2 if cfg.get("filtering") == "bilinear" else 0
 
-            # 1. Update f2_res.ini
-            ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
-            if os.path.exists(ini_path):
-                with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
-                    lines = f.readlines()
+            target_dirs = [self.gameplay_dir]
+            if hasattr(self, 'hd_dir') and os.path.exists(self.hd_dir):
+                target_dirs.append(self.hd_dir)
 
-                new_lines = []
-                for line in lines:
-                    if line.startswith("SCR_WIDTH="):
-                        new_lines.append(f"SCR_WIDTH={w}\n")
-                    elif line.startswith("SCR_HEIGHT="):
-                        new_lines.append(f"SCR_HEIGHT={h}\n")
-                    elif line.startswith("SCALE_2X="):
-                        new_lines.append(f"SCALE_2X={scale_2x}\n")
-                    elif line.startswith("WINDOWED="):
-                        new_lines.append(f"WINDOWED={windowed}\n")
-                    elif line.startswith("WINDOWED_FULLSCREEN="):
-                        new_lines.append(f"WINDOWED_FULLSCREEN={borderless}\n")
-                    elif line.startswith("COLOUR_BITS="):
-                        new_lines.append("COLOUR_BITS=32\n")
-                    else:
-                        new_lines.append(line)
+            for target_dir in target_dirs:
+                # 1. Update f2_res.ini
+                ini_path = os.path.join(target_dir, "f2_res.ini")
+                if os.path.exists(ini_path):
+                    with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
+                        lines = f.readlines()
 
-                with open(ini_path, "w", encoding="utf-8") as f:
-                    f.writelines(new_lines)
+                    new_lines = []
+                    for line in lines:
+                        if line.startswith("SCR_WIDTH="):
+                            new_lines.append(f"SCR_WIDTH={w}\n")
+                        elif line.startswith("SCR_HEIGHT="):
+                            new_lines.append(f"SCR_HEIGHT={h}\n")
+                        elif line.startswith("SCALE_2X="):
+                            new_lines.append(f"SCALE_2X={scale_2x}\n")
+                        elif line.startswith("WINDOWED="):
+                            new_lines.append(f"WINDOWED={windowed}\n")
+                        elif line.startswith("WINDOWED_FULLSCREEN="):
+                            new_lines.append(f"WINDOWED_FULLSCREEN={borderless}\n")
+                        elif line.startswith("COLOUR_BITS="):
+                            new_lines.append("COLOUR_BITS=32\n")
+                        else:
+                            new_lines.append(line)
 
-            # 2. Update ddraw.ini
-            ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
-            if os.path.exists(ddraw_path):
-                with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
-                    dlines = f.readlines()
+                    with open(ini_path, "w", encoding="utf-8") as f:
+                        f.writelines(new_lines)
 
-                new_dlines = []
-                for line in dlines:
-                    if line.strip().startswith("TextureFilter="):
-                        new_dlines.append(f"TextureFilter={filter_val}\n")
-                    else:
-                        new_dlines.append(line)
+                # 2. Update ddraw.ini
+                ddraw_path = os.path.join(target_dir, "ddraw.ini")
+                if os.path.exists(ddraw_path):
+                    with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
+                        dlines = f.readlines()
 
-                with open(ddraw_path, "w", encoding="utf-8") as f:
-                    f.writelines(new_dlines)
+                    new_dlines = []
+                    for line in dlines:
+                        if line.strip().startswith("TextureFilter="):
+                            new_dlines.append(f"TextureFilter={filter_val}\n")
+                        elif line.startswith("Mode="):
+                            new_dlines.append(f"Mode={ddraw_mode}\n")
+                        else:
+                            new_dlines.append(line)
 
-            # 3. Update fallout2.cfg
-            cfg_path = os.path.join(self.gameplay_dir, "fallout2.cfg")
-            if os.path.exists(cfg_path):
-                music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
-                sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
+                    with open(ddraw_path, "w", encoding="utf-8") as f:
+                        f.writelines(new_dlines)
 
-                with open(cfg_path, "r", encoding="utf-8", errors="ignore") as f:
-                    lines = f.readlines()
+                # 3. Update fallout2.cfg
+                cfg_path = os.path.join(target_dir, "fallout2.cfg")
+                if os.path.exists(cfg_path):
+                    music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
+                    sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
 
-                new_lines = []
-                for line in lines:
-                    if line.startswith("music_volume="):
-                        new_lines.append(f"music_volume={music_vol}\n")
-                    elif line.startswith("sndfx_volume="):
-                        new_lines.append(f"sndfx_volume={sfx_vol}\n")
-                    elif line.startswith("speech_volume="):
-                        new_lines.append(f"speech_volume={sfx_vol}\n")
-                    else:
-                        new_lines.append(line)
+                    with open(cfg_path, "r", encoding="utf-8", errors="ignore") as f:
+                        lines = f.readlines()
 
-                with open(cfg_path, "w", encoding="utf-8") as f:
-                    f.writelines(new_lines)
+                    new_lines = []
+                    for line in lines:
+                        if line.startswith("music_volume="):
+                            new_lines.append(f"music_volume={music_vol}\n")
+                        elif line.startswith("sndfx_volume="):
+                            new_lines.append(f"sndfx_volume={sfx_vol}\n")
+                        elif line.startswith("speech_volume="):
+                            new_lines.append(f"speech_volume={sfx_vol}\n")
+                        else:
+                            new_lines.append(line)
+
+                    with open(cfg_path, "w", encoding="utf-8") as f:
+                        f.writelines(new_lines)
 
             return {"status": "success"}
         except Exception as e:
