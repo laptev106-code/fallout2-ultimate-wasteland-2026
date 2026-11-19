@@ -14,7 +14,7 @@ rpu_wakizashi_animations.dat
 fo2_interface_upscaled.dat
 fo2_pip_timers.dat
 
-; Talking Heads & Companion Audio
+; Talking Heads Models & Audio
 cassidy_head.dat
 cassidy_voice_joey_bracken_hq.dat
 talking_heads.dat
@@ -29,6 +29,9 @@ InventoryFilter.dat
 rpu_y_ecco.dat
 F2MechanicsMiniRework.dat
 
-; Translations (Top Priority over English text)
+; Translations (Base Russian Text)
 rpu_russian.dat
 upu_russian_sound.dat
+
+; Talking Heads Compatibility & Russian Lip-Sync (Top Priority)
+talking_heads_that_rpu_map_update_patch.dat
