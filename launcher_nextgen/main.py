@@ -8,6 +8,8 @@ import json
 import zipfile
 import subprocess
 import webbrowser
+import shutil
+import ctypes
 from datetime import datetime
 import webview
 
@@ -24,38 +26,48 @@ class LauncherBridge:
         self._window = window
 
     def launch_profile(self, profile: str) -> dict:
-        """Запуск выбранного игрового профиля с проверкой фоновых процессов."""
+        """Запуск выбранного игрового профиля с проверкой всех процессов движка."""
         try:
-            # Проверка, не запущена ли уже игра
+            # 1. Проверка всех потенциально запущенных исполняемых файлов
+            tracked_exes = ["fallout2.exe", "dustlight.exe", "fallout2-ce.exe"]
             try:
-                tasklist = subprocess.check_output('tasklist /FI "IMAGENAME eq fallout2.exe"', shell=True, text=True)
-                if "fallout2.exe" in tasklist.lower():
-                    return {"status": "error", "message": "Процесс fallout2.exe уже запущен в системе."}
-            except Exception:
-                pass
+                tasklist = subprocess.check_output('tasklist /NH /FO CSV', shell=True, text=True, errors="ignore").lower()
+                for exe in tracked_exes:
+                    if f'"{exe}"' in tasklist or f'{exe}' in tasklist:
+                        return {
+                            "status": "error",
+                            "message": f"Процесс игры ({exe}) уже активен в памяти Windows. Закройте его перед новым запуском."
+                        }
+            except Exception as e:
+                print("Tasklist check warning:", e)
 
+            # 2. Выбор целевого исполняемого файла
             if profile == "gameplay":
                 target_exe = os.path.join(self.gameplay_dir, "fallout2.exe")
                 target_cwd = self.gameplay_dir
             else:
-                ce_exe = os.path.join(self.hd_dir, "fallout2-ce.exe")
                 dust_exe = os.path.join(self.hd_dir, "dustlight.exe")
+                ce_exe = os.path.join(self.hd_dir, "fallout2-ce.exe")
                 target_exe = dust_exe if os.path.exists(dust_exe) else ce_exe
                 target_cwd = self.hd_dir
 
             if not os.path.exists(target_exe):
-                return {"status": "error", "message": f"Исполняемый файл не найден: {target_exe}"}
+                return {
+                    "status": "error",
+                    "message": f"Исполняемый файл не найден на диске: {target_exe}"
+                }
 
+            # 3. Запуск дочернего процесса
             subprocess.Popen([target_exe], cwd=target_cwd)
-            return {"status": "success", "profile": profile}
+            return {"status": "success", "profile": profile, "exe": os.path.basename(target_exe)}
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return {"status": "error", "message": f"Критический сбой запуска: {str(e)}"}
 
     def read_config(self) -> dict:
         """Считывание текущих настроек f2_res.ini, ddraw.ini и fallout2.cfg."""
         cfg = {
             "resolution": "2560x1440",
-            "mode": "fullscreen",
+            "mode": "borderless",
             "scale": "2x",
             "filtering": "bilinear",
             "musicVol": 80,
@@ -71,22 +83,26 @@ class LauncherBridge:
 
                 w = 2560
                 h = 1440
-                win_val = 0
-                win_fs = 0
+                win_val = 1
+                win_fs = 1
                 for line in content.splitlines():
                     line_s = line.strip()
                     if line_s.startswith("SCR_WIDTH="):
-                        w = int(line_s.split("=")[1].strip())
+                        val = line_s.split("=")[1].strip()
+                        if val.isdigit(): w = int(val)
                     elif line_s.startswith("SCR_HEIGHT="):
-                        h = int(line_s.split("=")[1].strip())
+                        val = line_s.split("=")[1].strip()
+                        if val.isdigit(): h = int(val)
                     elif line_s.startswith("SCALE_2X=0"):
                         cfg["scale"] = "1x"
                     elif line_s.startswith("SCALE_2X=1"):
                         cfg["scale"] = "2x"
                     elif line_s.startswith("WINDOWED="):
-                        win_val = int(line_s.split("=")[1].strip())
+                        val = line_s.split("=")[1].strip()
+                        if val.isdigit(): win_val = int(val)
                     elif line_s.startswith("WINDOWED_FULLSCREEN="):
-                        win_fs = int(line_s.split("=")[1].strip())
+                        val = line_s.split("=")[1].strip()
+                        if val.isdigit(): win_fs = int(val)
 
                 cfg["resolution"] = f"{w}x{h}"
                 if win_val == 1 and win_fs == 1:
@@ -102,7 +118,7 @@ class LauncherBridge:
         ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
         if os.path.exists(ddraw_path):
             try:
-                with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(ddraw_path, "r", encoding="cp1251", errors="ignore") as f:
                     for line in f:
                         if line.strip().startswith("TextureFilter="):
                             val = line.strip().split("=")[1].strip()
@@ -117,25 +133,65 @@ class LauncherBridge:
                 with open(fallout_cfg, "r", encoding="utf-8", errors="ignore") as f:
                     for line in f:
                         if line.startswith("music_volume="):
-                            vol = int(line.split("=")[1].strip())
-                            cfg["musicVol"] = int((vol / 32767.0) * 100)
+                            val = line.split("=")[1].strip()
+                            if val.isdigit(): cfg["musicVol"] = int((int(val) / 32767.0) * 100)
                         elif line.startswith("sndfx_volume="):
-                            vol = int(line.split("=")[1].strip())
-                            cfg["sfxVol"] = int((vol / 32767.0) * 100)
+                            val = line.split("=")[1].strip()
+                            if val.isdigit(): cfg["sfxVol"] = int((int(val) / 32767.0) * 100)
             except Exception:
                 pass
 
         return cfg
 
+    def _safe_write_ini_key(self, file_path: str, key_values: dict, encoding="utf-8"):
+        """Безопасная запись параметров в INI: обновление существующих ключей или добавление отсутствующих."""
+        if not os.path.exists(file_path):
+            return
+
+        # Создаем страховочную копию перед записью
+        bak_path = file_path + ".bak"
+        try:
+            shutil.copy2(file_path, bak_path)
+        except Exception:
+            pass
+
+        with open(file_path, "r", encoding=encoding, errors="ignore") as f:
+            lines = f.readlines()
+
+        unhandled_keys = set(key_values.keys())
+        new_lines = []
+
+        for line in lines:
+            stripped = line.strip()
+            replaced = False
+            for k, v in key_values.items():
+                if stripped.startswith(f"{k}=") or stripped.startswith(f"{k} ="):
+                    new_lines.append(f"{k}={v}\n")
+                    if k in unhandled_keys:
+                        unhandled_keys.remove(k)
+                    replaced = True
+                    break
+            if not replaced:
+                new_lines.append(line)
+
+        # Если каких-то ключей не было в файле, безопасно дописываем их в конец
+        if unhandled_keys:
+            new_lines.append("\n; Added by Fallout 2 Next-Gen Launcher\n")
+            for k in unhandled_keys:
+                new_lines.append(f"{k}={key_values[k]}\n")
+
+        with open(file_path, "w", encoding=encoding, errors="ignore") as f:
+            f.writelines(new_lines)
+
     def save_config(self, cfg: dict) -> dict:
-        """Хирургическая запись настроек в f2_res.ini, ddraw.ini и fallout2.cfg."""
+        """Безопасная синхронизация графики и звука во все профили (Gameplay и HD)."""
         try:
             res_val = cfg.get("resolution", "2560x1440")
             w, h = res_val.split("x")
             w, h = int(w), int(h)
 
             scale_2x = 1 if cfg.get("scale") == "2x" else 0
-            mode = cfg.get("mode", "fullscreen")
+            mode = cfg.get("mode", "borderless")
             if mode == "borderless":
                 windowed = 1
                 borderless = 1
@@ -145,109 +201,78 @@ class LauncherBridge:
                 borderless = 0
                 ddraw_mode = 5
             else:
-                # Fullscreen: Mode=6 (borderless match) or Mode=4
                 windowed = 0
                 borderless = 0
                 ddraw_mode = 6
 
             filter_val = 2 if cfg.get("filtering") == "bilinear" else 0
+            music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
+            sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
 
             target_dirs = [self.gameplay_dir]
-            if hasattr(self, 'hd_dir') and os.path.exists(self.hd_dir):
+            if os.path.exists(self.hd_dir):
                 target_dirs.append(self.hd_dir)
 
             for target_dir in target_dirs:
-                # 1. Update f2_res.ini
-                ini_path = os.path.join(target_dir, "f2_res.ini")
-                if os.path.exists(ini_path):
-                    with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
-                        lines = f.readlines()
+                # 1. f2_res.ini
+                f2_res_path = os.path.join(target_dir, "f2_res.ini")
+                self._safe_write_ini_key(f2_res_path, {
+                    "SCR_WIDTH": w,
+                    "SCR_HEIGHT": h,
+                    "SCALE_2X": scale_2x,
+                    "WINDOWED": windowed,
+                    "WINDOWED_FULLSCREEN": borderless,
+                    "COLOUR_BITS": 32
+                }, encoding="cp1251")
 
-                    new_lines = []
-                    for line in lines:
-                        if line.startswith("SCR_WIDTH="):
-                            new_lines.append(f"SCR_WIDTH={w}\n")
-                        elif line.startswith("SCR_HEIGHT="):
-                            new_lines.append(f"SCR_HEIGHT={h}\n")
-                        elif line.startswith("SCALE_2X="):
-                            new_lines.append(f"SCALE_2X={scale_2x}\n")
-                        elif line.startswith("WINDOWED="):
-                            new_lines.append(f"WINDOWED={windowed}\n")
-                        elif line.startswith("WINDOWED_FULLSCREEN="):
-                            new_lines.append(f"WINDOWED_FULLSCREEN={borderless}\n")
-                        elif line.startswith("COLOUR_BITS="):
-                            new_lines.append("COLOUR_BITS=32\n")
-                        else:
-                            new_lines.append(line)
-
-                    with open(ini_path, "w", encoding="utf-8") as f:
-                        f.writelines(new_lines)
-
-                # 2. Update ddraw.ini
+                # 2. ddraw.ini
                 ddraw_path = os.path.join(target_dir, "ddraw.ini")
-                if os.path.exists(ddraw_path):
-                    with open(ddraw_path, "r", encoding="utf-8", errors="ignore") as f:
-                        dlines = f.readlines()
+                self._safe_write_ini_key(ddraw_path, {
+                    "Mode": ddraw_mode,
+                    "TextureFilter": filter_val
+                }, encoding="cp1251")
 
-                    new_dlines = []
-                    for line in dlines:
-                        if line.strip().startswith("TextureFilter="):
-                            new_dlines.append(f"TextureFilter={filter_val}\n")
-                        elif line.startswith("Mode="):
-                            new_dlines.append(f"Mode={ddraw_mode}\n")
-                        else:
-                            new_dlines.append(line)
+                # 3. fallout2.cfg
+                fallout_cfg = os.path.join(target_dir, "fallout2.cfg")
+                self._safe_write_ini_key(fallout_cfg, {
+                    "music_volume": music_vol,
+                    "sndfx_volume": sfx_vol,
+                    "speech_volume": sfx_vol
+                }, encoding="utf-8")
 
-                    with open(ddraw_path, "w", encoding="utf-8") as f:
-                        f.writelines(new_dlines)
-
-                # 3. Update fallout2.cfg
-                cfg_path = os.path.join(target_dir, "fallout2.cfg")
-                if os.path.exists(cfg_path):
-                    music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
-                    sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
-
-                    with open(cfg_path, "r", encoding="utf-8", errors="ignore") as f:
-                        lines = f.readlines()
-
-                    new_lines = []
-                    for line in lines:
-                        if line.startswith("music_volume="):
-                            new_lines.append(f"music_volume={music_vol}\n")
-                        elif line.startswith("sndfx_volume="):
-                            new_lines.append(f"sndfx_volume={sfx_vol}\n")
-                        elif line.startswith("speech_volume="):
-                            new_lines.append(f"speech_volume={sfx_vol}\n")
-                        else:
-                            new_lines.append(line)
-
-                    with open(cfg_path, "w", encoding="utf-8") as f:
-                        f.writelines(new_lines)
-
-            return {"status": "success"}
+            return {
+                "status": "success",
+                "message": f"Настройки успешно записаны: {w}x{h}, {mode}, {cfg.get('scale', '2x')}, {cfg.get('filtering', 'bilinear')}."
+            }
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return {"status": "error", "message": f"Ошибка сохранения настроек: {str(e)}"}
 
-    def get_saves_info(self) -> list:
-        """Сбор информации о слотах сохранений."""
-        saves_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
+    def get_saves_info(self, profile="gameplay") -> list:
+        """Сбор информации о слотах сохранений выбранного профиля."""
+        target_dir = self.gameplay_dir if profile == "gameplay" else self.hd_dir
+        saves_dir = os.path.join(target_dir, "DATA", "SAVEGAME")
         slots = []
+
         for i in range(1, 11):
             slot_name = f"SLOT{i:02d}"
             slot_path = os.path.join(saves_dir, slot_name)
             has_data = os.path.exists(slot_path) and len(os.listdir(slot_path)) > 0
-            meta = "Пусто"
+            meta = "Пустой слот"
             size_kb = 0
             mtime_str = ""
 
             if has_data:
                 try:
-                    total_bytes = sum(os.path.getsize(os.path.join(slot_path, f)) for f in os.listdir(slot_path) if os.path.isfile(os.path.join(slot_path, f)))
+                    total_bytes = sum(
+                        os.path.getsize(os.path.join(slot_path, f)) 
+                        for f in os.listdir(slot_path) 
+                        if os.path.isfile(os.path.join(slot_path, f))
+                    )
                     size_kb = total_bytes // 1024
                     save_dat = os.path.join(slot_path, "SAVE.DAT")
                     mtime = os.path.getmtime(save_dat if os.path.exists(save_dat) else slot_path)
                     mtime_str = datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M")
-                    meta = f"Слот {i} (Активен)"
+                    meta = f"Сейв {i} ({size_kb} КБ)"
                 except Exception:
                     pass
 
@@ -260,24 +285,134 @@ class LauncherBridge:
             })
         return slots
 
-    def backup_saves(self) -> str:
+    def backup_saves(self, profile="gameplay") -> dict:
         """Создание резервной ZIP-копии папки SAVEGAME."""
-        saves_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
-        if not os.path.exists(saves_dir):
-            raise Exception("Папка сохранений не найдена.")
+        try:
+            target_dir = self.gameplay_dir if profile == "gameplay" else self.hd_dir
+            saves_dir = os.path.join(target_dir, "DATA", "SAVEGAME")
+            if not os.path.exists(saves_dir):
+                return {"status": "error", "message": "Папка сохранений не найдена."}
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        zip_name = f"Fallout2_Saves_Backup_{timestamp}.zip"
-        zip_path = os.path.join(self.backups_dir, zip_name)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            zip_name = f"Fallout2_{profile}_{timestamp}.zip"
+            zip_path = os.path.join(self.backups_dir, zip_name)
 
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(saves_dir):
-                for file in files:
-                    full_p = os.path.join(root, file)
-                    rel_p = os.path.relpath(full_p, saves_dir)
-                    zipf.write(full_p, rel_p)
+            file_count = 0
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, _, files in os.walk(saves_dir):
+                    for file in files:
+                        full_p = os.path.join(root, file)
+                        rel_p = os.path.relpath(full_p, saves_dir)
+                        zipf.write(full_p, rel_p)
+                        file_count += 1
 
-        return zip_name
+            size_kb = os.path.getsize(zip_path) // 1024
+            return {
+                "status": "success",
+                "zipName": zip_name,
+                "sizeKb": size_kb,
+                "fileCount": file_count,
+                "path": zip_path
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    def list_backups(self) -> list:
+        """Получение списка существующих архивов резервных копий."""
+        if not os.path.exists(self.backups_dir):
+            return []
+        res = []
+        for f in sorted(os.listdir(self.backups_dir), reverse=True):
+            if f.lower().endswith(".zip"):
+                fp = os.path.join(self.backups_dir, f)
+                size_kb = os.path.getsize(fp) // 1024
+                mtime = os.path.getmtime(fp)
+                mtime_str = datetime.fromtimestamp(mtime).strftime("%d.%m.%Y %H:%M")
+                res.append({
+                    "fileName": f,
+                    "size": f"{size_kb} КБ",
+                    "date": mtime_str
+                })
+        return res
+
+    def restore_save_backup(self, zip_name: str, profile="gameplay") -> dict:
+        """Безопасное восстановление сохранений из бэкапа с предварительным автобэкапом."""
+        try:
+            zip_path = os.path.join(self.backups_dir, zip_name)
+            if not os.path.exists(zip_path):
+                return {"status": "error", "message": f"Архив бэкапа не найден: {zip_name}"}
+
+            target_dir = self.gameplay_dir if profile == "gameplay" else self.hd_dir
+            saves_dir = os.path.join(target_dir, "DATA", "SAVEGAME")
+
+            # 1. Автоматический снапшот перед перезаписью
+            if os.path.exists(saves_dir):
+                self.backup_saves(profile=f"safety_pre_restore_{profile}")
+
+            # 2. Распаковка архива
+            os.makedirs(saves_dir, exist_ok=True)
+            with zipfile.ZipFile(zip_path, 'r') as zipf:
+                zipf.extractall(saves_dir)
+
+            return {"status": "success", "message": f"Сейвы успешно восстановлены из {zip_name}!"}
+        except Exception as e:
+            return {"status": "error", "message": f"Сбой восстановления: {str(e)}"}
+
+    def generate_diagnostic_report(self, user_text: str, category: str, profile: str) -> dict:
+        """Генерация комплексного пакета телеметрии и диагностики для быстрой поддержки."""
+        try:
+            target_dir = self.gameplay_dir if "gameplay" in profile.lower() else self.hd_dir
+            
+            # Проверка наличия ключевых файлов
+            files_status = {}
+            for f in ["fallout2.exe", "ddraw.dll", "ddraw.ini", "f2_res.ini", "fallout2.cfg", "dustlight.exe"]:
+                fp = os.path.join(target_dir, f)
+                files_status[f] = "ЕСТЬ" if os.path.exists(fp) else "ОТСУТСТВУЕТ"
+
+            # Сбор последних строк логов
+            log_lines = []
+            for log_name in ["ddraw.log", "debug.log", "f2_res.log"]:
+                lp = os.path.join(target_dir, log_name)
+                if os.path.exists(lp):
+                    try:
+                        with open(lp, "r", encoding="utf-8", errors="ignore") as lf:
+                            last_lines = lf.readlines()[-15:]
+                            log_lines.append(f"=== {log_name} (последние {len(last_lines)} строк) ===\n" + "".join(last_lines))
+                    except Exception:
+                        pass
+
+            report = [
+                "============================================================",
+                "   FALLOUT 2 ULTIMATE WASTELAND 2026 // DIAGNOSTIC REPORT   ",
+                "============================================================",
+                f"Время формирования: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}",
+                f"Категория: {category}",
+                f"Выбранный профиль: {profile}",
+                f"Сообщение игрока: {user_text.strip() or 'Без комментария'}",
+                "",
+                "--- СОСТОЯНИЕ ФАЙЛОВОЙ СИСТЕМЫ ---",
+                *[f"  [{status}] {name}" for name, status in files_status.items()],
+                "",
+                "--- СРЕЗ КОНФИГУРАЦИИ ---",
+                json.dumps(self.read_config(), indent=2, ensure_ascii=False),
+                "",
+                "--- ЖУРНАЛЫ И ЛОГИ СИСТЕМЫ ---",
+                *(log_lines if log_lines else ["(Логи пусты или еще не сформированы движком)"]),
+                "============================================================"
+            ]
+
+            full_text = "\n".join(report)
+            report_path = os.path.join(self.backups_dir, "diagnostic_report.txt")
+            with open(report_path, "w", encoding="utf-8") as rf:
+                rf.write(full_text)
+
+            return {
+                "status": "success",
+                "reportText": full_text,
+                "savedPath": report_path
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
 
     def open_saves_folder(self):
         """Открытие папки сохранений в проводнике Windows."""
@@ -290,10 +425,28 @@ class LauncherBridge:
         webbrowser.open(url)
 
 
+def show_webview_error():
+    """Системное диалоговое окно при отсутствии Microsoft Edge WebView2."""
+    msg = (
+        "Для работы лаунчера Pip-Boy требуется компонент Microsoft Edge WebView2 Runtime.\n\n"
+        "Нажмите 'ОК', чтобы открыть страницу официальной загрузки от Microsoft, "
+        "или запустите игру напрямую через ярлыки в папках профилей."
+    )
+    title = "Fallout 2 Ultimate Wasteland // Требуется WebView2"
+    MB_OKCANCEL = 0x01
+    MB_ICONWARNING = 0x30
+    IDOK = 1
+    
+    try:
+        ret = ctypes.windll.user32.MessageBoxW(0, msg, title, MB_OKCANCEL | MB_ICONWARNING)
+        if ret == IDOK:
+            webbrowser.open("https://go.microsoft.com/fwlink/p/?LinkId=2124703")
+    except Exception:
+        webbrowser.open("https://go.microsoft.com/fwlink/p/?LinkId=2124703")
+
+
 def main():
-    # Находим базовую директорию сборки
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Если запущен из launcher_nextgen, root - родительская папка или E:\Fallout2_Ultimate
     possible_roots = [
         r"E:\Fallout2_Ultimate",
         os.path.abspath(os.path.join(current_dir, "..", "..", "Fallout2_Ultimate")),
@@ -321,20 +474,22 @@ def main():
 
     index_path = os.path.join(ui_dir, "index.html")
 
-    window = webview.create_window(
-        title="Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV",
-        url=index_path,
-        js_api=bridge,
-        width=1280,
-        height=820,
-        min_size=(1024, 720),
-        background_color="#050806",
-        text_select=False
-    )
-    bridge.set_window(window)
-
-    # Запуск WebView2 с аппаратным ускорением GPU
-    webview.start(gui="edgechromium", debug=False)
+    try:
+        window = webview.create_window(
+            title="Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV",
+            url=index_path,
+            js_api=bridge,
+            width=1280,
+            height=820,
+            min_size=(1024, 720),
+            background_color="#050806",
+            text_select=False
+        )
+        bridge.set_window(window)
+        webview.start(gui="edgechromium", debug=False)
+    except Exception as e:
+        print("WebView2 initialization error:", e)
+        show_webview_error()
 
 if __name__ == "__main__":
     main()

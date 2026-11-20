@@ -26,4 +26,6 @@ test_config/
 build/
 build_pipboy/
 build_nextgen/
+dist/
+dist_*/
 *.spec

@@ -2,7 +2,7 @@
 # FALLOUT 2: ULTIMATE WASTELAND EDITION (2026)
 
 > **Статус:** Генеральный документ архитектуры и философии проекта  
-> **Версия:** Director's Cut 2026 (Ядро: RPU v28.0 / sfall v5.1.x / SDL2 CE)  
+> **Версия:** Director's Cut 2026 (Ядро: RPU v2.4.34 / sfall v4.4.8 DX9 / SDL2 CE Dustlight v0.9.4-beta)  
 > **Генеральный кодекс лора и канона 2241 года:** [FALLOUT_LORE_CANON.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/FALLOUT_LORE_CANON.md)  
 > **Полный подробный реестр изменений (Changelog):** [MASTER_CHANGELOG.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/MASTER_CHANGELOG.md)  
 > **Главный разработчик (Lead/CTO):** Antigravity  

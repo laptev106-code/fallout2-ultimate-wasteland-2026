@@ -54,7 +54,7 @@
           </button>
           <button class="nav-item" data-view="catalog">
             <span class="nav-icon">📋</span>
-            <span id="nav-catalog-label">КАТАЛОГ МОДОВ (25)</span>
+            <span id="nav-catalog-label">КАТАЛОГ МОДОВ (28)</span>
           </button>
           <button class="nav-item" data-view="settings">
             <span class="nav-icon">⚙️</span>
@@ -84,14 +84,14 @@
               <div class="profile-card">
                 <div class="profile-hero">
                   <img class="profile-poster-img" src="assets/new_reno_hero.png" alt="Gameplay Ultimate">
-                  <div class="profile-badge-overlay">МАКСИМАЛЬНОЕ КОЛИЧЕСТВО МОДОВ (25 МОДУЛЕЙ)</div>
+                  <div class="profile-badge-overlay" id="badge-gameplay-mods">МАКСИМАЛЬНОЕ КОЛИЧЕСТВО МОДОВ (28 МОДУЛЕЙ)</div>
                 </div>
                 <div class="profile-content">
                   <div class="profile-title">GAMEPLAY ULTIMATE</div>
                   <div class="profile-subtitle">Полная переработка и восстановленный контент на движке sfall</div>
                   <div class="profile-story">
                     <p class="story-lead">В такой Fallout вы ещё не играли.</p>
-                    <p>Глобальная переработка классической Пустоши, объединяющая 25 модификаций и каноничных модулей в единую стабильную систему. Здесь возвращены вырезанные локации (Аббатство, EPA, Деревня Дикарей, Убежище 23) и незаконченные квесты, добавлены 3D-головы ключевых лидеров Пустоши, новая спутница Ангелина Бишоп из Нью-Рено, напарники визуально меняют экипировку при смене брони, а саундтрек звучит в несжатом стерео 44.1 кГц.</p>
+                    <p id="gameplay-story-desc">Глобальная переработка классической Пустоши, объединяющая 28 модификаций и каноничных модулей в единую стабильную систему. Здесь возвращены вырезанные локации (Аббатство, EPA, Деревня Дикарей, Убежище 23) и незаконченные квесты, добавлены 3D-головы ключевых лидеров Пустоши, новая спутница Ангелина Бишоп из Нью-Рено, напарники визуально меняют экипировку при смене брони, а саундтрек звучит в несжатом стерео 44.1 кГц.</p>
                     <p class="story-tail">И многое, многое другое.</p>
                   </div>
                   <button id="btn-launch-gameplay" class="btn-launch">
@@ -125,13 +125,14 @@
           <!-- VIEW 2: КАТАЛОГ МОДОВ -->
           <section id="view-catalog" class="view-page">
             <div class="catalog-filters">
-              <button class="filter-pill active" data-filter="ALL">ВСЕ (25 МОДОВ)</button>
+              <button class="filter-pill active" data-filter="ALL">ВСЕ (28 МОДОВ)</button>
               <button class="filter-pill" data-filter="КВЕСТЫ">КВЕСТЫ И МИР</button>
               <button class="filter-pill" data-filter="ВИЗУАЛ">ВИЗУАЛ И АНИМАЦИИ</button>
               <button class="filter-pill" data-filter="СПУТНИКИ">НАПАРНИКИ</button>
               <button class="filter-pill" data-filter="ГЕЙМПЛЕЙ">ГЕЙМПЛЕЙ И QOL</button>
               <button class="filter-pill" data-filter="ЗВУК">ЗВУК 44.1 КГЦ</button>
               <button class="filter-pill" data-filter="ДВИЖОК">ДВИЖОК И ЯДРО</button>
+              <button class="filter-pill" data-filter="ПЕРЕВОД">ПЕРЕВОД 18+</button>
               <button id="btn-toggle-thumbs" class="filter-pill view-toggle-btn" style="margin-left: auto;">📷 СКРИНШОТЫ</button>
             </div>
             <div id="catalog-cards-container" class="catalog-grid"></div>
@@ -226,11 +227,24 @@
 
           <!-- VIEW 4: СОХРАНЕНИЯ -->
           <section id="view-saves" class="view-page">
+            <div class="saves-profile-bar" style="display: flex; gap: 10px; margin-bottom: 14px;">
+              <button id="btn-saves-profile-gameplay" class="filter-pill active" data-profile="gameplay">ПРОФИЛЬ: GAMEPLAY ULTIMATE</button>
+              <button id="btn-saves-profile-hd" class="filter-pill" data-profile="hd">ПРОФИЛЬ: REWORK HD</button>
+            </div>
             <div class="saves-actions-bar">
               <button id="btn-backup-saves" class="btn-primary">📦 СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ (ZIP)</button>
               <button id="btn-open-saves-dir" class="ctrl-btn" style="padding: 10px 18px; font-size: 13px;">📂 ОТКРЫТЬ ПАПКУ СЕЙВОВ В EXPLORER</button>
             </div>
             <div id="saves-slots-container" class="save-slot-grid"></div>
+            <div class="saves-backup-manager" style="margin-top: 20px; padding: 14px; background: rgba(0,255,102,0.03); border: 1px solid var(--border-muted); border-radius: 4px;">
+              <div class="section-title" style="font-size: 13px; margin-bottom: 8px;">АРХИВЫ РЕЗЕРВНЫХ КОПИЙ (BACKUPS):</div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="select-backups-list" class="form-select" style="flex: 1;">
+                  <option value="">(Архивы не найдены)</option>
+                </select>
+                <button id="btn-restore-save" class="ctrl-btn" style="padding: 10px 16px; font-size: 12px;">♻ ВОССТАНОВИТЬ ИЗ АРХИВА</button>
+              </div>
+            </div>
           </section>
 
           <!-- VIEW 5: СВЯЗЬ И БАГ-РЕПОРТ -->
@@ -353,6 +367,7 @@
   <!-- Scripts -->
   <script src="js/particles.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/mods_data.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

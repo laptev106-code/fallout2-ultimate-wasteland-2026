@@ -11,7 +11,7 @@
 
 | Режим | Движок / Стек | Ключевые компоненты | Назначение |
 | :--- | :--- | :--- | :--- |
-| **01: Ultimate Gameplay Edition** | `Fallout2.exe` + `sfall 4.5.1` (DirectX 9) | RPU 2.4.34 + EcCo 1.0.0 hf1 + THAT Patch v2 + MiniRework 2.0.4.3 + FO2Tweaks 14.7 + Lossless Music (WAV 44.1kHz) + Talking Heads 3.7 + THAT 0.4.0 | **Основное проверенное прохождение**: строгий баланс урона и брони EcCo, крафт, ловушки, яды, скрытность, Talking Heads диалоги и аудиофильский саундтрек без риска для скриптов |
+| **01: Ultimate Gameplay Edition** | `Fallout2.exe` + `sfall v4.4.8` (DirectX 9) | RPU 2.4.34 + EcCo 1.0.0 hf1 + THAT Patch v2 + MiniRework 2.0.4.3 + FO2Tweaks 14.7 + Lossless Music (WAV 44.1kHz) + Talking Heads 3.7 + THAT 0.4.0 | **Основное проверенное прохождение**: строгий баланс урона и брони EcCo, крафт, ловушки, яды, скрытность, Talking Heads диалоги и аудиофильский саундтрек без риска для скриптов |
 | **02: Ultimate HD Edition** | `Fallout 2 Community Edition` (SDL2) | RPU 2.4.34 + Dustlight HD 0.9.4-beta + AI Upscale 2×/3× + Динамическое цветное освещение | **Визуальное погружение**: максимальная четкость спрайтов, мягкие тени и атмосферные темные ночи на нативном движке |
 
 ---
