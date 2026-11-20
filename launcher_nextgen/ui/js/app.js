@@ -385,6 +385,12 @@ class LauncherApp {
       sSfx.value = this.config.sfxVol ?? 80;
       document.getElementById('val-sfx').textContent = `${sSfx.value}%`;
     }
+
+    const chkReload = document.getElementById('toggle-autoreload');
+    if (chkReload) chkReload.checked = !!this.config.autoReload;
+
+    const chkRun = document.getElementById('toggle-alwaysrun');
+    if (chkRun) chkRun.checked = this.config.alwaysRun !== false;
   }
 
   async saveCurrentSettings(silent = false) {
@@ -401,6 +407,11 @@ class LauncherApp {
     if (selFilter) this.config.filtering = selFilter.value;
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
+
+    const chkReload = document.getElementById('toggle-autoreload');
+    const chkRun = document.getElementById('toggle-alwaysrun');
+    if (chkReload) this.config.autoReload = chkReload.checked;
+    if (chkRun) this.config.alwaysRun = chkRun.checked;
 
     const headerRes = document.getElementById('header-res-pill');
     if (headerRes && this.config.resolution) {

@@ -155,6 +155,7 @@ class LauncherBridge:
 
         # 3. fallout2.cfg
         fallout_cfg = os.path.join(self.gameplay_dir, "fallout2.cfg")
+        cfg["alwaysRun"] = True
         if os.path.exists(fallout_cfg):
             try:
                 with open(fallout_cfg, "r", encoding="utf-8", errors="ignore") as f:
@@ -165,6 +166,20 @@ class LauncherBridge:
                         elif line.startswith("sndfx_volume="):
                             val = line.split("=")[1].strip()
                             if val.isdigit(): cfg["sfxVol"] = int((int(val) / 32767.0) * 100)
+                        elif line.startswith("running="):
+                            cfg["alwaysRun"] = line.split("=")[1].strip() == "1"
+            except Exception:
+                pass
+
+        # 4. fo2tweaks.ini
+        fo2tweaks_cfg = os.path.join(self.gameplay_dir, "mods", "fo2tweaks.ini")
+        cfg["autoReload"] = False
+        if os.path.exists(fo2tweaks_cfg):
+            try:
+                with open(fo2tweaks_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if line.startswith("auto_reload="):
+                            cfg["autoReload"] = line.split("=")[1].strip() == "1"
             except Exception:
                 pass
 
@@ -267,6 +282,9 @@ class LauncherBridge:
                 ddraw_gh = 0
                 ce_scale = 1
 
+            auto_reload_val = 1 if cfg.get("autoReload", False) else 0
+            running_val = 1 if cfg.get("alwaysRun", True) else 0
+
             target_dirs = [self.gameplay_dir]
             if os.path.exists(self.hd_dir):
                 target_dirs.append(self.hd_dir)
@@ -296,7 +314,7 @@ class LauncherBridge:
                     "WindowData": 0,
                     "BackgroundKeyboard": 1,
                     "BackgroundMouse": 1,
-                    "SpeedInventoryPCRotation": 600,
+                    "SpeedInventoryPCRotation": 300,
                     "CombatPanelAnimDelay": 90,
                     "WorldMapEncounterRate": 14,
                     "SkipCompatModeCheck": 1
@@ -309,16 +327,17 @@ class LauncherBridge:
                     "sndfx_volume": sfx_vol,
                     "speech_volume": sfx_vol,
                     "combat_speed": 85,
+                    "running": running_val,
                     "resolution_x": w,
                     "resolution_y": h,
                     "scale": ce_scale,
                     "windowed": cfg_windowed
                 }, encoding="utf-8")
 
-                # 4. fo2tweaks.ini (отключение дерганного авто-релоада после боя)
+                # 4. fo2tweaks.ini (управление авто-перезарядкой после боя)
                 fo2tweaks_path = os.path.join(target_dir, "mods", "fo2tweaks.ini")
                 if os.path.exists(fo2tweaks_path):
-                    self._safe_write_ini_key(fo2tweaks_path, {"auto_reload": 0}, encoding="utf-8")
+                    self._safe_write_ini_key(fo2tweaks_path, {"auto_reload": auto_reload_val}, encoding="utf-8")
 
                 # 5. sfall-mods.ini (отключение 10-кадрового цикла сканирования криттеров)
                 sfall_mods_path = os.path.join(target_dir, "mods", "sfall-mods.ini")
