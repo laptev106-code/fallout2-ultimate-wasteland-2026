@@ -163,6 +163,17 @@
 
 ---
 
+### 3.4. Реестр внешних модов-кандидатов на доработку (External Candidate Register)
+Полный технический аудит, категоризация и правила хирургической доработки кандидатов зафиксированы в специальном реестре:
+👉 **[CANDIDATE_MODS_REGISTER.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/docs/CANDIDATE_MODS_REGISTER.md)**
+
+Включает:
+- **P1 (Берем сразу):** `Alternative Explosions`, `Unlocked Weapon Sounds 1.0`, `MapBlurFX`, фиксы Фокса (монтировка, сестра Сулика, сетка EPA).
+- **P2 (Берем строго с доработкой):** `RP Companion Expansion 0.81.1` (лимит партии, вычитка текста), `Lootable Armor` (шанс 15–25%, износ), `Mades Redo Recipes` (только 20 лорных рецептов), `Bunker 21 & Truck` (ребаланс лута).
+- **P3 (Исследование / Карантин):** `Scrapheap` (изоляция без Мегамода), `VaultVox`, `Carson City`, `Vault 14`.
+
+---
+
 ## 4. ПРАВИЛА И ЗАПРЕТЫ ДЛЯ АГЕНТА ПРИ РАБОТЕ С ПРОЕКТОМ (INVARIANTS)
 
 1. **Никакой отсебятины и треша:** Любая модификация или исправление обязаны гармонично вписываться в атмосферу Fallout 1 и Fallout 2.
