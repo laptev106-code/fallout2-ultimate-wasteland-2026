@@ -13,6 +13,7 @@ rpu_wakizashi_animations.dat
 ; Upscaled UI & Pip-Boy Notes
 fo2_interface_upscaled.dat
 fo2_pip_timers.dat
+MapBlurFX.dat
 
 ; Talking Heads Models & Audio
 cassidy_head.dat
