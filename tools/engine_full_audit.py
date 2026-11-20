@@ -283,7 +283,17 @@ class EngineAuditor:
             else:
                 self.log_fail('L1_LIP_ORDER', f'{patch_name} (#{p_idx}) loads BEFORE {ru_name} (#{ru_idx}) -> Lip tags will be overwritten!')
 
-        # Rule 3: Check for banned watchdog script gl_iu_warning.int in VFS
+        # Rule 3: rpu_russian_uncensored.dat should load after base russian
+        uncensored_name = 'rpu_russian_uncensored.dat'
+        if uncensored_name in order_lower and ru_name in order_lower:
+            u_idx = order_lower.index(uncensored_name)
+            ru_idx = order_lower.index(ru_name)
+            if u_idx > ru_idx:
+                self.log_pass('L1_UNCENSORED_ORDER', f'{uncensored_name} (#{u_idx}) loads with highest priority -> Overrides text cleanly.')
+            else:
+                self.log_warn('L1_UNCENSORED_ORDER', f'{uncensored_name} (#{u_idx}) loads before base russian.')
+
+        # Rule 4: Check for banned watchdog script gl_iu_warning.int in VFS
         if r'scripts\gl_iu_warning.int' in vfs:
             src = vfs[r'scripts\gl_iu_warning.int']['source']
             self.log_fail('L1_WATCHDOG_SCRIPT', f'Banned watchdog script gl_iu_warning.int found in {src} (Causes CE crashes)!')

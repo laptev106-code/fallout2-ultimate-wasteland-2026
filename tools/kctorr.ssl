@@ -120,6 +120,8 @@ procedure Node018;
 procedure Node020;
 procedure Node021;
 procedure Node031;
+procedure NodeBeatDuntons;
+procedure NodeBeatDuntonsLow;
 
 //~~~~~~~~~~~~~~~~ DESIGN TOOL ENDS HERE
 // The Following lines are for anything that is not needed to be
@@ -172,12 +174,8 @@ procedure map_enter_p_proc begin
    if (cur_map_index == MAP_KLAMATH_GRAZE) then begin
       if (global_var(GVAR_TORR_GUARD_STATUS) == TORR_GUARD_ACCEPT) then begin
          set_self_team(TEAM_PLAYER);
-         set_self_ai(AI_BERSERKER);
-         if (self_item_count(PID_CLUB) == 0) then begin
-            club_obj := create_object(PID_CLUB, 0, 0);
-            add_obj_to_inven(self_obj, club_obj);
-            wield_obj_critter(self_obj, club_obj);
-         end
+         set_self_ai(AI_TORR);
+// Club map_enter check removed
       end else begin
          set_self_team(TEAM_BRAHMIN);
          set_self_ai(AI_TORR);
@@ -293,13 +291,9 @@ procedure critter_p_proc begin
          if (map_var(MVAR_Dude_Bad) == 0) then begin
             if (self_team != TEAM_PLAYER) then begin
                set_self_team(TEAM_PLAYER);
-               set_self_ai(AI_BERSERKER);
+               set_self_ai(AI_TORR);
             end
-            if (self_item_count(PID_CLUB) == 0) then begin
-               club_critter_obj := create_object(PID_CLUB, 0, 0);
-               add_obj_to_inven(self_obj, club_critter_obj);
-               wield_obj_critter(self_obj, club_critter_obj);
-            end
+// Club heartbeat check removed to prevent stutter
          end
       end
    end
@@ -744,9 +738,31 @@ procedure Node014 begin
    GLowOption(dude_name + mstr(242), Node915);
    NLowOption(243, Node999);
    GOption(244, Node915, 004);
-   if ((global_var(GVAR_RUSTLE_ACCEPT) == 1) and (global_var(GVAR_RUSTLE_FAIL) != 1)) then   //added by killap
-      GOption(245, Node018, 004); //need to have a speech roll here...this is too easy
-   NOption(246, Node999, 004); //was GOption - killap
+   if ((global_var(GVAR_RUSTLE_ACCEPT) == 1) and (global_var(GVAR_RUSTLE_FAIL) != 1)) then
+      GOption(245, Node018, 004);
+   if ((global_var(GVAR_RUSTLE_ACCEPT) == 1) or (global_var(GVAR_RUSTLE_REFUSE) == 1)) then begin
+      GOption(247, NodeBeatDuntons, 004);
+      GLowOption(248, NodeBeatDuntonsLow);
+   end
+   NOption(246, Node999, 004);
+end
+
+procedure NodeBeatDuntons begin
+   Reply(256);
+   set_global_var(GVAR_TORR_GUARD_STATUS, TORR_GUARD_ACCEPT);
+   set_local_var(LVAR_Follow_Dude, 1);
+   set_self_team(TEAM_PLAYER);
+   set_self_ai(AI_TORR);
+   NOption(g_mstr(350), Node999, 004);
+end
+
+procedure NodeBeatDuntonsLow begin
+   Reply(257);
+   set_global_var(GVAR_TORR_GUARD_STATUS, TORR_GUARD_ACCEPT);
+   set_local_var(LVAR_Follow_Dude, 1);
+   set_self_team(TEAM_PLAYER);
+   set_self_ai(AI_TORR);
+   NLowOption(g_mstr(350), Node999);
 end
 
 procedure Node015 begin

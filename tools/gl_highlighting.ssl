@@ -123,7 +123,7 @@ procedure KeyPressHandler begin
       if isHighlight then begin
          set_global_script_repeat(0);
          call ToggleHighlight(false);
-         display_msg("РџРѕРґСЃРІРµС‚РєР°: Р’Р«РљР›");
+         display_msg("Подсветка: ВЫКЛ");
       end else begin
          set_global_script_repeat(REPEAT_FRAMES);
          if motionScanner then begin
@@ -135,20 +135,20 @@ procedure KeyPressHandler begin
                      set_weapon_ammo_count(scanner, charges - 1);
                      intface_redraw;
                      call ToggleHighlight(true);
-                     display_msg("РџРѕРґСЃРІРµС‚РєР°: Р’РљР›");
+                     display_msg("Подсветка: ВКЛ");
                   end else begin
                      display_msg(highlightFailMsg2);
                   end
                end else begin
                   call ToggleHighlight(true);
-                  display_msg("РџРѕРґСЃРІРµС‚РєР°: Р’РљР›");
+                  display_msg("Подсветка: ВКЛ");
                end
             end else begin
                display_msg(highlightFailMsg1);
             end
          end else begin
             call ToggleHighlight(true);
-            display_msg("РџРѕРґСЃРІРµС‚РєР°: Р’РљР›");
+            display_msg("Подсветка: ВКЛ");
          end
       end
    end

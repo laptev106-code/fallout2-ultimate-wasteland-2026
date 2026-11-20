@@ -6,8 +6,8 @@
 
 #pragma sce
 #define SCRIPT_REALNAME "gl_glasses"
-#include "define.h"
-#include "sfall/sfall.h"
+#include "headers/define.h"
+#include "headers/sfall/sfall.h"
 
 #define PID_SPECTACLES       (415)
 #define PID_MIRROR_SHADES    (433)
@@ -35,12 +35,12 @@ procedure apply_glasses(variable pid) begin
    if (pid == PID_MIRROR_SHADES) then begin
       set_critter_stat(dude_obj, STAT_ch, 1);
       set_sfall_global(SGVAR_WORN_GLASSES, PID_MIRROR_SHADES);
-      display_msg("Р’С‹ РЅР°РґРµР»Рё С‚РµРјРЅС‹Рµ РѕС‡РєРё (+1 Рє РҐР°СЂРёР·РјРµ).");
+      display_msg("Вы надели темные очки (+1 к Харизме).");
    end
    else if (pid == PID_SPECTACLES) then begin
       set_critter_stat(dude_obj, STAT_pe, 1);
       set_sfall_global(SGVAR_WORN_GLASSES, PID_SPECTACLES);
-      display_msg("Р’С‹ РЅР°РґРµР»Рё РѕС‡РєРё (+1 Рє Р’РѕСЃРїСЂРёСЏС‚РёСЋ).");
+      display_msg("Вы надели очки (+1 к Восприятию).");
    end
 end
 
@@ -60,7 +60,7 @@ procedure toggle_glasses(variable pid) begin
 
    if (current_worn == pid) then begin
       call remove_glasses(current_worn);
-      display_msg("Р’С‹ СЃРЅСЏР»Рё РѕС‡РєРё.");
+      display_msg("Вы сняли очки.");
    end
    else if (current_worn != 0) then begin
       call remove_glasses(current_worn);
@@ -113,7 +113,7 @@ procedure removeinven_handler begin
          remaining := obj_is_carrying_obj_pid(dude_obj, pid);
          if (remaining <= 1) then begin
             call remove_glasses(current_worn);
-            display_msg("Р’С‹ СЃРЅСЏР»Рё РѕС‡РєРё.");
+            display_msg("Вы сняли очки.");
          end
       end
    end
