@@ -113,9 +113,15 @@ class LauncherApp {
     // Catalog View Toggle (Compact vs Thumbnails)
     this.setupCatalogViewToggle();
 
-    // Settings Save Button
+    // Settings Save Button & Auto-Save on Change
     document.getElementById('btn-save-settings')?.addEventListener('click', () => {
       this.saveCurrentSettings();
+    });
+
+    ['select-res', 'select-mode', 'select-scale', 'select-filter'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => {
+        this.saveCurrentSettings(true);
+      });
     });
 
     // Sliders input
@@ -123,12 +129,14 @@ class LauncherApp {
     const labelMusic = document.getElementById('val-music');
     sliderMusic?.addEventListener('input', (e) => {
       labelMusic.textContent = `${e.target.value}%`;
+      this.saveCurrentSettings(true);
     });
 
     const sliderSfx = document.getElementById('slider-sfx');
     const labelSfx = document.getElementById('val-sfx');
     sliderSfx?.addEventListener('input', (e) => {
       labelSfx.textContent = `${e.target.value}%`;
+      this.saveCurrentSettings(true);
     });
 
     // Modal Close
@@ -301,6 +309,9 @@ class LauncherApp {
   }
 
   async launchProfile(profile) {
+    // 1. Автоматическое сохранение выбранных настроек перед запуском
+    await this.saveCurrentSettings(true);
+
     if (window.pipAudio) window.pipAudio.playLaunchSiren();
     
     const btn = profile === 'gameplay' 
@@ -371,30 +382,43 @@ class LauncherApp {
     }
   }
 
-  async saveCurrentSettings() {
-    this.config.resolution = document.getElementById('select-res').value;
-    this.config.mode = document.getElementById('select-mode').value;
-    this.config.scale = document.getElementById('select-scale').value;
-    this.config.filtering = document.getElementById('select-filter').value;
-    this.config.musicVol = parseInt(document.getElementById('slider-music').value, 10);
-    this.config.sfxVol = parseInt(document.getElementById('slider-sfx').value, 10);
+  async saveCurrentSettings(silent = false) {
+    const selRes = document.getElementById('select-res');
+    const selMode = document.getElementById('select-mode');
+    const selScale = document.getElementById('select-scale');
+    const selFilter = document.getElementById('select-filter');
+    const sMusic = document.getElementById('slider-music');
+    const sSfx = document.getElementById('slider-sfx');
+
+    if (selRes) this.config.resolution = selRes.value;
+    if (selMode) this.config.mode = selMode.value;
+    if (selScale) this.config.scale = selScale.value;
+    if (selFilter) this.config.filtering = selFilter.value;
+    if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
+    if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
 
     const btn = document.getElementById('btn-save-settings');
-    btn.textContent = 'СОХРАНЕНИЕ...';
+    if (!silent && btn) btn.textContent = 'СОХРАНЕНИЕ...';
 
     try {
       if (window.pywebview && window.pywebview.api) {
         const res = await window.pywebview.api.save_config(this.config);
-        if (res && res.status === 'error') {
+        if (res && res.status === 'error' && !silent) {
           alert(`Предупреждение: ${res.message}`);
         }
       }
-      if (window.pipAudio) window.pipAudio.playSwitchSnap();
-      btn.textContent = '✓ НАСТРОЙКИ ПРИМЕНЕНЫ';
-      setTimeout(() => { btn.textContent = '💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ'; }, 1800);
+      if (!silent) {
+        if (window.pipAudio) window.pipAudio.playSwitchSnap();
+        if (btn) {
+          btn.textContent = '✓ НАСТРОЙКИ ПРИМЕНЕНЫ';
+          setTimeout(() => { btn.textContent = '💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ'; }, 1800);
+        }
+      }
     } catch (e) {
-      alert(`Ошибка сохранения: ${e}`);
-      btn.textContent = '💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ';
+      if (!silent) {
+        alert(`Ошибка сохранения: ${e}`);
+        if (btn) btn.textContent = '💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ';
+      }
     }
   }
 

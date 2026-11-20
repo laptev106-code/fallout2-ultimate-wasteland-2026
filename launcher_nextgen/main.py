@@ -97,6 +97,8 @@ class LauncherBridge:
                         cfg["scale"] = "1x"
                     elif line_s.startswith("SCALE_2X=1"):
                         cfg["scale"] = "2x"
+                    elif line_s.startswith("SCALE_2X=2") or line_s.startswith("SCALE_4X"):
+                        cfg["scale"] = "4x"
                     elif line_s.startswith("WINDOWED="):
                         val = line_s.split("=")[1].strip()
                         if val.isdigit(): win_val = int(val)
@@ -184,30 +186,69 @@ class LauncherBridge:
             f.writelines(new_lines)
 
     def save_config(self, cfg: dict) -> dict:
-        """Безопасная синхронизация графики и звука во все профили (Gameplay и HD)."""
+        """Безопасная синхронизация графики, масштабирования и звука во все профили (Gameplay и HD)."""
         try:
             res_val = cfg.get("resolution", "2560x1440")
             w, h = res_val.split("x")
             w, h = int(w), int(h)
 
-            scale_2x = 1 if cfg.get("scale") == "2x" else 0
+            scale_choice = cfg.get("scale", "2x")
             mode = cfg.get("mode", "borderless")
             if mode == "borderless":
                 windowed = 1
                 borderless = 1
                 ddraw_mode = 6
+                cfg_windowed = 2
             elif mode == "windowed":
                 windowed = 1
                 borderless = 0
                 ddraw_mode = 5
+                cfg_windowed = 1
             else:
                 windowed = 0
                 borderless = 0
                 ddraw_mode = 6
+                cfg_windowed = 0
 
             filter_val = 2 if cfg.get("filtering") == "bilinear" else 0
             music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
             sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
+
+            # Вычисление параметров масштабирования под 4K / 1440p
+            # В Fallout 2 оригинальный интерфейс 640x480.
+            # Для 4K (3840x2160) стандартный SCALE_2X оставляет экран 1920x1080 (интерфейс 33%).
+            # При выборе 4x (или 4K с крупным UI) мы рендерим 1920x1080 + sfall GPU масштабирует до 4K,
+            # либо в Community Edition ставим scale=4.
+            if scale_choice == "4x" or (w >= 3840 and scale_choice == "2x"):
+                if scale_choice == "4x":
+                    f2_w = w // 2
+                    f2_h = h // 2
+                    f2_scale_2x = 1
+                    ddraw_gw = w
+                    ddraw_gh = h
+                    ce_scale = 4
+                else:
+                    # 4K со стандартным 2X
+                    f2_w = w
+                    f2_h = h
+                    f2_scale_2x = 1
+                    ddraw_gw = 0
+                    ddraw_gh = 0
+                    ce_scale = 3
+            elif scale_choice == "2x":
+                f2_w = w
+                f2_h = h
+                f2_scale_2x = 1
+                ddraw_gw = 0
+                ddraw_gh = 0
+                ce_scale = 2
+            else: # 1x
+                f2_w = w
+                f2_h = h
+                f2_scale_2x = 0
+                ddraw_gw = 0
+                ddraw_gh = 0
+                ce_scale = 1
 
             target_dirs = [self.gameplay_dir]
             if os.path.exists(self.hd_dir):
@@ -217,9 +258,10 @@ class LauncherBridge:
                 # 1. f2_res.ini
                 f2_res_path = os.path.join(target_dir, "f2_res.ini")
                 self._safe_write_ini_key(f2_res_path, {
-                    "SCR_WIDTH": w,
-                    "SCR_HEIGHT": h,
-                    "SCALE_2X": scale_2x,
+                    "SCR_WIDTH": f2_w,
+                    "SCR_HEIGHT": f2_h,
+                    "SCALE_2X": f2_scale_2x,
+                    "SCALE_BUTTONS_AND_TEXT_MENU": 1 if f2_scale_2x else 0,
                     "WINDOWED": windowed,
                     "WINDOWED_FULLSCREEN": borderless,
                     "COLOUR_BITS": 32
@@ -229,20 +271,26 @@ class LauncherBridge:
                 ddraw_path = os.path.join(target_dir, "ddraw.ini")
                 self._safe_write_ini_key(ddraw_path, {
                     "Mode": ddraw_mode,
+                    "GraphicsWidth": ddraw_gw,
+                    "GraphicsHeight": ddraw_gh,
                     "TextureFilter": filter_val
                 }, encoding="cp1251")
 
-                # 3. fallout2.cfg
+                # 3. fallout2.cfg (включая секцию [screen] для Community Edition / Dustlight)
                 fallout_cfg = os.path.join(target_dir, "fallout2.cfg")
                 self._safe_write_ini_key(fallout_cfg, {
                     "music_volume": music_vol,
                     "sndfx_volume": sfx_vol,
-                    "speech_volume": sfx_vol
+                    "speech_volume": sfx_vol,
+                    "resolution_x": w,
+                    "resolution_y": h,
+                    "scale": ce_scale,
+                    "windowed": cfg_windowed
                 }, encoding="utf-8")
 
             return {
                 "status": "success",
-                "message": f"Настройки успешно записаны: {w}x{h}, {mode}, {cfg.get('scale', '2x')}, {cfg.get('filtering', 'bilinear')}."
+                "message": f"Настройки успешно записаны: {w}x{h}, {mode}, Scale {scale_choice} (CE scale={ce_scale}, f2_res={f2_w}x{f2_h}), {cfg.get('filtering', 'bilinear')}."
             }
         except Exception as e:
             return {"status": "error", "message": f"Ошибка сохранения настроек: {str(e)}"}
