@@ -366,6 +366,11 @@ class LauncherApp {
     const selScale = document.getElementById('select-scale');
     if (selScale) selScale.value = this.config.scale || '2x';
 
+    const headerRes = document.getElementById('header-res-pill');
+    if (headerRes && this.config.resolution) {
+      headerRes.textContent = `ЭКРАН: ${this.config.resolution}`;
+    }
+
     const selFilter = document.getElementById('select-filter');
     if (selFilter) selFilter.value = this.config.filtering || 'bilinear';
 
@@ -396,6 +401,11 @@ class LauncherApp {
     if (selFilter) this.config.filtering = selFilter.value;
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
+
+    const headerRes = document.getElementById('header-res-pill');
+    if (headerRes && this.config.resolution) {
+      headerRes.textContent = `ЭКРАН: ${this.config.resolution}`;
+    }
 
     const btn = document.getElementById('btn-save-settings');
     if (!silent && btn) btn.textContent = 'СОХРАНЕНИЕ...';

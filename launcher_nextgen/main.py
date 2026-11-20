@@ -46,9 +46,11 @@ class LauncherBridge:
                 target_exe = os.path.join(self.gameplay_dir, "fallout2.exe")
                 target_cwd = self.gameplay_dir
             else:
+                f2_exe = os.path.join(self.hd_dir, "fallout2.exe")
                 dust_exe = os.path.join(self.hd_dir, "dustlight.exe")
                 ce_exe = os.path.join(self.hd_dir, "fallout2-ce.exe")
-                target_exe = dust_exe if os.path.exists(dust_exe) else ce_exe
+                # Default to fallout2.exe to provide smooth bilinear HD graphics without Dustlight AI oversharpening
+                target_exe = f2_exe if os.path.exists(f2_exe) else (dust_exe if os.path.exists(dust_exe) else ce_exe)
                 target_cwd = self.hd_dir
 
             if not os.path.exists(target_exe):
@@ -106,7 +108,11 @@ class LauncherBridge:
                         val = line_s.split("=")[1].strip()
                         if val.isdigit(): win_fs = int(val)
 
-                cfg["resolution"] = f"{w}x{h}"
+                if w == 1280 and h == 720:
+                    cfg["resolution"] = "2560x1440"
+                    cfg["scale"] = "2x"
+                else:
+                    cfg["resolution"] = f"{w}x{h}"
                 if win_val == 1 and win_fs == 1:
                     cfg["mode"] = "borderless"
                 elif win_val == 1:
@@ -120,11 +126,30 @@ class LauncherBridge:
         ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
         if os.path.exists(ddraw_path):
             try:
+                ddraw_gw = 0
+                ddraw_gh = 0
                 with open(ddraw_path, "r", encoding="cp1251", errors="ignore") as f:
                     for line in f:
-                        if line.strip().startswith("TextureFilter="):
-                            val = line.strip().split("=")[1].strip()
+                        line_s = line.strip()
+                        if line_s.startswith("TextureFilter="):
+                            val = line_s.split("=")[1].strip()
                             cfg["filtering"] = "bilinear" if val == "2" else "point"
+                        elif line_s.startswith("Mode="):
+                            val = line_s.split("=")[1].strip()
+                            if val == "6":
+                                cfg["mode"] = "borderless"
+                            elif val == "5":
+                                cfg["mode"] = "windowed"
+                        elif line_s.startswith("GraphicsWidth="):
+                            gw_val = line_s.split("=")[1].strip()
+                            if gw_val.isdigit() and int(gw_val) > 0:
+                                ddraw_gw = int(gw_val)
+                        elif line_s.startswith("GraphicsHeight="):
+                            gh_val = line_s.split("=")[1].strip()
+                            if gh_val.isdigit() and int(gh_val) > 0:
+                                ddraw_gh = int(gh_val)
+                if ddraw_gw > 0 and ddraw_gh > 0:
+                    cfg["resolution"] = f"{ddraw_gw}x{ddraw_gh}"
             except Exception:
                 pass
 
@@ -194,19 +219,23 @@ class LauncherBridge:
 
             scale_choice = cfg.get("scale", "2x")
             mode = cfg.get("mode", "borderless")
+            # Режим отображения:
+            # Для sfall Mode=6 (DirectX 9 Fullscreen Windowed) окно уже является полноценным borderless,
+            # а в f2_res.ini WINDOWED должен быть строго 0, чтобы F2_RES не отключал SCALE_2X
+            # и не конфликтовал с sfall DX9 хуком при старте.
             if mode == "borderless":
-                windowed = 1
-                borderless = 1
+                f2_windowed = 0
+                f2_borderless = 0
                 ddraw_mode = 6
                 cfg_windowed = 2
             elif mode == "windowed":
-                windowed = 1
-                borderless = 0
+                f2_windowed = 1
+                f2_borderless = 0
                 ddraw_mode = 5
                 cfg_windowed = 1
-            else:
-                windowed = 0
-                borderless = 0
+            else: # fullscreen
+                f2_windowed = 0
+                f2_borderless = 0
                 ddraw_mode = 6
                 cfg_windowed = 0
 
@@ -214,35 +243,23 @@ class LauncherBridge:
             music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
             sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
 
-            # Вычисление параметров масштабирования под 4K / 1440p
+            # Вычисление параметров масштабирования под 4K / 1800p / 1440p
             # В Fallout 2 оригинальный интерфейс 640x480.
-            # Для 4K (3840x2160) стандартный SCALE_2X оставляет экран 1920x1080 (интерфейс 33%).
-            # При выборе 4x (или 4K с крупным UI) мы рендерим 1920x1080 + sfall GPU масштабирует до 4K,
+            # Если рендерить 3840x2160 или 3200x1800 напрямую, даже с SCALE_2X поле 1920x1080 делает интерфейс мелким.
+            # При выборе 4x (или 4K с крупным UI) мы рендерим 1920x1080 + sfall GPU масштабирует до нативного разрешения,
             # либо в Community Edition ставим scale=4.
-            if scale_choice == "4x" or (w >= 3840 and scale_choice == "2x"):
-                if scale_choice == "4x":
-                    f2_w = w // 2
-                    f2_h = h // 2
-                    f2_scale_2x = 1
-                    ddraw_gw = w
-                    ddraw_gh = h
-                    ce_scale = 4
-                else:
-                    # 4K со стандартным 2X
-                    f2_w = w
-                    f2_h = h
-                    f2_scale_2x = 1
-                    ddraw_gw = 0
-                    ddraw_gh = 0
-                    ce_scale = 3
-            elif scale_choice == "2x":
-                f2_w = w
-                f2_h = h
+            if scale_choice == "2x" or scale_choice == "4x":
+                # В Fallout 2 связка SCR_WIDTH=1280 и SCR_HEIGHT=720 с SCALE_2X=1
+                # и sfall Mode=6 (DirectX 9 Borderless Fullscreen) масштабируется видеокартой
+                # на весь экран монитора (1440p / 1080p / 4K) с идеальными крупными пропорциями UI,
+                # крупным инвентарем и четкими шрифтами без микроскопических элементов.
+                f2_w = 1280
+                f2_h = 720
                 f2_scale_2x = 1
                 ddraw_gw = 0
                 ddraw_gh = 0
-                ce_scale = 2
-            else: # 1x
+                ce_scale = 2 if scale_choice == "2x" else 3
+            else: # 1x (Оригинальный мелкий интерфейс / максимальный обзор)
                 f2_w = w
                 f2_h = h
                 f2_scale_2x = 0
@@ -258,13 +275,15 @@ class LauncherBridge:
                 # 1. f2_res.ini
                 f2_res_path = os.path.join(target_dir, "f2_res.ini")
                 self._safe_write_ini_key(f2_res_path, {
+                    "GRAPHICS_MODE": 0,
                     "SCR_WIDTH": f2_w,
                     "SCR_HEIGHT": f2_h,
                     "SCALE_2X": f2_scale_2x,
-                    "SCALE_BUTTONS_AND_TEXT_MENU": 1 if f2_scale_2x else 0,
-                    "WINDOWED": windowed,
-                    "WINDOWED_FULLSCREEN": borderless,
-                    "COLOUR_BITS": 32
+                    "SCALE_BUTTONS_AND_TEXT_MENU": 0,
+                    "WINDOWED": f2_windowed,
+                    "WINDOWED_FULLSCREEN": f2_borderless,
+                    "COLOUR_BITS": 32,
+                    "EXTRA_WIN_MSG_CHECKS": 0
                 }, encoding="cp1251")
 
                 # 2. ddraw.ini
@@ -273,20 +292,38 @@ class LauncherBridge:
                     "Mode": ddraw_mode,
                     "GraphicsWidth": ddraw_gw,
                     "GraphicsHeight": ddraw_gh,
-                    "TextureFilter": filter_val
+                    "TextureFilter": filter_val,
+                    "WindowData": 0,
+                    "BackgroundKeyboard": 1,
+                    "BackgroundMouse": 1,
+                    "SpeedInventoryPCRotation": 600,
+                    "CombatPanelAnimDelay": 90,
+                    "WorldMapEncounterRate": 14,
+                    "SkipCompatModeCheck": 1
                 }, encoding="cp1251")
 
-                # 3. fallout2.cfg (включая секцию [screen] для Community Edition / Dustlight)
+                # 3. fallout2.cfg
                 fallout_cfg = os.path.join(target_dir, "fallout2.cfg")
                 self._safe_write_ini_key(fallout_cfg, {
                     "music_volume": music_vol,
                     "sndfx_volume": sfx_vol,
                     "speech_volume": sfx_vol,
+                    "combat_speed": 85,
                     "resolution_x": w,
                     "resolution_y": h,
                     "scale": ce_scale,
                     "windowed": cfg_windowed
                 }, encoding="utf-8")
+
+                # 4. fo2tweaks.ini (отключение дерганного авто-релоада после боя)
+                fo2tweaks_path = os.path.join(target_dir, "mods", "fo2tweaks.ini")
+                if os.path.exists(fo2tweaks_path):
+                    self._safe_write_ini_key(fo2tweaks_path, {"auto_reload": 0}, encoding="utf-8")
+
+                # 5. sfall-mods.ini (отключение 10-кадрового цикла сканирования криттеров)
+                sfall_mods_path = os.path.join(target_dir, "mods", "sfall-mods.ini")
+                if os.path.exists(sfall_mods_path):
+                    self._safe_write_ini_key(sfall_mods_path, {"Critters": 0, "CheckLOS": 0}, encoding="utf-8")
 
             return {
                 "status": "success",
