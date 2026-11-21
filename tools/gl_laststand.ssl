@@ -26,7 +26,7 @@ variable cfg_float_msg;
 procedure start;
 procedure load_config;
 procedure combatturn_handler;
-procedure trigger_last_stand(variable cr, variable target);
+procedure trigger_last_stand(variable cr);
 procedure get_last_stand_phrase;
 procedure get_closest_player_target(variable cr);
 procedure has_usable_ranged_weapon(variable cr);
@@ -135,9 +135,9 @@ procedure is_civilian_or_coward(variable cr) begin
    return false;
 end
 
-procedure trigger_last_stand(variable cr, variable target) begin
+procedure trigger_last_stand(variable cr) begin
    variable phrase;
-   // Cancel panic/flee state immediately
+   // Cancel panic/flee state immediately - native engine AI takes over combat
    critter_set_flee_state(cr, 0);
 
    // Optional red desperate battle cry above enemy head
@@ -145,9 +145,6 @@ procedure trigger_last_stand(variable cr, variable target) begin
       phrase := get_last_stand_phrase;
       float_msg(cr, phrase, FLOAT_MSG_RED);
    end
-
-   // Attack the nearest threatening target
-   attack(target);
 end
 
 procedure combatturn_handler begin
@@ -176,14 +173,10 @@ procedure combatturn_handler begin
    // Get critter species/kill type
    ktype := get_proto_data(obj_pid(cr), PROTO_CR_KILL_TYPE);
 
-   // Find closest active player party target
-   target := get_closest_player_target(cr);
-
    // Fearless entities: Super Mutants (3), Robots (10), Deathclaws (13), Aliens (16) NEVER flee
    if (cfg_fearless_brutes and (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16)) then begin
       if (critter_is_fleeing(cr)) then begin
          critter_set_flee_state(cr, 0);
-         attack(target);
       end
       return;
    end
@@ -208,6 +201,7 @@ procedure combatturn_handler begin
 
       // Only applies when critically injured (HP <= 22% or cur_hp <= 15)
       if (hp_percent <= 22 or cur_hp <= 15) then begin
+         target := get_closest_player_target(cr);
          dist := tile_distance_objs(cr, target);
 
          // CAUTIOUS RETREAT: If enemy already retreated to safe firing distance (>= cfg_kite_dist hexes),
@@ -216,7 +210,6 @@ procedure combatturn_handler begin
          if (dist >= cfg_kite_dist and critter_is_fleeing(cr)) then begin
             if (has_usable_ranged_weapon(cr)) then begin
                critter_set_flee_state(cr, 0);
-               attack(target);
                return;
             end
             // If enemy is melee or out of ammo, let them continue retreating!
@@ -235,7 +228,7 @@ procedure combatturn_handler begin
          roll := random(1, 100);
          if (roll <= chance) then begin
             call array_push(enraged_list, cr);
-            call trigger_last_stand(cr, target);
+            call trigger_last_stand(cr);
          end
       end
    end
