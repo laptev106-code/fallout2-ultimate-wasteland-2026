@@ -62,7 +62,7 @@ class LauncherApp {
       item.addEventListener('click', () => {
         const targetView = item.dataset.view;
         this.switchView(targetView);
-        if (window.pipAudio) window.pipAudio.playRelayClick();
+        if (window.pipAudio) window.pipAudio.playTabSwitch();
       });
     });
 
@@ -106,7 +106,7 @@ class LauncherApp {
         pill.classList.add('active');
         this.currentFilter = pill.dataset.filter;
         this.renderCatalog();
-        if (window.pipAudio) window.pipAudio.playRelayClick();
+        if (window.pipAudio) window.pipAudio.playTabSwitch();
       });
     });
 
@@ -196,6 +196,9 @@ class LauncherApp {
     });
     document.getElementById('btn-copy-report')?.addEventListener('click', () => {
       this.copyReportToClipboard();
+    });
+    document.getElementById('btn-run-integrity')?.addEventListener('click', () => {
+      this.runIntegrityCheck();
     });
 
     // Social Links
@@ -663,6 +666,51 @@ class LauncherApp {
       alertMsg += `\n\nТакже отчет сохранен в файл: ${diag.path}`;
     }
     alert(alertMsg);
+  }
+
+  async runIntegrityCheck() {
+    const btn = document.getElementById('btn-run-integrity');
+    const badge = document.getElementById('integrity-badge');
+    const results = document.getElementById('integrity-results');
+    if (!btn || !results) return;
+
+    if (window.pipAudio) window.pipAudio.playSwitchSnap();
+
+    btn.disabled = true;
+    btn.textContent = '⏳ ВЫЧИСЛЕНИЕ ХЕШЕЙ SHA-256...';
+    results.style.display = 'block';
+    results.innerHTML = '<div style="color: var(--pip-green);">Чтение архивов и сверка контрольных сумм SHA-256...</div>';
+
+    try {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.verify_integrity) {
+        const res = await window.pywebview.api.verify_integrity();
+        if (res.status === 'success') {
+          let html = `<div style="margin-bottom: 6px; font-weight: bold; color: ${res.overall === 'ok' ? '#00ff66' : '#ffb000'};">`;
+          html += `ИТОГ: ${res.passed} из ${res.total} файлов валидны (Ошибок: ${res.failed}, Отсутствует: ${res.missing})</div>`;
+          res.details.forEach(item => {
+            const color = item.status === 'ok' ? '#00ff66' : item.status === 'missing' ? '#ffb000' : '#ff3333';
+            const icon = item.status === 'ok' ? '✓' : item.status === 'missing' ? '?' : '✗';
+            html += `<div style="color: ${color}; margin-top: 2px;">${icon} [${item.name}]: ${item.message}</div>`;
+          });
+          results.innerHTML = html;
+          if (badge) {
+            badge.style.display = 'inline-block';
+            badge.textContent = res.overall === 'ok' ? '100% ВАЛИДЕН' : 'ЕСТЬ ПРЕДУПРЕЖДЕНИЯ';
+            badge.className = res.overall === 'ok' ? 'badge badge-canon' : 'badge badge-warning';
+          }
+        } else {
+          results.innerHTML = `<div style="color: #ff3333;">Ошибка: ${res.message}</div>`;
+        }
+      } else {
+        results.innerHTML = '<div style="color: #00ff66;">✓ [ИНТЕГРАЦИЯ]: Запустите десктопный лаунчер для полного дискового аудита SHA-256.</div>';
+      }
+    } catch (e) {
+      results.innerHTML = `<div style="color: #ff3333;">Исключение при проверке: ${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🔍 ПЕРЕПРОВЕРИТЬ ЦЕЛОСТНОСТЬ ФАЙЛОВ';
+      if (window.pipAudio) window.pipAudio.playRelayClick();
+    }
   }
 }
 

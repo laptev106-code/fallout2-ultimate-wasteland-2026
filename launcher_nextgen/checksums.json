@@ -1,0 +1,70 @@
+{
+  "Fallout2_Gameplay/master.dat": {
+    "size": 399437187,
+    "sha256": "0906a1d639fd90e896cc3bb2acf6fbf144df4657cd271df2390fcc45bc8d8b22"
+  },
+  "Fallout2_Gameplay/critter.dat": {
+    "size": 166951131,
+    "sha256": "da83d615967c0bac41fbc50e6b86b3088401ff69ed9d8b2e5be1d6ac0c125bcd"
+  },
+  "Fallout2_Gameplay/fallout2.exe": {
+    "size": 1189888,
+    "sha256": "b3b100fd6fe447bd187604ebb516edfbde767340c3695d22327227d33cac80ae"
+  },
+  "Fallout2_Gameplay/ddraw.dll": {
+    "size": 900608,
+    "sha256": "7cb0998e572e7cb3f9466b5be3aaeff68de51f83939392442265f9ab7be5c9b3"
+  },
+  "Fallout2_Gameplay/f2_res.dll": {
+    "size": 290816,
+    "sha256": "2d3c52cf624b22958db7fa44e3db71c2d0478503da5ceb40f0636dea1202fb5a"
+  },
+  "Fallout2_Gameplay/mods/rpu.dat": {
+    "size": 129661747,
+    "sha256": "27db830e0fb67d02b60e166e2acb772a92292f5f4dd88f733b740b406a0864ee"
+  },
+  "Fallout2_Gameplay/mods/npc_armor.dat": {
+    "size": 82677313,
+    "sha256": "18357ac34e53d7718ae4cb7b99f9a097666fd8ea1fefd8e36d9a300b63f53877"
+  },
+  "Fallout2_Gameplay/mods/talking_heads.dat": {
+    "size": 223884855,
+    "sha256": "c90bab908f44c31e0344c74125bbab829c45eaa05fc041bdf32df9d2771401e2"
+  },
+  "Fallout2_Gameplay/mods/rpu_y_ecco.dat": {
+    "size": 1748018,
+    "sha256": "881ab66428ad48a1226b40726d6e7913774d03d0ae7012a00493aeedd3160019"
+  },
+  "Fallout2_Gameplay/mods/rpu_enhanced_worldmap.dat": {
+    "size": 1335967,
+    "sha256": "d82ab131e89e850bb9648b97093d27d60f2c7ae923533c9ac071ba21a97aa21b"
+  },
+  "Fallout2_Gameplay/mods/rpu_russian_uncensored.dat/scripts/AIBKDOR.INT": {
+    "size": 2886,
+    "sha256": "8aeeee8ab29b4e10e11d8774f5eea48fe6cf447d1a6f011bd5dfbc77dd06e893"
+  },
+  "Fallout2_Gameplay/mods/rpu_russian_uncensored.dat/scripts/gl_highlighting.int": {
+    "size": 3358,
+    "sha256": "0e2dbd4d01122c7aa75c74076c45589df29cd458609905f318423c423b50e59c"
+  },
+  "Fallout2_Gameplay/mods/rpu_russian_uncensored.dat/scripts/gl_temple_hints.int": {
+    "size": 2936,
+    "sha256": "29e85dec06926535f65db502e58205ca6de5ab9eb723fb20511064b39a0b1cdf"
+  },
+  "Fallout2_HD/master.dat": {
+    "size": 399437187,
+    "sha256": "0906a1d639fd90e896cc3bb2acf6fbf144df4657cd271df2390fcc45bc8d8b22"
+  },
+  "Fallout2_HD/critter.dat": {
+    "size": 166951131,
+    "sha256": "da83d615967c0bac41fbc50e6b86b3088401ff69ed9d8b2e5be1d6ac0c125bcd"
+  },
+  "Fallout2_HD/fallout2.exe": {
+    "size": 1189888,
+    "sha256": "1a1b0209237a8b52adce8c46073ee82650e5a68e19271fcd2ebeb8ffc5dc8eea"
+  },
+  "Fallout2_HD/fallout2-ce.exe": {
+    "size": 4581376,
+    "sha256": "fbc59df6a4eef2c516b56538db3eb16131efc9ee77d8616faf8328f36979ea01"
+  }
+}

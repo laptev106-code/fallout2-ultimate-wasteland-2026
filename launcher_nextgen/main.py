@@ -83,7 +83,7 @@ class LauncherBridge:
         # 1. Если уже сохранен launcher_config.json, загружаем его как эталон
         if os.path.exists(self.config_file):
             try:
-                with open(self.config_file, "r", encoding="utf-8") as f:
+                with open(self.config_file, "r", encoding="utf-8-sig") as f:
                     saved = json.load(f)
                     if isinstance(saved, dict):
                         default_cfg.update(saved)
@@ -204,19 +204,14 @@ class LauncherBridge:
             scale_choice = cfg.get("scale", "2x")
             mode = cfg.get("mode", "fullscreen")
 
-            if mode == "borderless":
-                f2_windowed = 0
-                f2_borderless = 0
-                ddraw_mode = 6
-                cfg_windowed = 2
-            elif mode == "windowed":
+            if mode == "windowed":
                 f2_windowed = 1
                 f2_borderless = 0
                 ddraw_mode = 5
                 cfg_windowed = 1
-            else:  # fullscreen
-                f2_windowed = 0
-                f2_borderless = 0
+            else:  # fullscreen / borderless (современный полноэкранный режим без мерцания монитора)
+                f2_windowed = 1
+                f2_borderless = 1
                 ddraw_mode = 6
                 cfg_windowed = 0
 
@@ -277,8 +272,11 @@ class LauncherBridge:
                     "SpeedInventoryPCRotation": 300,
                     "CombatPanelAnimDelay": 90,
                     "WorldMapEncounterRate": 14,
+                    "WorldMapSlots": 21,
                     "SkipCompatModeCheck": 1,
-                    "ExtraCRC": "0xf18aa577,0xe1680293",
+                    "ExtraCRC": "0xffd65e6d,0xe1680293,0xf18aa577",
+                    "BoostScriptDialogLimit": 1,
+                    "HiResMode": 1,
                     "TempleTutorial": temple_tut_val
                 }, encoding="cp1251")
 
@@ -474,6 +472,66 @@ class LauncherBridge:
             }
         except Exception as e:
             return {"status": "error", "message": str(e)}
+
+    def verify_integrity(self) -> dict:
+        """Мгновенная проверка целостности ключевых файлов сборки по контрольным суммам SHA-256."""
+        import hashlib
+        checksums_file = os.path.join(self.root_dir, "checksums.json")
+        bundle_dir = getattr(sys, "_MEIPASS", None)
+        if not os.path.exists(checksums_file) and bundle_dir:
+            checksums_file = os.path.join(bundle_dir, "checksums.json")
+        if not os.path.exists(checksums_file):
+            checksums_file = os.path.join(os.path.dirname(__file__), "checksums.json")
+
+        if not os.path.exists(checksums_file):
+            return {"status": "error", "message": "Файл манифеста контрольных сумм (checksums.json) не найден."}
+
+        try:
+            with open(checksums_file, "r", encoding="utf-8") as f:
+                manifest = json.load(f)
+
+            total = len(manifest)
+            passed = 0
+            failed = 0
+            missing = 0
+            details = []
+
+            for rel_path, expected in manifest.items():
+                abs_path = os.path.join(self.root_dir, rel_path.replace("/", os.sep))
+                item_name = os.path.basename(rel_path)
+                if not os.path.exists(abs_path):
+                    missing += 1
+                    details.append({"file": rel_path, "name": item_name, "status": "missing", "message": "Файл отсутствует"})
+                    continue
+
+                sha = hashlib.sha256()
+                try:
+                    with open(abs_path, "rb") as bf:
+                        while chunk := bf.read(1024 * 1024):
+                            sha.update(chunk)
+                    actual_digest = sha.hexdigest()
+                    if actual_digest.lower() == expected["sha256"].lower():
+                        passed += 1
+                        details.append({"file": rel_path, "name": item_name, "status": "ok", "message": "Целостность подтверждена"})
+                    else:
+                        failed += 1
+                        details.append({"file": rel_path, "name": item_name, "status": "corrupted", "message": "Контрольная сумма не совпадает"})
+                except Exception as e:
+                    failed += 1
+                    details.append({"file": rel_path, "name": item_name, "status": "error", "message": str(e)})
+
+            overall_status = "ok" if (failed == 0 and missing == 0) else "warning" if failed == 0 else "error"
+            return {
+                "status": "success",
+                "overall": overall_status,
+                "total": total,
+                "passed": passed,
+                "failed": failed,
+                "missing": missing,
+                "details": details
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"Ошибка верификации целостности: {str(e)}"}
 
     def open_saves_folder(self):
         """Открытие папки сохранений в проводнике Windows."""
