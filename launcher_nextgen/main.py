@@ -356,7 +356,7 @@ class LauncherBridge:
                 # 5. sfall-mods.ini (отключение 10-кадрового цикла сканирования криттеров)
                 sfall_mods_path = os.path.join(target_dir, "mods", "sfall-mods.ini")
                 if os.path.exists(sfall_mods_path):
-                    self._safe_write_ini_key(sfall_mods_path, {"Critters": 0, "CheckLOS": 0}, encoding="utf-8")
+                    self._safe_write_ini_key(sfall_mods_path, {"Key": 0, "Critters": 0, "CheckLOS": 0}, encoding="utf-8")
 
             return {
                 "status": "success",

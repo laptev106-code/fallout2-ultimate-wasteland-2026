@@ -49,10 +49,10 @@ procedure map_enter_p_proc begin
          lang := get_ini_string("fallout2.cfg|system|language");
 
          if (lang == "english") then begin
-            display_msg("Keep your eyes peeled in the gloom. Press TAB to spot gear and containers, and F1 for key controls.");
+            display_msg("Keep your eyes peeled in the gloom. Press Caps Lock for permanent highlighting (or hold Shift), and press F1 for key controls.");
             display_msg("Check every clay urn and pot along the walls. The tribal elders loved tucking away supplies in old pottery.");
          end else begin
-            display_msg("В полумраке святилища держи ухо востро. Клавиша TAB подсветит вещи и сундуки, а F1 откроет памятку по кнопкам.");
+            display_msg("В полумраке святилища держи ухо востро. Нажми Caps Lock для постоянной подсветки (или зажми Shift), а F1 откроет памятку по кнопкам.");
             display_msg("Не проходи мимо глиняных ваз и урн. Старики в деревне любят прятать полезные пожитки в старую посуду.");
          end
       end
