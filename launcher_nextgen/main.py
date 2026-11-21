@@ -13,6 +13,11 @@ import ctypes
 from datetime import datetime
 import webview
 
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("genix106.fallout2.ultimate.launcher.2026")
+except Exception:
+    pass
+
 class LauncherBridge:
     def __init__(self, root_dir: str):
         self.root_dir = root_dir
@@ -77,7 +82,8 @@ class LauncherBridge:
             "sfxVol": 80,
             "alwaysRun": True,
             "autoReload": True,
-            "templeTutorial": True
+            "templeTutorial": True,
+            "reshade": "off"
         }
 
         # 1. Если уже сохранен launcher_config.json, загружаем его как эталон
@@ -298,6 +304,57 @@ class LauncherBridge:
                 fo2tweaks_path = os.path.join(target_dir, "mods", "fo2tweaks.ini")
                 if os.path.exists(fo2tweaks_path):
                     self._safe_write_ini_key(fo2tweaks_path, {"auto_reload": auto_reload_val}, encoding="utf-8")
+
+            # 5. Управление ReShade для Direct3D 9 в Gameplay-профиле
+            reshade_choice = cfg.get("reshade", "off")
+            curr_dir = os.path.dirname(os.path.abspath(__file__))
+            presets_reshade = os.path.join(curr_dir, "presets", "reshade")
+            if not os.path.exists(presets_reshade):
+                presets_reshade = os.path.join(self.root_dir, "launcher_nextgen", "presets", "reshade")
+
+            gameplay_d3d9 = os.path.join(self.gameplay_dir, "d3d9.dll")
+            gameplay_d3d9_off = os.path.join(self.gameplay_dir, "d3d9.dll.off")
+
+            if reshade_choice == "off":
+                if os.path.exists(gameplay_d3d9):
+                    try:
+                        if os.path.exists(gameplay_d3d9_off):
+                            os.remove(gameplay_d3d9_off)
+                        os.rename(gameplay_d3d9, gameplay_d3d9_off)
+                    except Exception as re_err:
+                        print("Warning disabling ReShade:", re_err)
+            else:
+                src_d3d9 = os.path.join(presets_reshade, "d3d9.dll")
+                if os.path.exists(src_d3d9):
+                    try:
+                        shutil.copy2(src_d3d9, gameplay_d3d9)
+                        if os.path.exists(gameplay_d3d9_off):
+                            os.remove(gameplay_d3d9_off)
+                    except Exception as re_err:
+                        print("Warning copying ReShade DLL:", re_err)
+
+                src_ini = os.path.join(presets_reshade, "ReShade.ini")
+                if os.path.exists(src_ini):
+                    try:
+                        shutil.copy2(src_ini, os.path.join(self.gameplay_dir, "ReShade.ini"))
+                    except Exception:
+                        pass
+
+                preset_file = "preset_cinema_88.ini" if reshade_choice == "cinema" else "preset_soft_163.ini"
+                src_preset = os.path.join(presets_reshade, preset_file)
+                if os.path.exists(src_preset):
+                    try:
+                        shutil.copy2(src_preset, os.path.join(self.gameplay_dir, "ReShadePreset.ini"))
+                    except Exception:
+                        pass
+
+                src_shaders = os.path.join(presets_reshade, "reshade-shaders")
+                dest_shaders = os.path.join(self.gameplay_dir, "reshade-shaders")
+                if os.path.exists(src_shaders) and not os.path.exists(dest_shaders):
+                    try:
+                        shutil.copytree(src_shaders, dest_shaders)
+                    except Exception:
+                        pass
 
             return {
                 "status": "success",
@@ -608,23 +665,39 @@ def main():
 
         import threading, time
         def apply_window_icon():
-            time.sleep(0.6)
-            try:
-                hwnd = ctypes.windll.user32.FindWindowW(None, "Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV")
-                if hwnd:
-                    ico_path = os.path.join(ui_dir, "assets", "vault13_icon.ico")
-                    if os.path.exists(ico_path):
-                        IMAGE_ICON = 1
-                        LR_LOADFROMFILE = 0x00000010
-                        h_icon_big = ctypes.windll.user32.LoadImageW(0, ico_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE)
+            ico_path = os.path.join(ui_dir, "assets", "green_remaster_13.ico")
+            if not os.path.exists(ico_path):
+                ico_path = os.path.join(ui_dir, "assets", "vault13_icon.ico")
+            if not os.path.exists(ico_path):
+                return
+            IMAGE_ICON = 1
+            LR_LOADFROMFILE = 0x00000010
+            WM_SETICON = 0x0080
+            GCLP_HICON = -14
+            GCLP_HICONSM = -34
+
+            for _ in range(12):
+                time.sleep(0.3)
+                try:
+                    hwnd = ctypes.windll.user32.FindWindowW(None, "Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV")
+                    if hwnd:
+                        h_icon_big = ctypes.windll.user32.LoadImageW(0, ico_path, IMAGE_ICON, 48, 48, LR_LOADFROMFILE)
                         h_icon_small = ctypes.windll.user32.LoadImageW(0, ico_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
-                        WM_SETICON = 0x0080
                         if h_icon_big:
                             ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 1, h_icon_big)
+                            try:
+                                ctypes.windll.user32.SetClassLongPtrW(hwnd, GCLP_HICON, h_icon_big)
+                            except Exception:
+                                pass
                         if h_icon_small:
                             ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 0, h_icon_small)
-            except Exception:
-                pass
+                            try:
+                                ctypes.windll.user32.SetClassLongPtrW(hwnd, GCLP_HICONSM, h_icon_small)
+                            except Exception:
+                                pass
+                        break
+                except Exception:
+                    pass
 
         threading.Thread(target=apply_window_icon, daemon=True).start()
 

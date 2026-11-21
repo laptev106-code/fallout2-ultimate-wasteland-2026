@@ -26,6 +26,11 @@ test_config/
 build/
 build_pipboy/
 build_nextgen/
+build_launcher/
 dist/
 dist_*/
 *.spec
+launcher_config.json
+
+!launcher_nextgen/presets/
+!launcher_nextgen/presets/**

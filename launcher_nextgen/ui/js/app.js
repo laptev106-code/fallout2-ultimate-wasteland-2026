@@ -23,6 +23,13 @@ class LauncherApp {
     this.renderCatalog();
     this.loadInitialConfig();
     this.loadSavesInfo();
+
+    window.addEventListener('pywebviewready', () => {
+      this.loadInitialConfig();
+    });
+    setTimeout(() => this.loadInitialConfig(), 150);
+    setTimeout(() => this.loadInitialConfig(), 500);
+    setTimeout(() => this.loadInitialConfig(), 1200);
   }
 
   initElements() {
@@ -118,7 +125,7 @@ class LauncherApp {
       this.saveCurrentSettings();
     });
 
-    ['select-res', 'select-mode', 'select-scale', 'select-filter'].forEach(id => {
+    ['select-res', 'select-mode', 'select-scale', 'select-filter', 'select-reshade'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => {
         this.saveCurrentSettings(true);
       });
@@ -400,6 +407,9 @@ class LauncherApp {
     const selFilter = document.getElementById('select-filter');
     if (selFilter) selFilter.value = this.config.filtering || 'bilinear';
 
+    const selReShade = document.getElementById('select-reshade');
+    if (selReShade) selReShade.value = this.config.reshade || 'off';
+
     const sMusic = document.getElementById('slider-music');
     if (sMusic) {
       sMusic.value = this.config.musicVol ?? 80;
@@ -436,6 +446,7 @@ class LauncherApp {
     const selMode = document.getElementById('select-mode');
     const selScale = document.getElementById('select-scale');
     const selFilter = document.getElementById('select-filter');
+    const selReShade = document.getElementById('select-reshade');
     const sMusic = document.getElementById('slider-music');
     const sSfx = document.getElementById('slider-sfx');
 
@@ -443,6 +454,7 @@ class LauncherApp {
     if (selMode) this.config.mode = selMode.value;
     if (selScale) this.config.scale = selScale.value;
     if (selFilter) this.config.filtering = selFilter.value;
+    if (selReShade) this.config.reshade = selReShade.value;
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
 

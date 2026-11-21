@@ -73,7 +73,7 @@
           </button>
 
           <div class="sidebar-vaultboy">
-            <img class="vaultboy-preview-img" src="assets/vault_boy_thumbsup.png" alt="Pip-Boy" style="filter: drop-shadow(0 0 10px rgba(0,255,130,0.3));">
+            <img class="vaultboy-preview-img" src="assets/pipboy_gear_chatgpt.jpg" alt="Pip-Boy" style="border-radius: 6px; border: 1px solid var(--border-muted); filter: drop-shadow(0 0 10px rgba(0,255,130,0.3));">
             <div class="vaultboy-tag">PIP-BOY 3000 // ВСЁ ОТЛИЧНО!</div>
           </div>
         </nav>
@@ -132,7 +132,7 @@
               </div>
               <div class="qol-toggles-grid">
                 <label class="qol-toggle-item">
-                  <input type="checkbox" id="quick-toggle-alwaysrun" class="qol-checkbox">
+                  <input type="checkbox" id="quick-toggle-alwaysrun" class="qol-checkbox" checked>
                   <div class="qol-label-desc">
                     <span class="qol-label-text">Всегда бегать (Auto-Run)</span>
                     <span class="qol-subtext">Персонаж передвигается бегом по умолчанию без удержания Shift</span>
@@ -146,7 +146,7 @@
                   </div>
                 </label>
                 <label class="qol-toggle-item">
-                  <input type="checkbox" id="quick-toggle-temple-tutorial" class="qol-checkbox">
+                  <input type="checkbox" id="quick-toggle-temple-tutorial" class="qol-checkbox" checked>
                   <div class="qol-label-desc">
                     <span class="qol-label-text">Обучение в Храме Испытаний</span>
                     <span class="qol-subtext">Подсказки старейшин в храме по тактике боя, ловушкам и выживанию</span>
@@ -225,6 +225,18 @@
                   <select id="select-filter" class="form-select">
                     <option value="bilinear" selected>Билинейное сглаживание GPU (Мягкие грани без шума)</option>
                     <option value="point">Точечное пиксельное (Резкий пиксель-арт)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">5. ПОСТ-ОБРАБОТКА И ОСВЕЩЕНИЕ (RESHADE D3D9):</span>
+                    <span class="form-hint">Опциональные кинематографичные шейдеры для классического профиля Gameplay.</span>
+                  </div>
+                  <select id="select-reshade" class="form-select">
+                    <option value="off" selected>Выключено (Оригинал 1998 / Чистый Direct3D 9, максимальная чёткость шрифтов)</option>
+                    <option value="soft">Мягкий ReShade (Пресет #163 — деликатный блум NeoBloom, сглаживание FXAA)</option>
+                    <option value="cinema">Атмосферный ReShade (Пресет #88 — глубокий контраст, объёмные тени)</option>
                   </select>
                 </div>
               </div>
