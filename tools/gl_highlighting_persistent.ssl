@@ -5,10 +5,12 @@
  * - Caps Lock (58): Persistent Toggle mode ("Включил и бегаешь")
  * - Shift (42): Temporary Hold mode (when persistent is OFF)
  * - NEVER drops after actions (survives inventory, dialog, barter, looting, combat, map transitions)
- * - Multi-color outlines:
- *     - Green: Containers with loot
- *     - Red: Locked containers
- *     - Yellow: Ground items & Lootable corpses
+ * - Intelligent visual color hierarchy:
+ *     - Glowing Green (8): Containers with loot
+ *     - Bright Yellow (16): Ground items & lootable corpses
+ *     - Red (2): Locked containers & locked doors
+ *     - Purple (64): Interactive scenery (Bulletin boards, Terminals, Computers, Switches)
+ *     - Gray (4): Empty/already-looted containers & empty corpses
  * - Bilingual notifications (RU / EN)
  */
 
@@ -21,8 +23,11 @@
 
 #define COLOR_ITEMS                 (16) // Bright yellow
 #define COLOR_CORPSES               (16) // Bright yellow
-#define COLOR_CONTAINERS            (8)  // Glowing green
-#define COLOR_LOCKED                (2)  // Red
+#define COLOR_CORPSE_EMPTY          (4)  // Subtle gray for empty corpses
+#define COLOR_CONTAINERS            (8)  // Glowing green for loot
+#define COLOR_CONTAINER_EMPTY       (4)  // Subtle gray for empty looted containers
+#define COLOR_LOCKED                (2)  // Red for locked doors/containers
+#define COLOR_INTERACTIVE_SCENERY   (64) // Purple for Bulletin Boards, Terminals, Computers
 
 #define NO_HIGHLIGHT(obj)           (get_flags(obj) bwand FLAG_NOHIGHLIGHT)
 #define NO_STEAL(obj)               (get_proto_data(obj_pid(obj), PROTO_CR_FLAGS) bwand CFLG_NOSTEAL)
@@ -40,14 +45,14 @@ end
 procedure GetItemColor(variable obj) begin
    if (obj_item_subtype(obj) == item_type_container) then begin
       if (obj_is_locked(obj)) then return COLOR_LOCKED;
-      if (IS_EMPTY(obj)) then return 0;
+      if (IS_EMPTY(obj)) then return COLOR_CONTAINER_EMPTY;
       return COLOR_CONTAINERS;
    end
    return COLOR_ITEMS;
 end
 
 procedure ApplyHighlight(variable enable) begin
-   variable obj, isCorpse, col;
+   variable obj, isCorpse, col, sid;
 
    // 1. Ground items & Containers
    foreach obj in list_as_array(LIST_GROUNDITEMS) begin
@@ -63,7 +68,7 @@ procedure ApplyHighlight(variable enable) begin
       end
    end
 
-   // 2. Dead Bodies (Corpses with loot)
+   // 2. Dead Bodies (Corpses)
    foreach obj in list_as_array(LIST_CRITTERS) begin
       if obj and obj != dude_obj then begin
          isCorpse := (critter_state(obj) == CRITTER_IS_DEAD);
@@ -72,11 +77,31 @@ procedure ApplyHighlight(variable enable) begin
                if (not IS_EMPTY(obj)) then begin
                   set_outline(obj, COLOR_CORPSES);
                end else begin
-                  set_outline(obj, 0);
+                  set_outline(obj, COLOR_CORPSE_EMPTY);
                end
             end else begin
                set_outline(obj, 0);
             end
+         end
+      end
+   end
+
+   // 3. Scenery: Interactive Props (Bulletin Boards, Terminals, Computers, Locked Doors)
+   foreach obj in list_as_array(LIST_SCENERY) begin
+      if obj then begin
+         if enable then begin
+            sid := get_object_data(obj, OBJ_DATA_SID);
+            if (sid != -1 and not NO_HIGHLIGHT(obj)) then begin
+               if (obj_is_locked(obj) and not obj_is_open(obj)) then begin
+                  set_outline(obj, COLOR_LOCKED);
+               end else begin
+                  set_outline(obj, COLOR_INTERACTIVE_SCENERY);
+               end
+            end else begin
+               set_outline(obj, 0);
+            end
+         end else begin
+            set_outline(obj, 0);
          end
       end
    end
