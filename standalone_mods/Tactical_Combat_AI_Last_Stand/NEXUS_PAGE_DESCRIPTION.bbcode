@@ -1,0 +1,58 @@
+﻿[center][size=6][b][color=#e67e22]TACTICAL COMBAT AI: LAST STAND & CAUTIOUS RETREAT[/color][/b][/size]
+[size=3][i]Dynamic Enemy Morale, Intelligent Ranged Kiting & Desperation Counter-Attacks for Fallout 2[/i][/size][/center]
+
+[hr]
+
+[size=4][b][color=#f39c12]THE PROBLEM IN CLASSIC FALLOUT 2[/color][/b][/size]
+In vanilla Fallout 2, almost every combat encounter suffers from the [b]"mop-up slog"[/b]. Once you severely injure an enemy, they enter a hardcoded panic state and spend 5 to 7 agonizing turns sprinting 40 hexes into the black fog of war. Even worse, terrifying Enclave Combat Robots or heavily armored 10-foot Super Mutants armed with miniguns turn tail and flee like frightened children. 
+
+[b]Tactical Combat AI[/b fixes this pacing and immersion breakdown entirely through a lightweight, zero-overhead sFall hook.
+
+[hr]
+
+[size=4][b][color=#2ecc71]KEY FEATURES[/color][/b][/size]
+[list]
+[*] [b]Cautious Retreat & Ranged Kiting:[/b] Armed humanoids with functional ranged weapons and loaded ammunition stop fleeing once they reach a safe firing distance ([b]12 hexes[/b]), turn around, and return fire from long range. Enemies with melee weapons or empty magazines continue running.
+[*] [b]Fearless Heavy Entities:[/b] Combat Robots, Super Mutants, Deathclaws, and Aliens [b]never flee in panic[/b]. They fight to the death as terrifying war machines and wasteland apex predators should.
+[*] [b]Desperation Last Stand (Berserk Mode):[/b] Critically injured humanoids (HP <= 22% or <= 15 HP) have a base [b]8% chance[/b] (up to 12% for enemies with high Strength and Endurance) to snap out of panic, shout an authentic floating red battle cry, and launch a suicidal final counter-attack.
+[*] [b]Dynamic Target Selection:[/b] Last Stand enemies attack the nearest threatening party member (Sulik, Marcus, Cassidy) rather than blindly bee-lining across the battlefield towards the player.
+[*] [b]Civilian & Non-Combatant Protection:[/b] Frightened townspeople, peasants, prostitutes, and children are excluded and will continue to flee naturally.
+[*] [b]Physical Disability Guards:[/b] Blinded enemies or enemies with both arms crippled will continue fleeing rather than freezing up with no attacks available.
+[/list]
+
+[hr]
+
+[size=4][b][color=#3498db]FULL CONFIGURATION (INI)[/color][/b][/size]
+The mod includes [b]mods/gl_laststand.ini[/b] to let you customize every parameter to your liking:
+[code]
+[Settings]
+; Distance (in hexes) at which wounded armed enemies stop fleeing and resume firing (default: 12)
+KitingDistance=12
+
+; Base percentage chance (0 to 100) for a critically wounded enemy to trigger Last Stand (default: 8)
+LastStandBaseChance=8
+
+; Fearless Robots, Super Mutants, Deathclaws, and Aliens (1 = on, 0 = off)
+FearlessBrutes=1
+
+; Floating red combat shouts above the enemy head (1 = on, 0 = off)
+FloatCombatMessages=1
+[/code]
+
+[hr]
+
+[size=4][b][color=#9b59b6]COMPATIBILITY & PERFORMANCE[/color][/b][/size]
+[list]
+[*] [b]Compatibility:[/b] 100% compatible with Vanilla Fallout 2 (1.02d), Restoration Project Updated (RPU), EcCo Gameplay Balance, Fallout: Nevada, Fallout: Sonora, and Olympus 2207.
+[*] [b]Performance:[/b] ZERO impact on real-time performance. The script hooks [i]HOOK_COMBATTURN[/i] and executes in less than 0.001 milliseconds strictly during turn-based combat when an enemy starts their turn.
+[*] [b]Requirements:[/b] sFall 4.x or 5.x.
+[/list]
+
+[hr]
+
+[size=4][b][color=#e74c3c]INSTALLATION[/color][/b][/size]
+[list=1]
+[*] Download the archive.
+[*] Extract the [b]mods[/b] folder into your Fallout 2 game directory.
+[*] Play!
+[/list]

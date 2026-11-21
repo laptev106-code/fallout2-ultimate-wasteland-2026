@@ -1,6 +1,7 @@
 /*
    Tactical Combat AI: Desperation Last Stand & Cautious Retreat (Hardened Edition)
    Fallout 2: Ultimate Wasteland Edition (2026)
+   Standalone Release for Nexus Mods / Modding Community
 */
 
 #pragma sce
@@ -13,9 +14,17 @@
 #include "headers/sfall/lib.arrays.h"
 #include "headers/aipacket.h"
 
+#define INI_FILE "mods\\gl_laststand.ini"
+
 variable enraged_list;
+variable cfg_loaded;
+variable cfg_kite_dist;
+variable cfg_base_chance;
+variable cfg_fearless_brutes;
+variable cfg_float_msg;
 
 procedure start;
+procedure load_config;
 procedure combatturn_handler;
 procedure trigger_last_stand(variable cr, variable target);
 procedure get_last_stand_phrase;
@@ -23,10 +32,35 @@ procedure get_closest_player_target(variable cr);
 procedure has_usable_ranged_weapon(variable cr);
 procedure is_civilian_or_coward(variable cr);
 
+procedure load_config begin
+   variable val;
+   if (cfg_loaded) then return;
+
+   // Default: Kiting distance 12 hexes
+   val := get_ini_setting(INI_FILE + "|Settings|KitingDistance");
+   if (val > 0) then cfg_kite_dist := val; else cfg_kite_dist := 12;
+
+   // Default: Base 8% chance for Last Stand
+   val := get_ini_setting(INI_FILE + "|Settings|LastStandBaseChance");
+   if (val >= 0) then cfg_base_chance := val; else cfg_base_chance := 8;
+
+   // Default: Fearless Super Mutants, Robots, Deathclaws (1 = on, 0 = off)
+   val := get_ini_setting(INI_FILE + "|Settings|FearlessBrutes");
+   if (val >= 0) then cfg_fearless_brutes := val; else cfg_fearless_brutes := 1;
+
+   // Default: Red floating combat cry above head (1 = on, 0 = off)
+   val := get_ini_setting(INI_FILE + "|Settings|FloatCombatMessages");
+   if (val >= 0) then cfg_float_msg := val; else cfg_float_msg := 1;
+
+   cfg_loaded := 1;
+end
+
 procedure start begin
    if game_loaded then begin
       if (sfall_ver_major < 4) then return;
       enraged_list := 0;
+      cfg_loaded := 0;
+      call load_config;
       register_hook_proc(HOOK_COMBATTURN, combatturn_handler);
    end
 end
@@ -106,9 +140,11 @@ procedure trigger_last_stand(variable cr, variable target) begin
    // Cancel panic/flee state immediately
    critter_set_flee_state(cr, 0);
 
-   // Float red desperate battle cry above enemy head
-   phrase := get_last_stand_phrase;
-   float_msg(cr, phrase, FLOAT_MSG_RED);
+   // Optional red desperate battle cry above enemy head
+   if (cfg_float_msg) then begin
+      phrase := get_last_stand_phrase;
+      float_msg(cr, phrase, FLOAT_MSG_RED);
+   end
 
    // Attack the nearest threatening target
    attack(target);
@@ -134,6 +170,9 @@ procedure combatturn_handler begin
    // Ignore player party members
    if (party_member_obj(obj_pid(cr)) != 0) then return;
 
+   // Ensure config is loaded
+   call load_config;
+
    // Get critter species/kill type
    ktype := get_proto_data(obj_pid(cr), PROTO_CR_KILL_TYPE);
 
@@ -141,7 +180,7 @@ procedure combatturn_handler begin
    target := get_closest_player_target(cr);
 
    // Fearless entities: Super Mutants (3), Robots (10), Deathclaws (13), Aliens (16) NEVER flee
-   if (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16) then begin
+   if (cfg_fearless_brutes and (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16)) then begin
       if (critter_is_fleeing(cr)) then begin
          critter_set_flee_state(cr, 0);
          attack(target);
@@ -171,10 +210,10 @@ procedure combatturn_handler begin
       if (hp_percent <= 22 or cur_hp <= 15) then begin
          dist := tile_distance_objs(cr, target);
 
-         // CAUTIOUS RETREAT: If enemy already retreated to safe firing distance (>= 12 hexes),
+         // CAUTIOUS RETREAT: If enemy already retreated to safe firing distance (>= cfg_kite_dist hexes),
          // AND has a functional ranged weapon with loaded ammo,
          // stop fleeing endlessly across the map; take position and fight from a distance!
-         if (dist >= 12 and critter_is_fleeing(cr)) then begin
+         if (dist >= cfg_kite_dist and critter_is_fleeing(cr)) then begin
             if (has_usable_ranged_weapon(cr)) then begin
                critter_set_flee_state(cr, 0);
                attack(target);
@@ -188,8 +227,8 @@ procedure combatturn_handler begin
          if (enraged_list == 0) then enraged_list := create_array(0, 0);
          if (scan_array(enraged_list, cr) != -1) then return;
 
-         // Rare chance: Base 8%
-         chance := 8;
+         // Rare chance: Base cfg_base_chance (8%)
+         chance := cfg_base_chance;
          if (get_critter_stat(cr, STAT_st) >= 7) then chance := chance + 2;
          if (get_critter_stat(cr, STAT_en) >= 7) then chance := chance + 2;
 
