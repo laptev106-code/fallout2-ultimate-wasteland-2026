@@ -19,6 +19,7 @@ class LauncherBridge:
         self.gameplay_dir = os.path.join(self.root_dir, "Fallout2_Gameplay")
         self.hd_dir = os.path.join(self.root_dir, "Fallout2_HD")
         self.backups_dir = os.path.join(self.root_dir, "Backups")
+        self.config_file = os.path.join(self.root_dir, "launcher_config.json")
         os.makedirs(self.backups_dir, exist_ok=True)
         self._window = None
 
@@ -66,134 +67,83 @@ class LauncherBridge:
             return {"status": "error", "message": f"Критический сбой запуска: {str(e)}"}
 
     def read_config(self) -> dict:
-        """Считывание текущих настроек f2_res.ini, ddraw.ini и fallout2.cfg."""
-        cfg = {
-            "resolution": "2560x1440",
-            "mode": "borderless",
+        """Считывание сохраненных настроек из launcher_config.json с синхронизацией из INI при первом запуске."""
+        default_cfg = {
+            "resolution": "1920x1080",
+            "mode": "fullscreen",
             "scale": "2x",
             "filtering": "bilinear",
             "musicVol": 80,
-            "sfxVol": 80
+            "sfxVol": 80,
+            "alwaysRun": True,
+            "autoReload": True,
+            "templeTutorial": True
         }
 
-        # 1. f2_res.ini
-        ini_path = os.path.join(self.gameplay_dir, "f2_res.ini")
-        if os.path.exists(ini_path):
+        # 1. Если уже сохранен launcher_config.json, загружаем его как эталон
+        if os.path.exists(self.config_file):
             try:
-                with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
-                    content = f.read()
-
-                w = 2560
-                h = 1440
-                win_val = 1
-                win_fs = 1
-                for line in content.splitlines():
-                    line_s = line.strip()
-                    if line_s.startswith("SCR_WIDTH="):
-                        val = line_s.split("=")[1].strip()
-                        if val.isdigit(): w = int(val)
-                    elif line_s.startswith("SCR_HEIGHT="):
-                        val = line_s.split("=")[1].strip()
-                        if val.isdigit(): h = int(val)
-                    elif line_s.startswith("SCALE_2X=0"):
-                        cfg["scale"] = "1x"
-                    elif line_s.startswith("SCALE_2X=1"):
-                        cfg["scale"] = "2x"
-                    elif line_s.startswith("SCALE_2X=2") or line_s.startswith("SCALE_4X"):
-                        cfg["scale"] = "4x"
-                    elif line_s.startswith("WINDOWED="):
-                        val = line_s.split("=")[1].strip()
-                        if val.isdigit(): win_val = int(val)
-                    elif line_s.startswith("WINDOWED_FULLSCREEN="):
-                        val = line_s.split("=")[1].strip()
-                        if val.isdigit(): win_fs = int(val)
-
-                if w == 1280 and h == 720:
-                    cfg["resolution"] = "2560x1440"
-                    cfg["scale"] = "2x"
-                else:
-                    cfg["resolution"] = f"{w}x{h}"
-                if win_val == 1 and win_fs == 1:
-                    cfg["mode"] = "borderless"
-                elif win_val == 1:
-                    cfg["mode"] = "windowed"
-                else:
-                    cfg["mode"] = "fullscreen"
+                with open(self.config_file, "r", encoding="utf-8") as f:
+                    saved = json.load(f)
+                    if isinstance(saved, dict):
+                        default_cfg.update(saved)
+                        return default_cfg
             except Exception as e:
-                print("Error reading f2_res.ini:", e)
+                print("Warning loading launcher_config.json:", e)
 
-        # 2. ddraw.ini
-        ddraw_path = os.path.join(self.gameplay_dir, "ddraw.ini")
-        if os.path.exists(ddraw_path):
-            try:
-                ddraw_gw = 0
-                ddraw_gh = 0
-                with open(ddraw_path, "r", encoding="cp1251", errors="ignore") as f:
-                    for line in f:
-                        line_s = line.strip()
-                        if line_s.startswith("TextureFilter="):
-                            val = line_s.split("=")[1].strip()
-                            cfg["filtering"] = "bilinear" if val == "2" else "point"
-                        elif line_s.startswith("Mode="):
-                            val = line_s.split("=")[1].strip()
-                            if val == "6":
-                                cfg["mode"] = "borderless"
-                            elif val == "5":
-                                cfg["mode"] = "windowed"
-                        elif line_s.startswith("GraphicsWidth="):
-                            gw_val = line_s.split("=")[1].strip()
-                            if gw_val.isdigit() and int(gw_val) > 0:
-                                ddraw_gw = int(gw_val)
-                        elif line_s.startswith("GraphicsHeight="):
-                            gh_val = line_s.split("=")[1].strip()
-                            if gh_val.isdigit() and int(gh_val) > 0:
-                                ddraw_gh = int(gh_val)
-                if ddraw_gw > 0 and ddraw_gh > 0:
-                    cfg["resolution"] = f"{ddraw_gw}x{ddraw_gh}"
-            except Exception:
-                pass
+        # 2. Если файла еще нет, считываем фактические значения из ini/cfg файлов
+        cfg = default_cfg.copy()
 
-        # 3. fallout2.cfg
+        # fallout2.cfg
         fallout_cfg = os.path.join(self.gameplay_dir, "fallout2.cfg")
-        cfg["alwaysRun"] = True
         if os.path.exists(fallout_cfg):
             try:
                 with open(fallout_cfg, "r", encoding="utf-8", errors="ignore") as f:
                     for line in f:
-                        if line.startswith("music_volume="):
-                            val = line.split("=")[1].strip()
+                        line_s = line.strip()
+                        if line_s.startswith("music_volume="):
+                            val = line_s.split("=")[1].strip()
                             if val.isdigit(): cfg["musicVol"] = int((int(val) / 32767.0) * 100)
-                        elif line.startswith("sndfx_volume="):
-                            val = line.split("=")[1].strip()
+                        elif line_s.startswith("sndfx_volume="):
+                            val = line_s.split("=")[1].strip()
                             if val.isdigit(): cfg["sfxVol"] = int((int(val) / 32767.0) * 100)
-                        elif line.startswith("running="):
-                            cfg["alwaysRun"] = line.split("=")[1].strip() == "1"
+                        elif line_s.startswith("running="):
+                            cfg["alwaysRun"] = (line_s.split("=")[1].strip() == "1")
             except Exception:
                 pass
 
-        # 4. fo2tweaks.ini
+        # fo2tweaks.ini
         fo2tweaks_cfg = os.path.join(self.gameplay_dir, "mods", "fo2tweaks.ini")
-        cfg["autoReload"] = False
         if os.path.exists(fo2tweaks_cfg):
             try:
                 with open(fo2tweaks_cfg, "r", encoding="utf-8", errors="ignore") as f:
                     for line in f:
-                        if line.startswith("auto_reload="):
-                            cfg["autoReload"] = line.split("=")[1].strip() == "1"
+                        line_s = line.strip()
+                        if line_s.startswith("auto_reload=") or line_s.startswith("auto_reload ="):
+                            val = line_s.split("=")[1].strip()
+                            cfg["autoReload"] = (val == "1")
             except Exception:
                 pass
 
-        # 5. Temple Tutorial in ddraw.ini
-        cfg["templeTutorial"] = True
+        # ddraw.ini (TempleTutorial)
         ddraw_cfg = os.path.join(self.gameplay_dir, "ddraw.ini")
         if os.path.exists(ddraw_cfg):
             try:
-                with open(ddraw_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                with open(ddraw_cfg, "r", encoding="cp1251", errors="ignore") as f:
                     for line in f:
-                        if line.startswith("TempleTutorial="):
-                            cfg["templeTutorial"] = line.split("=")[1].strip() == "1"
+                        line_s = line.strip()
+                        if line_s.startswith("TempleTutorial=") or line_s.startswith("TempleTutorial ="):
+                            val = line_s.split("=")[1].strip()
+                            cfg["templeTutorial"] = (val == "1")
             except Exception:
                 pass
+
+        # Сохраняем первично сформированный JSON, чтобы он был стабилен
+        try:
+            with open(self.config_file, "w", encoding="utf-8") as f:
+                json.dump(cfg, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
         return cfg
 
@@ -202,7 +152,6 @@ class LauncherBridge:
         if not os.path.exists(file_path):
             return
 
-        # Создаем страховочную копию перед записью
         bak_path = file_path + ".bak"
         try:
             shutil.copy2(file_path, bak_path)
@@ -228,7 +177,6 @@ class LauncherBridge:
             if not replaced:
                 new_lines.append(line)
 
-        # Если каких-то ключей не было в файле, безопасно дописываем их в конец
         if unhandled_keys:
             new_lines.append("\n; Added by Fallout 2 Next-Gen Launcher\n")
             for k in unhandled_keys:
@@ -240,16 +188,22 @@ class LauncherBridge:
     def save_config(self, cfg: dict) -> dict:
         """Безопасная синхронизация графики, масштабирования и звука во все профили (Gameplay и HD)."""
         try:
-            res_val = cfg.get("resolution", "2560x1440")
-            w, h = res_val.split("x")
-            w, h = int(w), int(h)
+            # 1. Сохраняем в эталонный JSON конфиг лаунчера для 100% стабильности UI
+            try:
+                with open(self.config_file, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f, indent=2, ensure_ascii=False)
+            except Exception as e:
+                print("Error saving launcher_config.json:", e)
+
+            res_val = cfg.get("resolution", "1920x1080")
+            if "x" in res_val:
+                w, h = map(int, res_val.split("x"))
+            else:
+                w, h = 1920, 1080
 
             scale_choice = cfg.get("scale", "2x")
-            mode = cfg.get("mode", "borderless")
-            # Режим отображения:
-            # Для sfall Mode=6 (DirectX 9 Fullscreen Windowed) окно уже является полноценным borderless,
-            # а в f2_res.ini WINDOWED должен быть строго 0, чтобы F2_RES не отключал SCALE_2X
-            # и не конфликтовал с sfall DX9 хуком при старте.
+            mode = cfg.get("mode", "fullscreen")
+
             if mode == "borderless":
                 f2_windowed = 0
                 f2_borderless = 0
@@ -260,7 +214,7 @@ class LauncherBridge:
                 f2_borderless = 0
                 ddraw_mode = 5
                 cfg_windowed = 1
-            else: # fullscreen
+            else:  # fullscreen
                 f2_windowed = 0
                 f2_borderless = 0
                 ddraw_mode = 6
@@ -270,28 +224,21 @@ class LauncherBridge:
             music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
             sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
 
-            # Вычисление параметров масштабирования под 4K / 1800p / 1440p
-            # В Fallout 2 оригинальный интерфейс 640x480.
-            # Если рендерить 3840x2160 или 3200x1800 напрямую, даже с SCALE_2X поле 1920x1080 делает интерфейс мелким.
-            # При выборе 4x (или 4K с крупным UI) мы рендерим 1920x1080 + sfall GPU масштабирует до нативного разрешения,
-            # либо в Community Edition ставим scale=4.
-            if scale_choice == "2x" or scale_choice == "4x":
-                # В Fallout 2 связка SCR_WIDTH=1280 и SCR_HEIGHT=720 с SCALE_2X=1
-                # и sfall Mode=6 (DirectX 9 Borderless Fullscreen) масштабируется видеокартой
-                # на весь экран монитора (1440p / 1080p / 4K) с идеальными крупными пропорциями UI,
-                # крупным инвентарем и четкими шрифтами без микроскопических элементов.
-                f2_w = 1280
-                f2_h = 720
+            # Вычисление параметров масштабирования под монитор
+            if scale_choice == "2x":
+                f2_w = w // 2
+                f2_h = h // 2
                 f2_scale_2x = 1
-                ddraw_gw = 0
-                ddraw_gh = 0
-                ce_scale = 2 if scale_choice == "2x" else 3
-            else: # 1x (Оригинальный мелкий интерфейс / максимальный обзор)
+                ce_scale = 2
+            elif scale_choice == "4x":
+                f2_w = w // 4
+                f2_h = h // 4
+                f2_scale_2x = 2
+                ce_scale = 3
+            else: # 1x
                 f2_w = w
                 f2_h = h
                 f2_scale_2x = 0
-                ddraw_gw = 0
-                ddraw_gh = 0
                 ce_scale = 1
 
             auto_reload_val = 1 if cfg.get("autoReload", False) else 0
@@ -321,8 +268,8 @@ class LauncherBridge:
                 ddraw_path = os.path.join(target_dir, "ddraw.ini")
                 self._safe_write_ini_key(ddraw_path, {
                     "Mode": ddraw_mode,
-                    "GraphicsWidth": ddraw_gw,
-                    "GraphicsHeight": ddraw_gh,
+                    "GraphicsWidth": 0,
+                    "GraphicsHeight": 0,
                     "TextureFilter": filter_val,
                     "WindowData": 0,
                     "BackgroundKeyboard": 1,
@@ -331,7 +278,8 @@ class LauncherBridge:
                     "CombatPanelAnimDelay": 90,
                     "WorldMapEncounterRate": 14,
                     "SkipCompatModeCheck": 1,
-                    "ExtraCRC": "0xf18aa577,0xe1680293"
+                    "ExtraCRC": "0xf18aa577,0xe1680293",
+                    "TempleTutorial": temple_tut_val
                 }, encoding="cp1251")
 
                 # 3. fallout2.cfg
@@ -348,19 +296,14 @@ class LauncherBridge:
                     "windowed": cfg_windowed
                 }, encoding="utf-8")
 
-                # 4. fo2tweaks.ini (управление авто-перезарядкой после боя)
+                # 4. fo2tweaks.ini
                 fo2tweaks_path = os.path.join(target_dir, "mods", "fo2tweaks.ini")
                 if os.path.exists(fo2tweaks_path):
                     self._safe_write_ini_key(fo2tweaks_path, {"auto_reload": auto_reload_val}, encoding="utf-8")
 
-                # 5. sfall-mods.ini (отключение 10-кадрового цикла сканирования криттеров)
-                sfall_mods_path = os.path.join(target_dir, "mods", "sfall-mods.ini")
-                if os.path.exists(sfall_mods_path):
-                    self._safe_write_ini_key(sfall_mods_path, {"Key": 0, "Critters": 0, "CheckLOS": 0}, encoding="utf-8")
-
             return {
                 "status": "success",
-                "message": f"Настройки успешно записаны: {w}x{h}, {mode}, Scale {scale_choice} (CE scale={ce_scale}, f2_res={f2_w}x{f2_h}), {cfg.get('filtering', 'bilinear')}."
+                "message": f"Конфигурация успешно сохранена: {w}x{h}, {mode}, Scale {scale_choice}, бег={running_val}, автоперезарядка={auto_reload_val}, обучение={temple_tut_val}."
             }
         except Exception as e:
             return {"status": "error", "message": f"Ошибка сохранения настроек: {str(e)}"}
@@ -604,6 +547,29 @@ def main():
             text_select=False
         )
         bridge.set_window(window)
+
+        import threading, time
+        def apply_window_icon():
+            time.sleep(0.6)
+            try:
+                hwnd = ctypes.windll.user32.FindWindowW(None, "Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV")
+                if hwnd:
+                    ico_path = os.path.join(ui_dir, "assets", "vault13_icon.ico")
+                    if os.path.exists(ico_path):
+                        IMAGE_ICON = 1
+                        LR_LOADFROMFILE = 0x00000010
+                        h_icon_big = ctypes.windll.user32.LoadImageW(0, ico_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE)
+                        h_icon_small = ctypes.windll.user32.LoadImageW(0, ico_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
+                        WM_SETICON = 0x0080
+                        if h_icon_big:
+                            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 1, h_icon_big)
+                        if h_icon_small:
+                            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 0, h_icon_small)
+            except Exception:
+                pass
+
+        threading.Thread(target=apply_window_icon, daemon=True).start()
+
         webview.start(gui="edgechromium", debug=False)
     except Exception as e:
         print("WebView2 initialization error:", e)

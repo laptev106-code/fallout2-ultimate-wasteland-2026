@@ -24,7 +24,7 @@
       <!-- 1. Header Bar -->
       <header class="app-header">
         <div class="brand-section">
-          <img src="assets/badge_fallout25.png" alt="Fallout 2.5" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px; filter: drop-shadow(0 0 6px rgba(255,208,52,0.4));">
+          <img src="assets/app_icon.png" alt="Pip-Boy Remaster" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 8px; filter: drop-shadow(0 0 8px rgba(0,255,130,0.5));">
           <span class="brand-logo glow-text">VAULT-TEC</span>
           <span class="brand-badge">VAULT 13 // PIP-BOY 3000 MK IV</span>
           <span style="font-size: 11px; color: var(--phosphor-dim);">// DIRECTORS CUT 2026</span>
@@ -61,7 +61,7 @@
           </button>
           <button class="nav-item" data-view="settings">
             <span class="nav-icon">⚙️</span>
-            <span>НАСТРОЙКИ ГРАФИКИ</span>
+            <span>НАСТРОЙКИ ИГРЫ</span>
           </button>
           <button class="nav-item" data-view="saves">
             <span class="nav-icon">💾</span>
@@ -73,8 +73,8 @@
           </button>
 
           <div class="sidebar-vaultboy">
-            <img class="vaultboy-preview-img" src="assets/vault13_icon.png" alt="Vault 13" style="filter: drop-shadow(0 0 8px rgba(234,184,42,0.5));">
-            <div class="vaultboy-tag">УБЕЖИЩЕ 13 // ГОТОВНОСТЬ 100%</div>
+            <img class="vaultboy-preview-img" src="assets/vault_boy_thumbsup.png" alt="Pip-Boy" style="filter: drop-shadow(0 0 10px rgba(0,255,130,0.3));">
+            <div class="vaultboy-tag">PIP-BOY 3000 // ВСЁ ОТЛИЧНО!</div>
           </div>
         </nav>
 
@@ -123,6 +123,37 @@
                 </div>
               </div>
             </div>
+
+            <!-- QUICK QoL & TUTORIAL TOGGLE PANEL -->
+            <div class="launch-quick-qol-panel">
+              <div class="qol-panel-title">
+                <span class="qol-icon">⚡</span>
+                <span>БЫСТРЫЕ НАСТРОЙКИ ПУСТОШИ &amp; QoL (ДЕЙСТВУЮТ НА ОБА ПРОФИЛЯ)</span>
+              </div>
+              <div class="qol-toggles-grid">
+                <label class="qol-toggle-item">
+                  <input type="checkbox" id="quick-toggle-alwaysrun" class="qol-checkbox">
+                  <div class="qol-label-desc">
+                    <span class="qol-label-text">Всегда бегать (Auto-Run)</span>
+                    <span class="qol-subtext">Персонаж передвигается бегом по умолчанию без удержания Shift</span>
+                  </div>
+                </label>
+                <label class="qol-toggle-item">
+                  <input type="checkbox" id="quick-toggle-autoreload" class="qol-checkbox">
+                  <div class="qol-label-desc">
+                    <span class="qol-label-text">Автоперезарядка оружия</span>
+                    <span class="qol-subtext">Автоматически пополняет боезапас из рюкзака после окончания боя</span>
+                  </div>
+                </label>
+                <label class="qol-toggle-item">
+                  <input type="checkbox" id="quick-toggle-temple-tutorial" class="qol-checkbox">
+                  <div class="qol-label-desc">
+                    <span class="qol-label-text">Обучение в Храме Испытаний</span>
+                    <span class="qol-subtext">Подсказки старейшин в храме по тактике боя, ловушкам и выживанию</span>
+                  </div>
+                </label>
+              </div>
+            </div>
           </section>
 
           <!-- VIEW 2: КАТАЛОГ МОДОВ -->
@@ -154,12 +185,11 @@
                     <span class="form-hint">Нативное разрешение матрицы монитора для четкой геометрии без размытия.</span>
                   </div>
                   <select id="select-res" class="form-select">
-                    <option value="2560x1440" selected>2560x1440 (2K QHD — Рекомендуется)</option>
-                    <option value="3200x1800">3200x1800 (1800p QHD+)</option>
+                    <option value="1920x1080" selected>1920x1080 (Full HD 1080p — Рекомендуется)</option>
+                    <option value="2560x1440">2560x1440 (2K QHD)</option>
                     <option value="3840x2160">3840x2160 (4K Ultra HD)</option>
-                    <option value="1920x1080">1920x1080 (Full HD)</option>
                     <option value="1600x900">1600x900</option>
-                    <option value="1280x720">1280x720 (720p)</option>
+                    <option value="1280x720">1280x720 (720p HD)</option>
                   </select>
                 </div>
 

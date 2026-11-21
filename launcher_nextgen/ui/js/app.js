@@ -124,6 +124,29 @@ class LauncherApp {
       });
     });
 
+    // Sync and Auto-Save for QoL toggles (Quick Bar and Settings page)
+    const qolToggles = [
+      { quick: 'quick-toggle-alwaysrun', full: 'toggle-alwaysrun', key: 'alwaysRun' },
+      { quick: 'quick-toggle-autoreload', full: 'toggle-autoreload', key: 'autoReload' },
+      { quick: 'quick-toggle-temple-tutorial', full: 'toggle-temple-tutorial', key: 'templeTutorial' }
+    ];
+
+    qolToggles.forEach(({ quick, full, key }) => {
+      const elQuick = document.getElementById(quick);
+      const elFull = document.getElementById(full);
+
+      const handleToggle = (checked) => {
+        if (elQuick) elQuick.checked = checked;
+        if (elFull) elFull.checked = checked;
+        this.config[key] = checked;
+        if (window.pipAudio) window.pipAudio.playSwitchSnap();
+        this.saveCurrentSettings(true);
+      };
+
+      elQuick?.addEventListener('change', (e) => handleToggle(e.target.checked));
+      elFull?.addEventListener('change', (e) => handleToggle(e.target.checked));
+    });
+
     // Sliders input
     const sliderMusic = document.getElementById('slider-music');
     const labelMusic = document.getElementById('val-music');
@@ -387,13 +410,22 @@ class LauncherApp {
     }
 
     const chkReload = document.getElementById('toggle-autoreload');
-    if (chkReload) chkReload.checked = !!this.config.autoReload;
+    const quickReload = document.getElementById('quick-toggle-autoreload');
+    const autoReloadVal = !!this.config.autoReload;
+    if (chkReload) chkReload.checked = autoReloadVal;
+    if (quickReload) quickReload.checked = autoReloadVal;
 
     const chkRun = document.getElementById('toggle-alwaysrun');
-    if (chkRun) chkRun.checked = this.config.alwaysRun !== false;
+    const quickRun = document.getElementById('quick-toggle-alwaysrun');
+    const alwaysRunVal = this.config.alwaysRun !== false;
+    if (chkRun) chkRun.checked = alwaysRunVal;
+    if (quickRun) quickRun.checked = alwaysRunVal;
 
     const chkTutorial = document.getElementById('toggle-temple-tutorial');
-    if (chkTutorial) chkTutorial.checked = this.config.templeTutorial !== false;
+    const quickTutorial = document.getElementById('quick-toggle-temple-tutorial');
+    const templeTutVal = this.config.templeTutorial !== false;
+    if (chkTutorial) chkTutorial.checked = templeTutVal;
+    if (quickTutorial) quickTutorial.checked = templeTutVal;
   }
 
   async saveCurrentSettings(silent = false) {
@@ -411,11 +443,13 @@ class LauncherApp {
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
 
-    const chkReload = document.getElementById('toggle-autoreload');
-    const chkRun = document.getElementById('toggle-alwaysrun');
-    const chkTutorial = document.getElementById('toggle-temple-tutorial');
+    const chkReload = document.getElementById('toggle-autoreload') || document.getElementById('quick-toggle-autoreload');
+    const chkRun = document.getElementById('toggle-alwaysrun') || document.getElementById('quick-toggle-alwaysrun');
+    const chkTutorial = document.getElementById('toggle-temple-tutorial') || document.getElementById('quick-toggle-temple-tutorial');
+
     if (chkReload) this.config.autoReload = chkReload.checked;
     if (chkRun) this.config.alwaysRun = chkRun.checked;
+    if (chkTutorial) this.config.templeTutorial = chkTutorial.checked;
 
     const headerRes = document.getElementById('header-res-pill');
     if (headerRes && this.config.resolution) {
