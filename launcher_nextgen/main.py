@@ -317,7 +317,8 @@ class LauncherBridge:
                     "SpeedInventoryPCRotation": 300,
                     "CombatPanelAnimDelay": 90,
                     "WorldMapEncounterRate": 14,
-                    "SkipCompatModeCheck": 1
+                    "SkipCompatModeCheck": 1,
+                    "ExtraCRC": "0xf18aa577,0xe1680293"
                 }, encoding="cp1251")
 
                 # 3. fallout2.cfg

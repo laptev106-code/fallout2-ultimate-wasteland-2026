@@ -1,5 +1,5 @@
 /*
-   Tactical Combat AI: Desperation Last Stand & Cautious Retreat
+   Tactical Combat AI: Desperation Last Stand & Cautious Retreat (Hardened Edition)
    Fallout 2: Ultimate Wasteland Edition (2026)
 */
 
@@ -11,13 +11,17 @@
 #include "headers/sfall/sfall.h"
 #include "headers/sfall/define_extra.h"
 #include "headers/sfall/lib.arrays.h"
+#include "headers/aipacket.h"
 
 variable enraged_list;
 
 procedure start;
 procedure combatturn_handler;
-procedure trigger_last_stand(variable cr);
+procedure trigger_last_stand(variable cr, variable target);
 procedure get_last_stand_phrase;
+procedure get_closest_player_target(variable cr);
+procedure has_usable_ranged_weapon(variable cr);
+procedure is_civilian_or_coward(variable cr);
 
 procedure start begin
    if game_loaded then begin
@@ -44,21 +48,74 @@ procedure get_last_stand_phrase begin
    return "ƒавай, стрел€й! я все равно доберусь до твоей глотки!";
 end
 
-procedure trigger_last_stand(variable cr) begin
+procedure get_closest_player_target(variable cr) begin
+   variable best_target, min_dist, dist, p_list, who;
+   best_target := dude_obj;
+   min_dist := tile_distance_objs(cr, dude_obj);
+   p_list := party_member_list_critters;
+   if (p_list != 0) then begin
+      foreach (who in p_list) begin
+         if (who != 0 and who != cr) then begin
+            if (not is_critter_dead(who)) then begin
+               dist := tile_distance_objs(cr, who);
+               if (dist < min_dist) then begin
+                  min_dist := dist;
+                  best_target := who;
+               end
+            end
+         end
+      end
+   end
+   return best_target;
+end
+
+procedure has_usable_ranged_weapon(variable cr) begin
+   variable item, range, mag_size, ammo_cnt;
+   item := critter_inven_obj(cr, INVEN_TYPE_RIGHT_HAND);
+   if (item == 0 or obj_item_subtype(item) != item_type_weapon) then begin
+      item := critter_inven_obj(cr, INVEN_TYPE_LEFT_HAND);
+   end
+   if (item == 0 or obj_item_subtype(item) != item_type_weapon) then return false;
+
+   // Check weapon range (melee is <= 2)
+   range := get_proto_data(obj_pid(item), PROTO_WP_RANGE_1);
+   if (range <= 2) then return false;
+
+   // Check if weapon uses ammo and has ammo loaded
+   mag_size := get_proto_data(obj_pid(item), PROTO_WP_MAG_SIZE);
+   if (mag_size > 0) then begin
+      ammo_cnt := get_weapon_ammo_count(item);
+      if (ammo_cnt <= 0) then return false;
+   end
+
+   return true;
+end
+
+procedure is_civilian_or_coward(variable cr) begin
+   variable ai;
+   ai := has_trait(TRAIT_OBJECT, cr, OBJECT_AI_PACKET);
+   if (ai == AI_ARROYO_VILLAGER or ai == AI_ARROYO_ELDER or ai == AI_ARROYO_SHAMAN) then return true;
+   if (ai == AI_PEASANT or ai == AI_CHILD or ai == AI_WIMPY_PEASANT or ai == AI_COWARD) then return true;
+   if (ai == AI_GHOUL_PEASANT or ai == AI_PROSTITUTE or ai == AI_LONER_CITIZEN) then return true;
+   if (ai == AI_ADDICT_WIMPY or ai == AI_PEASANT_NO_MOVE or ai == AI_PRIMITIVE_COWARD) then return true;
+   return false;
+end
+
+procedure trigger_last_stand(variable cr, variable target) begin
    variable phrase;
    // Cancel panic/flee state immediately
    critter_set_flee_state(cr, 0);
 
-   // Float red desperate battle cry above enemy's head
+   // Float red desperate battle cry above enemy head
    phrase := get_last_stand_phrase;
    float_msg(cr, phrase, FLOAT_MSG_RED);
 
-   // Charge into desperate counter-attack
-   attack(dude_obj);
+   // Attack the nearest threatening target
+   attack(target);
 end
 
 procedure combatturn_handler begin
-   variable event_type, cr, ktype, cur_hp, max_hp, hp_percent, dist, roll, chance;
+   variable event_type, cr, ktype, cur_hp, max_hp, hp_percent, dist, roll, chance, target, c_state;
    event_type := get_sfall_arg;
    cr := get_sfall_arg;
 
@@ -71,7 +128,7 @@ procedure combatturn_handler begin
       return;
    end
 
-   // Only evaluate at the start of a critter's turn (event_type == 1)
+   // Only evaluate at the start of a critter turn (event_type == 1)
    if (event_type != 1 or cr == 0 or cr == dude_obj) then return;
 
    // Ignore player party members
@@ -80,19 +137,30 @@ procedure combatturn_handler begin
    // Get critter species/kill type
    ktype := get_proto_data(obj_pid(cr), PROTO_CR_KILL_TYPE);
 
+   // Find closest active player party target
+   target := get_closest_player_target(cr);
+
    // Fearless entities: Super Mutants (3), Robots (10), Deathclaws (13), Aliens (16) NEVER flee
    if (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16) then begin
       if (critter_is_fleeing(cr)) then begin
          critter_set_flee_state(cr, 0);
-         attack(dude_obj);
+         attack(target);
       end
       return;
    end
 
    // Humanoid combatants: men (0), women (1), ghouls (4)
    if (ktype == 0 or ktype == 1 or ktype == 4) then begin
-      // Exclude mindless creatures/children
+      // Exclude mindless creatures/children/low IQ
       if (get_critter_stat(cr, STAT_iq) < 4) then return;
+
+      // Filter out non-combatants, peasants, prostitutes, and cowards
+      if (is_civilian_or_coward(cr)) then return;
+
+      // Check severe physical disability: blindness or both arms crippled
+      c_state := critter_state(cr);
+      if (c_state bwand DAM_BLIND) then return;
+      if ((c_state bwand DAM_CRIP_ARM_LEFT) and (c_state bwand DAM_CRIP_ARM_RIGHT)) then return;
 
       cur_hp := get_critter_stat(cr, STAT_current_hp);
       max_hp := get_critter_stat(cr, STAT_max_hp);
@@ -101,14 +169,18 @@ procedure combatturn_handler begin
 
       // Only applies when critically injured (HP <= 22% or cur_hp <= 15)
       if (hp_percent <= 22 or cur_hp <= 15) then begin
-         dist := tile_distance_objs(cr, dude_obj);
+         dist := tile_distance_objs(cr, target);
 
          // CAUTIOUS RETREAT: If enemy already retreated to safe firing distance (>= 12 hexes),
+         // AND has a functional ranged weapon with loaded ammo,
          // stop fleeing endlessly across the map; take position and fight from a distance!
          if (dist >= 12 and critter_is_fleeing(cr)) then begin
-            critter_set_flee_state(cr, 0);
-            attack(dude_obj);
-            return;
+            if (has_usable_ranged_weapon(cr)) then begin
+               critter_set_flee_state(cr, 0);
+               attack(target);
+               return;
+            end
+            // If enemy is melee or out of ammo, let them continue retreating!
          end
 
          // LAST STAND (BERZERK / DESPERATION COUNTER-ATTACK):
@@ -124,7 +196,7 @@ procedure combatturn_handler begin
          roll := random(1, 100);
          if (roll <= chance) then begin
             call array_push(enraged_list, cr);
-            call trigger_last_stand(cr);
+            call trigger_last_stand(cr, target);
          end
       end
    end
