@@ -183,6 +183,18 @@ class LauncherBridge:
             except Exception:
                 pass
 
+        # 5. Temple Tutorial in ddraw.ini
+        cfg["templeTutorial"] = True
+        ddraw_cfg = os.path.join(self.gameplay_dir, "ddraw.ini")
+        if os.path.exists(ddraw_cfg):
+            try:
+                with open(ddraw_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if line.startswith("TempleTutorial="):
+                            cfg["templeTutorial"] = line.split("=")[1].strip() == "1"
+            except Exception:
+                pass
+
         return cfg
 
     def _safe_write_ini_key(self, file_path: str, key_values: dict, encoding="utf-8"):
@@ -284,6 +296,7 @@ class LauncherBridge:
 
             auto_reload_val = 1 if cfg.get("autoReload", False) else 0
             running_val = 1 if cfg.get("alwaysRun", True) else 0
+            temple_tut_val = 1 if cfg.get("templeTutorial", True) else 0
 
             target_dirs = [self.gameplay_dir]
             if os.path.exists(self.hd_dir):

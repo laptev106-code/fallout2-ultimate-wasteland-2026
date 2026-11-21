@@ -391,6 +391,9 @@ class LauncherApp {
 
     const chkRun = document.getElementById('toggle-alwaysrun');
     if (chkRun) chkRun.checked = this.config.alwaysRun !== false;
+
+    const chkTutorial = document.getElementById('toggle-temple-tutorial');
+    if (chkTutorial) chkTutorial.checked = this.config.templeTutorial !== false;
   }
 
   async saveCurrentSettings(silent = false) {
@@ -410,6 +413,7 @@ class LauncherApp {
 
     const chkReload = document.getElementById('toggle-autoreload');
     const chkRun = document.getElementById('toggle-alwaysrun');
+    const chkTutorial = document.getElementById('toggle-temple-tutorial');
     if (chkReload) this.config.autoReload = chkReload.checked;
     if (chkRun) this.config.alwaysRun = chkRun.checked;
 
