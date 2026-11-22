@@ -12,14 +12,16 @@ rpu_wakizashi_animations.dat
 
 ; Upscaled UI & Pip-Boy Notes
 fo2_interface_upscaled.dat
+resurrection_interface.dat
 fo2_pip_timers.dat
-MapBlurFX.dat
+; MapBlurFX.dat
 
 ; Talking Heads Models & Audio
 cassidy_head.dat
 cassidy_voice_joey_bracken_hq.dat
 talking_heads.dat
 npc_armor.dat
+DB_Enchanced_Miria.dat
 
 ; Tactical & Quality of Life
 party_orders.dat
@@ -28,7 +30,6 @@ InventoryFilter.dat
 
 ; Overhaul & Mechanics
 rpu_y_ecco.dat
-F2MechanicsMiniRework.dat
 
 ; Translations (Base Russian Text)
 rpu_russian.dat
@@ -36,3 +37,6 @@ upu_russian_sound.dat
 
 ; Talking Heads Compatibility & Russian Lip-Sync (Top Priority)
 talking_heads_that_rpu_map_update_patch.dat
+
+; Authentic Uncensored Translation & Dialogue Rework (Final Override)
+rpu_russian_uncensored.dat
