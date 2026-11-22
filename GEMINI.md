@@ -123,9 +123,22 @@
 
 ## 9. Fallout 2 Ultimate Wasteland Edition (Canon, Architecture & Lore Invariants)
 - **Mandatory Directive**: In any conversation or task involving Fallout 2, mods, scripts, dialogues, balance, or launcher development, the agent MUST strictly adhere to and reference these primary sources:
-  1. [Fallout.md](file:///D:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/Fallout.md) — Product Blueprint, Master Roadmap, Dual-Engine Architecture & Inter-Agent Sync.
-  2. [FALLOUT_LORE_CANON.md](file:///D:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/FALLOUT_LORE_CANON.md) — Canonical Lore Bible (2241 timeline, Northern California, strict Interplay/Black Isle/Avellone canon, zero Bethesda retcons).
-  3. [PROJECT_MAP.md](file:///D:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md) — Master Architecture Map & Curated Modlist.
+  1. [Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md) — Product Blueprint, Master Roadmap, Dual-Engine Architecture & Inter-Agent Sync.
+  2. [FALLOUT_LORE_CANON.md](file:///E:/FALLOUT%20Ult%20pjt/FALLOUT_LORE_CANON.md) — Canonical Lore Bible (2241 timeline, Northern California, strict Interplay/Black Isle/Avellone canon, zero Bethesda retcons).
+  3. [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md) — Master Architecture Map & Curated Modlist.
+  4. [MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md) — Complete Changelog & Feature Registry.
+  5. [AUDIT_FALLOUT_MODDING_ARCHITECTURE.md](file:///E:/FALLOUT%20Ult%20pjt/Docs/AUDIT_FALLOUT_MODDING_ARCHITECTURE.md) — Devil's Advocate Architecture & Progressive Skill Audit.
+- **Hierarchical Skill Routing (Fallout Engine Craft, Audit & Narrative)**:
+  - Architecture, VFS & Test Audit: [`fallout-audit-god`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-audit-god/SKILL.md).
+  - Engine, Bytecode & sFall Scripting: [`fallout-engine-craft`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/SKILL.md) and drill down into its references:
+    - Scripting & Hooks: [`sfall-scripting.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/sfall-scripting.md)
+    - Dialogues & Lip-Sync: [`dialogue-canon.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/dialogue-canon.md)
+    - ID Registry & Balance: [`id-registry.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/id-registry.md)
+    - Data Formats & VFS: [`vfs-formats.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/vfs-formats.md)
+  - Lore, Dialogues & Character Narrative: [`fallout-narrative-craft`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/SKILL.md) and drill down into its references:
+    - Companion Voices & Profiles: [`companion-voices.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/references/companion-voices.md)
+    - Replica Matrix & Reactivity: [`replica-matrix.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/references/replica-matrix.md)
+  - Execute all compilation, ID checks, and profile deployment strictly through closed-loop pipeline: [`tools/mod_pipeline.py`](file:///E:/FALLOUT%20Ult%20pjt/tools/mod_pipeline.py).
 - **The Authentic Developer Test (Anti-Fan-Slop Filter)**:
   - Any added quest, dialogue line, companion behavior, or item MUST pass the developer authenticity test: it must look, sound, and play exactly as if Tim Cain, Leonard Boyarsky, or Chris Avellone designed it for Black Isle in 1998.
   - Absolute ban on amateur fan-fiction, silly memes, out-of-place modern weapons, and random quest-dumping.

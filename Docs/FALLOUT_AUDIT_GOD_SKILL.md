@@ -110,5 +110,5 @@
 py -3 tools/engine_full_audit.py
 
 # 2. Проверка чистоты Git и Conventional Commits
-cd "D:\AG games mods\fallout2-ultimate-wasteland-2026"; git status
+cd "E:\FALLOUT Ult pjt"; git status
 ```

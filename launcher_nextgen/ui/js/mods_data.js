@@ -1,6 +1,17 @@
 // SINGLE SOURCE OF TRUTH: Fallout 2 Ultimate Wasteland Edition 2026 Mods Database
-// Exactly 28 verified modules
+// Exactly 29 verified modules
 const MODS_DATABASE = [
+  {
+    id: "master_patch",
+    title: "ULTIMATE WASTELAND CUMULATIVE MASTER PATCH",
+    category: "АРХИТЕКТУРА",
+    badge: "КУМУЛЯТИВНЫЙ МОНОЛИТ",
+    version: "v2026.1 Final",
+    author: "genix106 & Antigravity Lead Team",
+    desc: "Главный кумулятивный пакет ручных исправлений и улучшений движка Fallout 2: анти-софтлок Храма, исправление собаки-неудачницы, надеваемые очки (+1 PE / +1 CH), двуязычный литературный боевой лог, золотой стандарт задержек интерфейса (300 мс), подсветка лута на Shift и защита от коллизий GVAR/LVAR.",
+    cancels: "Вековые софтлоки 1998 года, женские окончания в боевом логе у мужчин, дергание боевой панели и рассинхрон скриптов.",
+    specs: ["VFS Приоритет: Наивысший (Layer 1)", "Архив: rpu_russian_uncensored.dat", "Реестр правок: FIX-01 .. FIX-18", "Стабильность: 100% Closed-Loop Tested"]
+  },
   {
     id: "rpu",
     title: "RESTORATION PROJECT UPDATED",
