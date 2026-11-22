@@ -553,6 +553,12 @@ class EngineAuditor:
             (r'text\russian\dialog\schenry.msg', 400, 'Dr. Henry mutant tentacle research'),
             (r'text\russian\dialog\mcbaltha.msg', 1001, 'Balthas leather tanning'),
             (r'text\russian\dialog\vcmainwk.msg', 501, 'Valerie tool crafting'),
+            (r'text\russian\dialog\kctrapr.msg', 500, 'Klamath trapper gecko leather crafting'),
+            (r'text\russian\dialog\rcascort.msg', 401, 'Ascorti Wanamingo mine leasing'),
+            (r'text\russian\dialog\sckarl.msg', 200, 'Karl deputy security quests'),
+            (r'text\russian\dialog\slvcc1.msg', 1001, 'Slaver camp Ranger infiltration'),
+            (r'text\russian\dialog\vcconnar.msg', 800, 'Connar gun delivery negotiation'),
+            (r'text\russian\dialog\fccrocke.msg', 129, 'Crockett dynamic price hardening ($%d)'),
         ]
         missing_ecco = []
         for rel_k, line_num, desc in ecco_checks:
@@ -565,6 +571,32 @@ class EngineAuditor:
             self.log_fail('L7_ECCO_LINES_MISSING', f'EcCo dialogue lines missing in VFS: {missing_ecco}')
         else:
             self.log_pass('L7_ECCO_INTEGRITY', f'All {len(ecco_checks)} EcCo gameplay dialogue mechanics lines verified present in VFS.')
+
+        # Verify Scenery descriptions translation (pro_scen.msg)
+        scen_info = vfs.get(r'text\russian\game\pro_scen.msg')
+        if scen_info:
+            txt, enc = read_vfs_text(scen_info)
+            scen_eng = []
+            for num in [230300, 230301, 230400, 230401, 230700, 230701, 230800, 230801, 231900, 232000, 232100, 232501, 232900]:
+                m = re.search(rf'\{{{num}\}}\{{[^}}]*\}}\{{([^}}]*)\}}', txt)
+                if m and re.search(r'[A-Za-z]{4,}', m.group(1)) and not re.search(r'[А-Яа-яЁё]', m.group(1)):
+                    scen_eng.append((num, m.group(1)))
+            if scen_eng:
+                self.log_fail('L7_SCENERY_LEAK', f'{len(scen_eng)} scenery objects in pro_scen.msg have English descriptions: {scen_eng[:3]}')
+            else:
+                self.log_pass('L7_SCENERY_CLEAN', 'All scenery descriptions in pro_scen.msg verified in 100% authentic Russian.')
+        else:
+            self.log_warn('L7_SCENERY_ABSENT', 'pro_scen.msg not found in VFS.')
+
+        # Verify Party Orders hotkey deconfliction
+        po_ini = os.path.join(self.profile, 'mods', 'party_orders.ini')
+        if os.path.isfile(po_ini):
+            with open(po_ini, 'r', encoding='cp1251', errors='ignore') as f:
+                po_txt = f.read()
+            if re.search(r'(?i)PickUpKey\s*=\s*20\b', po_txt) and not re.search(r'(?i)PickUpKey\s*=\s*20\s*\+', po_txt):
+                self.log_fail('L7_HOTKEY_COLLISION', 'party_orders.ini uses bare PickUpKey=20 colliding with Town Map (T)!')
+            else:
+                self.log_pass('L7_HOTKEY_DECONFLICTED', 'party_orders.ini PickUpKey isolated with Ctrl+T (Town Map key T preserved).')
 
     def run_all(self):
         """Execute full test suite."""
