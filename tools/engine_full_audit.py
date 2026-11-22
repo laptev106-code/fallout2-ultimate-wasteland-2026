@@ -311,6 +311,11 @@ class EngineAuditor:
             (r'text\russian\dialog\gcfestus.msg', 'FEST', 'Festus (Gecko)'),
             (r'text\russian\dialog\vcmclure.msg', 'MCCLR', 'McClure (Vault City)'),
             (r'text\russian\dialog\ccdoctor.msg', 'SCH', 'Dr. Schreber (Navarro)'),
+            (r'text\russian\dialog\tribec4.msg', 'SHAM', 'Shaman (Primitive Tribe)'),
+            (r'text\russian\dialog\dcmom.msg', 'MOM', 'Mom (Den)'),
+            (r'text\russian\dialog\schenry.msg', 'HENRY', 'Dr. Henry (NCR)'),
+            (r'text\russian\dialog\mcbaltha.msg', 'BAL', 'Balthas (Modoc)'),
+            (r'text\russian\dialog\vcmainwk.msg', 'VCVAL', 'Valerie (Vault City)'),
         ]
 
         verified_heads = 0
@@ -520,6 +525,47 @@ class EngineAuditor:
         else:
             self.log_warn('L2_SCRIPTS_LST', 'scripts.lst not in loose mods (contained in master dat).')
 
+    def check_level7_linguistic_and_mechanics(self, vfs):
+        """Verify zero English leaks in Russian 7700+ dialogue lines and EcCo mechanics dialogue integrity."""
+        ru_dialogs = [k for k in vfs if k.startswith('text\\russian\\dialog\\') and k.endswith('.msg')]
+        leaks = []
+        for k in ru_dialogs:
+            txt, enc = read_vfs_text(vfs[k])
+            if not txt: continue
+            for m in re.finditer(r'\{(\d+)\}\{([^}]*)\}\{(.*)\}', txt):
+                num = int(m.group(1))
+                body = m.group(3)
+                if num >= 7700:
+                    ascii_words = re.findall(r'\b[A-Za-z]{4,}\b', body)
+                    cyr_words = re.findall(r'\b[а-яА-ЯёЁ]{4,}\b', body)
+                    if len(ascii_words) > 2 and len(cyr_words) == 0:
+                        leaks.append((k, num, body[:40]))
+        if leaks:
+            self.log_fail('L7_ENGLISH_LEAK', f'{len(leaks)} English text leaks found in 7700+ Russian lines: {leaks[:3]}')
+        else:
+            self.log_pass('L7_NO_ENGLISH_LEAKS', f'Surveyed all {len(ru_dialogs)} Russian dialogue files: 0 English leaks in 7700+ voiced lines.')
+
+        # Verify EcCo gameplay dialogue lines
+        ecco_checks = [
+            (r'text\russian\dialog\gcskeetr.msg', 1001, 'Skeeter ammo crafting'),
+            (r'text\russian\dialog\dcvic.msg', 5100, 'Vic repair crafting'),
+            (r'text\russian\dialog\dcmom.msg', 2001, 'Mom cooking training'),
+            (r'text\russian\dialog\schenry.msg', 400, 'Dr. Henry mutant tentacle research'),
+            (r'text\russian\dialog\mcbaltha.msg', 1001, 'Balthas leather tanning'),
+            (r'text\russian\dialog\vcmainwk.msg', 501, 'Valerie tool crafting'),
+        ]
+        missing_ecco = []
+        for rel_k, line_num, desc in ecco_checks:
+            info = vfs.get(rel_k)
+            txt, enc = read_vfs_text(info) if info else (None, None)
+            if not txt or not re.search(rf'\{{{line_num}\}}', txt):
+                missing_ecco.append((desc, line_num))
+
+        if missing_ecco:
+            self.log_fail('L7_ECCO_LINES_MISSING', f'EcCo dialogue lines missing in VFS: {missing_ecco}')
+        else:
+            self.log_pass('L7_ECCO_INTEGRITY', f'All {len(ecco_checks)} EcCo gameplay dialogue mechanics lines verified present in VFS.')
+
     def run_all(self):
         """Execute full test suite."""
         print(f"\n{'='*75}")
@@ -558,6 +604,9 @@ class EngineAuditor:
 
         print(f"[*] Running Level 6: Deep Armor Bounds, Scripts Hygiene & Craft Integrity...")
         self.check_level6_deep_linter(vfs)
+
+        print(f"[*] Running Level 7: Linguistic Integrity & EcCo Mechanics...")
+        self.check_level7_linguistic_and_mechanics(vfs)
 
         # Print Report
         print(f"\n--- AUDIT RESULTS FOR: {self.name} ---")
