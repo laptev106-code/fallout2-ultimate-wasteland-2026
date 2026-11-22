@@ -1,11 +1,12 @@
 # PRODUCT BLUEPRINT & MASTER ROADMAP
 # Fallout 2: Ultimate Wasteland Edition (2026)
 
-> 🧭 **ГЕНЕРАЛЬНАЯ КАРТА ПРОЕКТА И ФИЛОСОФИЯ СБОРКИ:** [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md)  
-> ☢️ **ГЕНЕРАЛЬНЫЙ КОДЕКС ЛОРА И КАНОНА 2241 ГОДА:** [FALLOUT_LORE_CANON.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/FALLOUT_LORE_CANON.md)  
-> 📋 **РЕЕСТР РУЧНЫХ ПРАВОК И МОД-ФИКСОВ (FIX-01..FIX-16):** [PATCHES_REGISTRY.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PATCHES_REGISTRY.md)  
-> 📜 **ПОЛНЫЙ ПОДРОБНЫЙ ЧЕНДЖЛОГ (ДОБАВЛЕНО / ИСПРАВЛЕНО):** [MASTER_CHANGELOG.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/MASTER_CHANGELOG.md)  
-> ⚠️ **ОБЯЗАТЕЛЬНАЯ ДИРЕКТИВА АГЕНТА:** При любой разработке, добавлении модов, правке диалогов, скриптов и сборке инсталлятора агент ОБЯЗАН строго ссылаться и руководствоваться принципами и каталогом из [PROJECT_MAP.md](file:///d:/AG%20games%20mods/fallout2-ultimate-wasteland-2026/PROJECT_MAP.md). Никакого наваливания мусора, строгий канон, баланс и закрытый цикл проверки.
+> 🧭 **ГЕНЕРАЛЬНАЯ КАРТА ПРОЕКТА И ФИЛОСОФИЯ СБОРКИ:** [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md)  
+> ☢️ **ГЕНЕРАЛЬНЫЙ КОДЕКС ЛОРА И КАНОНА 2241 ГОДА:** [FALLOUT_LORE_CANON.md](file:///E:/FALLOUT%20Ult%20pjt/FALLOUT_LORE_CANON.md)  
+> 📋 **РЕЕСТР РУЧНЫХ ПРАВОК И МОД-ФИКСОВ (FIX-01..FIX-16):** [PATCHES_REGISTRY.md](file:///E:/FALLOUT%20Ult%20pjt/PATCHES_REGISTRY.md)  
+> 📜 **ПОЛНЫЙ ПОДРОБНЫЙ ЧЕНДЖЛОГ (ДОБАВЛЕНО / ИСПРАВЛЕНО):** [MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md)  
+> 🏛️ **АРХИТЕКТУРНЫЙ АУДИТ И ДЕРЕВО СКИЛЛОВ:** [AUDIT_FALLOUT_MODDING_ARCHITECTURE.md](file:///E:/FALLOUT%20Ult%20pjt/Docs/AUDIT_FALLOUT_MODDING_ARCHITECTURE.md)  
+> ⚠️ **ОБЯЗАТЕЛЬНАЯ ДИРЕКТИВА АГЕНТА:** При любой разработке, добавлении модов, правке диалогов, скриптов и сборке инсталлятора агент ОБЯЗАН строго ссылаться и руководствоваться принципами и каталогом из [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md). Никакого наваливания мусора, строгий канон, баланс и закрытый цикл проверки.
 
 ---
 
@@ -14,6 +15,17 @@
 > 📡 **ПРАВИЛО СИНХРОНИЗАЦИИ:** Перед началом работы каждый агент (Основной чат и Вспомогательный чат) читает этот журнал, чтобы видеть актуальный статус соседа и не дублировать задачи.
 
 ### Журнал обмена статусами (Live Sync Log):
+- **[2026-11-22 03:50] Чат 1 (Lead CTO Antigravity)**:
+  - **FIX-20: Оптимизация скорости анимации диалоговой панели и бартера (DialogPanelAnimDelay)**:
+    1. По обратной связи от игрока дефолтная скорость движения диалоговой консоли была затянутой (33 мс задержки на шаг, ~30 fps). При переходе диалог ↔ бартер панель дважды уползала и выползала с ощутимой задержкой.
+    2. Во всех профилях (`E:\Fallout2_Ultimate\Fallout2_Gameplay\ddraw.ini`, `Fallout2_HD\ddraw.ini` и корневом `E:\FALLOUT Ult pjt\ddraw.ini`) выставлен параметр `DialogPanelAnimDelay=12`.
+    3. Анимация ускорена в 2.75 раза: диалог открывается и переходит в бартер бодро и отзывчиво, при этом сохраняются плавные кадры скольжения (без жесткого мгновенного переключения).
+- **[2026-11-22 02:55] Чат 1 (Lead CTO Antigravity)**:
+  - **Взят в работу пакет: Напарница Мирия, Сердце Кэссиди, Рейнджеры НКР**:
+    1. *Мирия (Modoc)*: Аудит имеющегося `miria.zip` (Miria Can Wait) и подготовка интеграции `Enchanced Miria v1.1 (Foxx)` / `RP Companion Expansion (RPCE v0.81.1)` (прокачка статов, смена брони, боевые приказы, инвентарь).
+    2. *Сердце Кэссиди (Vault City)*: Проверены тексты `vcdrtroy.msg` (реплики {770}-{773}) и `vccasidy.msg` ({30001}). Подготовка верификации скрипта кардиостимулятора и снятия сердечных приступов.
+    3. *Рейнджеры НКР (NCR Elise)*: Проверка скрипта `scelise.int` и условий закрытия квеста уничтожения работорговцев в Pip-Boy.
+    4. *Предостережение для Чатов 2, 3, 4*: Не вносить правки в `mcmiria.*`, `vccasidy.*`, `vcdrtroy.*`, `scelise.*` во избежание коллизий в `rpu_russian_uncensored.dat`.
 - **[2026-11-21 12:15] Основной Чат (Lead CTO Antigravity)**:
   - **Отключение фоновой подсветки, фикс грамматики боя и красная подсветка врагов**:
     1. *FIX-05 (Статус: Отключен)*: Скрипт `gl_highlighting.int` полностью удален из обоих профилей и `rpu_russian_uncensored.dat` по требованию игрока. Боевой поток sfall полностью освобожден от прерываний.
