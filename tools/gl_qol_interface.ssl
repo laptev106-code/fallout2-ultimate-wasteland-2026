@@ -89,9 +89,11 @@ procedure mouseclick_handler begin
       end
    end
 
-   // 2. Click in the expanded Done / ГОТОВО hit-box (bottom-right plate)
+   // 2. Click in the expanded Done / ГОТОВО text area (bottom-right plate, left of the red button)
+   // Native red button (wx + ww - 35 .. wx + ww - 5) is handled by the vanilla engine itself.
+   // This covers the entire large "ГОТОВО" / "DONE" text plate seamlessly without double ESC events.
    if (cfg_expanded_done) then begin
-      if (mx >= (wx + ww - 130) and mx <= (wx + ww - 5) and my >= (wy + wh - 48) and my <= (wy + wh - 6)) then begin
+      if (mx >= (wx + ww - 135) and mx <= (wx + ww - 36) and my >= (wy + wh - 48) and my <= (wy + wh - 6)) then begin
          tap_key(1); // Simulate ESC / Done
          set_sfall_return(0);
          return;
