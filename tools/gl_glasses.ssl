@@ -13,7 +13,7 @@
 #define PID_SPECTACLES       (415)
 #define PID_MIRROR_SHADES    (433)
 
-#define SGVAR_WORN_GLASSES   "WORN_GLASSES_PID"
+#define SGVAR_WORN_GLASSES   "GL_GLASS"
 
 procedure start;
 procedure invenmove_handler;

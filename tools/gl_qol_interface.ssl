@@ -1,0 +1,138 @@
+/*
+   Fallout 2 Ultimate Wasteland Edition 2026
+   Quality of Life Interface Enhancements (gl_qol_interface.ssl)
+   - Click outside inventory/container to close (Fast Exit)
+   - Expanded Done / ГОТОВО clickable hit-box
+   - Optional Auto-Close on Take All / Empty Container
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_qol_interface"
+
+#include "headers/define.h"
+#include "headers/sfall/sfall.h"
+#include "headers/sfall/define_extra.h"
+
+#define INI_FILE "mods\\gl_qol_interface.ini"
+#define WINTYPE_INV (0)
+
+variable cfg_loaded := 0;
+variable cfg_click_outside := 1;
+variable cfg_expanded_done := 1;
+variable cfg_auto_close_empty := 0;
+variable cfg_take_all_close := 1;
+
+procedure start;
+procedure load_config;
+procedure mouseclick_handler;
+procedure keypress_handler;
+procedure invenmove_handler;
+
+procedure load_config begin
+   variable val;
+   if (cfg_loaded) then return;
+
+   val := get_ini_setting(INI_FILE + "|Settings|ClickOutsideClosesInventory");
+   if (val >= 0) then cfg_click_outside := val; else cfg_click_outside := 1;
+
+   val := get_ini_setting(INI_FILE + "|Settings|ExpandedDoneButtonArea");
+   if (val >= 0) then cfg_expanded_done := val; else cfg_expanded_done := 1;
+
+   val := get_ini_setting(INI_FILE + "|Settings|AutoCloseEmptyContainers");
+   if (val >= 0) then cfg_auto_close_empty := val; else cfg_auto_close_empty := 0;
+
+   val := get_ini_setting(INI_FILE + "|Settings|CloseOnTakeAllKey");
+   if (val >= 0) then cfg_take_all_close := val; else cfg_take_all_close := 1;
+
+   cfg_loaded := 1;
+end
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      call load_config;
+      register_hook_proc(HOOK_MOUSECLICK, mouseclick_handler);
+      register_hook_proc(HOOK_KEYPRESS, keypress_handler);
+      register_hook_proc(HOOK_INVENTORYMOVE, invenmove_handler);
+   end
+end
+
+procedure mouseclick_handler begin
+   variable pressed, button, mx, my, wx, wy, ww, wh, gmode;
+   pressed := get_sfall_arg;
+   button  := get_sfall_arg;
+
+   // Trigger only on left mouse click press (button 0, pressed 1)
+   if (pressed != 1 or button != 0) then return;
+
+   // Check if inventory or container window is open
+   gmode := get_game_mode;
+   if ((gmode bwand (INVENTORY bwor INTFACELOOT bwor INTFACEUSE bwor BARTER)) == 0) then return;
+   if (not intface_is_shown(WINTYPE_INV)) then return;
+
+   call load_config;
+
+   wx := get_interface_x(WINTYPE_INV);
+   wy := get_interface_y(WINTYPE_INV);
+   ww := get_interface_width(WINTYPE_INV);
+   wh := get_interface_height(WINTYPE_INV);
+
+   mx := get_mouse_x;
+   my := get_mouse_y;
+
+   // 1. Click outside the inventory/loot window bounds -> Close immediately
+   if (cfg_click_outside) then begin
+      if (mx < wx or mx >= (wx + ww) or my < wy or my >= (wy + wh)) then begin
+         tap_key(1); // Simulate ESC
+         set_sfall_return(0);
+         return;
+      end
+   end
+
+   // 2. Click in the expanded Done / ГОТОВО hit-box (bottom-right plate)
+   if (cfg_expanded_done) then begin
+      if (mx >= (wx + ww - 130) and mx <= (wx + ww - 5) and my >= (wy + wh - 48) and my <= (wy + wh - 6)) then begin
+         tap_key(1); // Simulate ESC / Done
+         set_sfall_return(0);
+         return;
+      end
+   end
+end
+
+procedure keypress_handler begin
+   variable pressed, scancode, gmode;
+   pressed  := get_sfall_arg;
+   scancode := get_sfall_arg;
+
+   if (not cfg_take_all_close or pressed != 1) then return;
+
+   // Key 'D' (scancode 32) is standard Take All key in InventoryFilter
+   if (scancode == 32) then begin
+      gmode := get_game_mode;
+      if (gmode bwand INTFACELOOT) then begin
+         if (cfg_auto_close_empty) then begin
+            tap_key(1);
+         end
+      end
+   end
+end
+
+procedure invenmove_handler begin
+   variable source, item, slot, gmode, l_obj;
+   source := get_sfall_arg;
+   item   := get_sfall_arg;
+   slot   := get_sfall_arg;
+
+   if (not cfg_auto_close_empty) then return;
+
+   gmode := get_game_mode;
+   if (gmode bwand INTFACELOOT) then begin
+      l_obj := loot_obj;
+      if (l_obj != 0) then begin
+         // If container is now completely empty
+         if (inven_ptr(l_obj, 0) == 0) then begin
+            tap_key(1);
+         end
+      end
+   end
+end

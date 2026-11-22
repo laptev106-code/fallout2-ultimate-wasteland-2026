@@ -163,6 +163,7 @@ procedure combatturn_handler begin
 
    // Only evaluate at the start of a critter turn (event_type == 1)
    if (event_type != 1 or cr == 0 or cr == dude_obj) then return;
+   if (is_critter_dead(cr)) then return;
 
    // Ignore player party members
    if (party_member_obj(obj_pid(cr)) != 0) then return;
@@ -217,7 +218,7 @@ procedure combatturn_handler begin
 
          // LAST STAND (BERZERK / DESPERATION COUNTER-ATTACK):
          // Ensure each critter can only trigger Last Stand once per combat
-         if (enraged_list == 0) then enraged_list := create_array(0, 0);
+         if (enraged_list == 0) then begin enraged_list := create_array(0, 0); fix_array(enraged_list); end
          if (scan_array(enraged_list, cr) != -1) then return;
 
          // Rare chance: Base cfg_base_chance (8%)
