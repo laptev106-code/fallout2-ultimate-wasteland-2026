@@ -16,6 +16,7 @@
 
 /* Include Files */
 #define SCRIPT_REALNAME "dcsmitty"
+#define HEAD_SMITTY             (151)
 #include "headers/define.h"
 #define NAME                    SCRIPT_DCSMITTY
 #define TOWN_REPUTATION         GVAR_TOWN_REP_THE_DEN
@@ -182,7 +183,7 @@ procedure talk_p_proc begin
    end else begin
       move_obj_inven_to_obj(self_obj,generic_temp_box);
       move_obj_inven_to_obj(den_smitty_box_obj,self_obj);
-         start_gdialog(NAME,self_obj,4,-1,-1);
+         start_gdialog(NAME,self_obj,4,HEAD_SMITTY,BACKGROUND_JUNKTOWN);
          gSay_Start;
             call Node000;
          gSay_End;

@@ -17,6 +17,7 @@
 
 /* Include Files */
 #define SCRIPT_REALNAME "mccornel"
+#define HEAD_CORNELIUS              (166)
 #include "headers/define.h"
 
 #define NAME                        SCRIPT_MCCORNEL
@@ -195,7 +196,7 @@ procedure talk_p_proc begin
       kill_them_all_floater;
    end else if (local_var(LVAR_Yell_State) == yell_state_none) then begin
       script_overrides;
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_CORNELIUS,BACKGROUND_JUNKTOWN);
       gSay_Start;
          if (farrel_dead) then begin
             call Node003;

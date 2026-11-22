@@ -33,6 +33,7 @@
         -rwh2   11/13/97
 */
 #define SCRIPT_REALNAME "kcdunton"
+#define HEAD_DUNTON             (183)
 #include "headers/define.h"
 #include "headers/klamath.h"
 #include "headers/klagraz.h"
@@ -466,11 +467,21 @@ end
    written by designers are placed in here. Additionally, Reactions are generated and
    stored which affects player interactions. */
 procedure talk_p_proc begin
+   variable bkg_dunton;
    script_overrides;
    GetReaction;
 
    call checkarea; //find out where the Duntons are
    who_am_i := 1 + random(0,1);
+
+   if (area == PASTURE) then begin
+      if ((game_time_hour <= 600) or (game_time_hour >= 1800)) then
+         bkg_dunton := 21;
+      else
+         bkg_dunton := 16;
+   end else begin
+      bkg_dunton := 13;
+   end
 
    //move and edited by killap
    if (area == SHOP) then
@@ -490,7 +501,7 @@ procedure talk_p_proc begin
    end
 
    else if (dude_is_stupid) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       if (area == PASTURE) then begin
          call NodePastureLowIQ;
@@ -502,7 +513,7 @@ procedure talk_p_proc begin
    end
 
    else if (area == PASTURE) then begin
-         start_gdialog(NAME,self_obj,4,-1,-1);
+         start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
          gSay_Start;
          if (global_var(GVAR_RUSTLE_FAIL) == 1) then
             call Node007;
@@ -519,7 +530,7 @@ procedure talk_p_proc begin
    end
 
    else if (global_var(GVAR_RUSTLE_FAIL_VIOLENT) == 1) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node004;
       gSay_End;
@@ -527,7 +538,7 @@ procedure talk_p_proc begin
    end
 
    else if (global_var(GVAR_RUSTLE_FAIL) == 1) then begin
-         start_gdialog(NAME,self_obj,4,-1,-1);
+         start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
          gSay_Start;
          call Node007;
          gSay_End;
@@ -535,7 +546,7 @@ procedure talk_p_proc begin
    end
 
    else if (global_var(GVAR_RUSTLE_SUCCESS) == 2) then begin //edit by killap - was == 1
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node008;
       gSay_End;
@@ -543,7 +554,7 @@ procedure talk_p_proc begin
    end
 
    else if (global_var(GVAR_RUSTLE_REFUSE) == 1) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node012;
       gSay_End;
@@ -552,7 +563,7 @@ procedure talk_p_proc begin
 
    else if ( (global_var(GVAR_RUSTLE_ACCEPT) == 1) and
              (global_var(GVAR_RUSTLE_OVER) == 0) ) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node014;
       gSay_End;
@@ -563,7 +574,7 @@ procedure talk_p_proc begin
              (global_var(GVAR_RUSTLE_OVER) == 1) and
              (local_var(LVAR_warned_dude) == 0) ) then begin
       set_local_var(LVAR_warned_dude,1);
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node031;
       gSay_End;
@@ -571,7 +582,7 @@ procedure talk_p_proc begin
    end
 
    else if (area == GOLDENGECKO) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node015;
       gSay_End;
@@ -579,7 +590,7 @@ procedure talk_p_proc begin
    end
 
    else if (area == SHOP) then begin
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_DUNTON,bkg_dunton);
       gSay_Start;
       call Node021;
       gSay_End;

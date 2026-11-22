@@ -30,6 +30,10 @@
         -rwh2   11/13/97
 */
 #define SCRIPT_REALNAME "kctorr"
+#define HEAD_TORR               (100)
+#define BKG_KLAMATH             (2)
+#define BKG_PASTURE             (16)
+#define BKG_CANYON              (21)
 #include "headers/define.h"
 #include "headers/klamath.h"
 #include "headers/klagraz.h"
@@ -344,7 +348,7 @@ procedure talk_p_proc begin
    end
 
    else if (local_var(LVAR_Torr_Search_Success) == 1) then begin
-       start_gdialog(NAME,self_obj,4,-1,-1);
+       start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_KLAMATH);
        gSay_Start;
            call Node015;
        gSay_End;
@@ -359,7 +363,7 @@ procedure talk_p_proc begin
          float_msg(self_obj, mstr(600),FLOAT_MSG_GREEN); //edit by killap
       end
       else begin
-         start_gdialog(NAME,self_obj,4,-1,-1);
+         start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_CANYON);
          gSay_Start;
          if (local_var(LVAR_not_first_time_canyon) == 0) then begin //first_time? (ask Matt)
             set_local_var(LVAR_not_first_time_canyon,1);
@@ -377,7 +381,7 @@ procedure talk_p_proc begin
 //player in this situation...check
 //with Matt on this.
    else if (0) then begin //PC HAS HURT TORR
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_KLAMATH);
       gSay_Start;
       call Node001;
       gSay_End;
@@ -387,7 +391,7 @@ procedure talk_p_proc begin
    else if (cur_map_index == MAP_KLAMATH_1) then begin
       if ( ( (local_var(LVAR_not_first_time_downtown) == 0) or (local_var(LVAR_Torr_Guard_Wait) == 1) ) and (global_var(GVAR_RUSTLE_OVER) != 1) ) then begin //first_time? (ask Matt); added Torr guard wait variable check - killap
          set_local_var(LVAR_not_first_time_downtown,1);
-         start_gdialog(NAME,self_obj,4,-1,-1);
+         start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_KLAMATH);
          gSay_Start;
          call Node004;
          gSay_End;
@@ -395,7 +399,7 @@ procedure talk_p_proc begin
       end
       else begin
          if dude_low_iq then begin
-            start_gdialog(NAME,self_obj,4,-1,-1);
+            start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_KLAMATH);
             gSay_Start;
             call Node017;
             gSay_End;
@@ -409,7 +413,7 @@ procedure talk_p_proc begin
    else if (cur_map_index == MAP_KLAMATH_GRAZE) then begin
       if (global_var(GVAR_TORR_GUARD_STATUS) == TORR_GUARD_ACCEPT) then begin
             if ( A_SCORP_SURVIVES ) then begin
-               start_gdialog(NAME,self_obj,4,-1,-1);
+               start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_PASTURE);
                gSay_Start;
                call Node013;
                gSay_End;
@@ -421,7 +425,7 @@ procedure talk_p_proc begin
             end
       end
       else begin
-            start_gdialog(NAME,self_obj,4,-1,-1);
+            start_gdialog(NAME,self_obj,4,HEAD_TORR,BKG_PASTURE);
             gSay_Start;
             call Node014;
             gSay_End;

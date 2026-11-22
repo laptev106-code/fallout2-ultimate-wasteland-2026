@@ -20,9 +20,21 @@
 #include "headers/sfall/lib.math.h"
 #define NAME                    SCRIPT_NCTRAY
 #define TOWN_REP_VAR            GVAR_TOWN_REP_NEW_RENO
+#define HEAD_TRAY               (201)
 #include "headers/command.h"
 #include "headers/modreact.h"
 #include "headers/newreno.h"
+
+#undef start_dialog_at_node
+#define start_dialog_at_node(x)                 if (in_dialog == false) then begin          \
+                                                   in_dialog := true;                       \
+                                                   start_gdialog(NAME,self_obj,4,HEAD_TRAY,BACKGROUND_RAIDERS); \
+                                                   gSay_Start;                              \
+                                                      call x;                               \
+                                                   gSay_End;                                \
+                                                   end_dialogue;                            \
+                                                   in_dialog := false;                      \
+                                                end else call x
 
 /* Standard Script Procedures */
 procedure start;

@@ -16,6 +16,7 @@
 
 /* Include Files */
 #define SCRIPT_REALNAME "dcjoey"
+#define HEAD_JOEY                   (17)
 #include "headers/define.h"
 #include "headers/den.h"
 
@@ -25,6 +26,17 @@
 #include "headers/command.h"
 #include "headers/modreact.h"
 #include "headers/denres1.h"
+
+#undef start_dialog_at_node
+#define start_dialog_at_node(x)                 if (in_dialog == false) then begin          \
+                                                   in_dialog := true;                       \
+                                                   start_gdialog(NAME,self_obj,4,HEAD_JOEY,BACKGROUND_NECROPOLIS); \
+                                                   gSay_Start;                              \
+                                                      call x;                               \
+                                                   gSay_End;                                \
+                                                   end_dialogue;                            \
+                                                   in_dialog := false;                      \
+                                                end else call x
 
 /* Standard Script Procedures */
 procedure start;
@@ -161,7 +173,7 @@ procedure talk_p_proc begin
    else begin
       GetReaction;
       ReactToLevel; //added by killap
-      start_gdialog(NAME,self_obj,4,-1,-1);
+      start_gdialog(NAME,self_obj,4,HEAD_JOEY,BACKGROUND_NECROPOLIS);
       gSay_Start;
          if ((hostile) or (mom_attacked) or (mom_dead)) then begin
             call Node001;
