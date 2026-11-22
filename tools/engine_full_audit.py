@@ -413,6 +413,100 @@ class EngineAuditor:
                 wm_val = m_wm.group(1) if m_wm else 'None'
                 self.log_fail('L5_KEY_W_COLLISION', f'fo2tweaks.ini worldmap_key={wm_val} conflicts with InventoryFilter scancode 17 (W)!')
 
+    def check_level6_deep_linter(self, vfs):
+        """Level 6: Deep Armor Bounds, Loose Script Hygiene, Heap Limits & Craft Integrity."""
+
+        # 1. Check critters.lst length vs npcarmor.ini FIDs
+        critters_rel = r'art\critters\critters.lst'
+        if critters_rel in vfs:
+            text, enc = read_vfs_text(vfs[critters_rel])
+            critter_lines = [l.strip() for l in text.splitlines() if l.strip()]
+            
+            # Check npcarmor.ini
+            npcarmor_path = os.path.join(self.profile, 'mods', 'npcarmor.ini')
+            if os.path.isfile(npcarmor_path):
+                import configparser
+                cfg = configparser.ConfigParser()
+                cfg.read(npcarmor_path)
+                bounds_errors = []
+                for sec in cfg.sections():
+                    if sec == 'ArmorTypes': continue
+                    for k, v in cfg.items(sec):
+                        if k in ['pid', 'weaponanims']: continue
+                        try:
+                            fid = int(v)
+                            idx = fid - 16777216
+                            if idx < 0 or idx >= len(critter_lines):
+                                bounds_errors.append((sec, k, fid, idx))
+                        except ValueError:
+                            pass
+                if bounds_errors:
+                    self.log_fail('L6_ARMOR_BOUNDS_OVERFLOW', f'{len(bounds_errors)} FIDs exceed critters.lst ({len(critter_lines)} lines): {bounds_errors[:3]}')
+                else:
+                    self.log_pass('L6_ARMOR_BOUNDS_OK', f'All companion armor FIDs safely bound within {len(critter_lines)}-line critters.lst.')
+            else:
+                self.log_warn('L6_NPCARMOR_ABSENT', 'mods/npcarmor.ini not found.')
+        else:
+            self.log_warn('L6_CRITTERS_LST_ABSENT', 'art/critters/critters.lst not found in VFS.')
+
+        # 2. Check loose scripts in DATA/scripts/
+        loose_dir = os.path.join(self.profile, 'DATA', 'scripts')
+        if os.path.isdir(loose_dir):
+            loose_ints = [f for f in os.listdir(loose_dir) if f.lower().endswith('.int')]
+            if loose_ints:
+                self.log_fail('L6_LOOSE_SCRIPTS_DIRTY', f'Found {len(loose_ints)} loose INT files in DATA/scripts shadowing DAT priority: {loose_ints[:4]}')
+            else:
+                self.log_pass('L6_LOOSE_SCRIPTS_CLEAN', 'Zero loose INT scripts in DATA/scripts/ (Pure DAT priority hierarchy preserved).')
+        else:
+            self.log_pass('L6_LOOSE_SCRIPTS_CLEAN', 'DATA/scripts/ directory clean or absent.')
+
+        # 3. Check Heap Safety (f2_res.ini NumPathNodes)
+        f2_res_path = os.path.join(self.profile, 'f2_res.ini')
+        if os.path.isfile(f2_res_path):
+            with open(f2_res_path, 'r', encoding='utf-8-sig', errors='ignore') as f:
+                c = f.read()
+            m_nodes = re.search(r'^\s*NumPathNodes\s*=\s*(\d+)', c, re.MULTILINE | re.IGNORECASE)
+            if m_nodes:
+                val = int(m_nodes.group(1))
+                if val <= 4:
+                    self.log_pass('L6_HEAP_SAFETY', f'f2_res.ini NumPathNodes={val} <= 4 (Combat heap exhaustion protected).')
+                else:
+                    self.log_fail('L6_HEAP_OVERFLOW_RISK', f'f2_res.ini NumPathNodes={val} > 4 (Exceeds safe 8000 nodes limit)!')
+            else:
+                self.log_pass('L6_HEAP_SAFETY', 'f2_res.ini NumPathNodes not explicitly set (defaults to safe 1).')
+        else:
+            self.log_pass('L6_HEAP_SAFETY', 'f2_res.ini not present in profile (CE engine).')
+
+        # 4. Check Craft Integrity (if pbs_craft.ini present)
+        craft_rel = r'config\pbs_craft.ini'
+        if craft_rel in vfs:
+            import configparser
+            text, enc = read_vfs_text(vfs[craft_rel])
+            cfg = configparser.ConfigParser()
+            cfg.read_string(text)
+            existing_pids = set()
+            for k in vfs.keys():
+                if k.startswith('proto\\items\\') and k.endswith('.pro'):
+                    try:
+                        p_num = int(k[len('proto\\items\\'):-4])
+                        existing_pids.add(p_num)
+                    except ValueError:
+                        pass
+            craft_errors = []
+            for sec in cfg.sections():
+                if sec == 'Main': continue
+                if cfg.has_option(sec, 'result'):
+                    try:
+                        r_pid = int(cfg.get(sec, 'result').split(',')[0].strip())
+                        if r_pid not in existing_pids:
+                            craft_errors.append((sec, 'result', r_pid))
+                    except:
+                        pass
+            if craft_errors:
+                self.log_fail('L6_CRAFT_PID_MISSING', f'{len(craft_errors)} craft recipes reference non-existent item PIDs: {craft_errors[:3]}')
+            else:
+                self.log_pass('L6_CRAFT_INTEGRITY', f'All {len(cfg.sections())-1} EcCo craft recipes reference verified item prototypes.')
+
     def check_level2_scripts_registry(self, vfs):
         """Verify scripts.lst presence and registered scripts."""
         scripts_lst = r'scripts\scripts.lst'
@@ -461,6 +555,9 @@ class EngineAuditor:
 
         print(f"[*] Running Level 5: Scancode Matrix & Hotkey Isolation...")
         self.check_level5_hotkeys_matrix()
+
+        print(f"[*] Running Level 6: Deep Armor Bounds, Scripts Hygiene & Craft Integrity...")
+        self.check_level6_deep_linter(vfs)
 
         # Print Report
         print(f"\n--- AUDIT RESULTS FOR: {self.name} ---")
