@@ -340,21 +340,27 @@ class EngineAuditor:
         if verified_heads == len(test_heads):
             self.log_pass('L3_LIP_SYNC_TAGS', f'All {verified_heads}/{len(test_heads)} surveyed talking heads dialogues have active lip-sync tags.')
 
-        # Validate general CP1251 integrity of Russian dialogue files
+        # Validate general CP1251 integrity and brace syntax of ALL Russian dialogue files
         dialog_files = [k for k in vfs.keys() if k.startswith('text\\russian\\dialog\\') and k.endswith('.msg')]
-        encoding_errors = 0
+        encoding_errors = []
+        syntax_errors = []
         checked_count = len(dialog_files)
-        for df in dialog_files[:100]:  # sample check 100 dialogs
+        for df in dialog_files:
             text, enc = read_vfs_text(vfs[df])
             if enc == 'latin1':
-                encoding_errors += 1
+                encoding_errors.append(df)
+            elif text:
+                if text.count('{') != text.count('}'):
+                    syntax_errors.append(df)
 
-        if encoding_errors == 0 and checked_count > 0:
-            self.log_pass('L3_CP1251_CLEAN', f'Sampled {min(checked_count, 100)}/{checked_count} Russian dialog files: all decode cleanly as valid CP1251.')
-        elif checked_count == 0:
-            self.log_pass('L3_CP1251_CLEAN', 'Base Russian dialogs stored in master.dat/rpu.dat.')
+        if not encoding_errors and not syntax_errors and checked_count > 0:
+            self.log_pass('L3_CP1251_CLEAN', f'Audited all {checked_count} Russian dialog files: 100% valid CP1251 and 0 syntax brace mismatches.')
+        elif encoding_errors:
+            self.log_fail('L3_CP1251_CORRUPT', f'{len(encoding_errors)} dialog files failed CP1251 decoding: {encoding_errors[:3]}!')
+        elif syntax_errors:
+            self.log_fail('L3_SYNTAX_BRACES_MISMATCH', f'{len(syntax_errors)} dialog files have mismatched braces: {syntax_errors[:3]}!')
         else:
-            self.log_fail('L3_CP1251_CORRUPT', f'{encoding_errors} dialog files failed CP1251 decoding (corrupted text)!')
+            self.log_pass('L3_CP1251_CLEAN', 'Base Russian dialogs stored in master.dat/rpu.dat.')
 
     def check_level4_heads_lst_and_art(self, vfs):
         """Validate heads.lst canon indices 0-14 and verify art assets."""
