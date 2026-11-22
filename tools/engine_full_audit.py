@@ -604,6 +604,46 @@ class EngineAuditor:
             else:
                 self.log_pass('L7_HOTKEY_DECONFLICTED', 'party_orders.ini PickUpKey isolated with Ctrl+T (Town Map key T preserved).')
 
+        # Verify fo2tweaks ammo and grenade synergy
+        fo2_ini = os.path.join(self.profile, 'mods', 'fo2tweaks.ini')
+        if os.path.isfile(fo2_ini):
+            with open(fo2_ini, 'r', encoding='utf-8-sig', errors='ignore') as f:
+                fo2_txt = f.read()
+            # 1. Ammo PIDs (EcCo 7.62mm AP - 642)
+            if re.search(r'ammo_pids\s*=.*?\b642\b', fo2_txt):
+                self.log_pass('L7_AMMO_SYNC', 'fo2tweaks.ini ammo_pids includes EcCo 7.62mm AP (PID 642).')
+            else:
+                self.log_fail('L7_AMMO_MISSING', 'fo2tweaks.ini ammo_pids is missing EcCo 7.62mm AP (PID 642)!')
+
+            # 2. Improved grenades Crowbar isolation
+            m_g = re.search(r'\[improved_grenades\].*?weapons\s*=\s*([^\r\n]+)', fo2_txt, re.DOTALL)
+            if m_g and re.search(r'\b20\b', m_g.group(1)):
+                self.log_fail('L7_CROWBAR_EXPLOSIVE', 'fo2tweaks.ini treats Crowbar (PID 20) as explosive grenade!')
+            else:
+                self.log_pass('L7_GRENADE_CROWBAR_SAFE', 'fo2tweaks.ini weapons isolates Crowbar (PID 20) from grenade mechanics.')
+
+        # Verify InvenFilter tool group cleanup
+        inv_ini = os.path.join(self.profile, 'mods', 'InventoryFilter.dat', 'InvenFilter.ini')
+        if os.path.isfile(inv_ini):
+            with open(inv_ini, 'r', encoding='cp1251', errors='ignore') as f:
+                inv_txt = f.read()
+            m_tools = re.search(r'ToolGroupPids\s*=\s*([^\r\n]+)', inv_txt)
+            if m_tools and any(bad in m_tools.group(1).split(',') for bad in ['393', '647', '556', '247']):
+                self.log_fail('L7_INVEN_FILTER_DIRTY', f'InvenFilter.ini contains non-tool weapons or drugs: {m_tools.group(1)}')
+            else:
+                self.log_pass('L7_INVEN_FILTER_CLEAN', 'InvenFilter.ini ToolGroupPids verified clean of weapons and drugs.')
+
+        # Verify NPC Armor Fire Gecko Armor mapping
+        npc_ini = os.path.join(self.profile, 'mods', 'npcarmor.ini')
+        if os.path.isfile(npc_ini):
+            with open(npc_ini, 'r', encoding='utf-8', errors='ignore') as f:
+                npc_txt = f.read()
+            m_leather = re.search(r'\[ArmorTypes\].*?Leather\s*=\s*([^\r\n]+)', npc_txt, re.DOTALL)
+            if m_leather and '652' in m_leather.group(1):
+                self.log_pass('L7_NPC_ARMOR_GECKO', 'npcarmor.ini maps Fire Gecko Armor (PID 652) to Leather appearance.')
+            else:
+                self.log_fail('L7_NPC_ARMOR_GECKO_MISSING', 'npcarmor.ini does not recognize Fire Gecko Armor (PID 652)!')
+
     def run_all(self):
         """Execute full test suite."""
         print(f"\n{'='*75}")
