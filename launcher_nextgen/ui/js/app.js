@@ -24,12 +24,24 @@ class LauncherApp {
     this.loadInitialConfig();
     this.loadSavesInfo();
 
+    // Play authentic CRT terminal boot sound and start hum
+    if (window.pipAudio && window.pipAudio.enabled) {
+      window.pipAudio.playLauncherBoot();
+    }
+
     window.addEventListener('pywebviewready', () => {
       this.loadInitialConfig();
+      this.runSmartHealthCheck(false);
     });
     setTimeout(() => this.loadInitialConfig(), 150);
-    setTimeout(() => this.loadInitialConfig(), 500);
-    setTimeout(() => this.loadInitialConfig(), 1200);
+    setTimeout(() => {
+      this.loadInitialConfig();
+      this.runSmartHealthCheck(false);
+    }, 500);
+    setTimeout(() => {
+      this.loadInitialConfig();
+      this.runSmartHealthCheck(false);
+    }, 1200);
   }
 
   initElements() {
@@ -119,23 +131,60 @@ class LauncherApp {
 
     // Catalog View Toggle (Compact vs Thumbnails)
     this.setupCatalogViewToggle();
+    // Hover sounds disabled to prevent audio fatigue on mouse movement
+
+    // Sound on select changes
+    document.querySelectorAll('.form-select').forEach(el => {
+      el.addEventListener('change', () => {
+        if (window.pipAudio) window.pipAudio.playPipClick();
+      });
+    });
+
+    // Sound on slider drag (debounced)
+    let sliderDebounce = 0;
+    document.querySelectorAll('.form-slider').forEach(el => {
+      el.addEventListener('input', () => {
+        const now = Date.now();
+        if (now - sliderDebounce > 70) {
+          sliderDebounce = now;
+          if (window.pipAudio) window.pipAudio.playPipSelect();
+        }
+      });
+    });
+
 
     // Settings Save Button & Auto-Save on Change
     document.getElementById('btn-save-settings')?.addEventListener('click', () => {
       this.saveCurrentSettings();
     });
 
-    ['select-res', 'select-mode', 'select-scale', 'select-filter', 'select-reshade'].forEach(id => {
+    ['select-res', 'select-mode', 'select-scale', 'select-filter', 'select-reshade', 'select-fps'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => {
         this.saveCurrentSettings(true);
       });
     });
 
+    // Target highlight synchronization (Quick select on View 1 & Full select on View 3)
+    const syncTargetHighlight = (val) => {
+      const q = document.getElementById('quick-select-target-highlight');
+      const s = document.getElementById('select-target-highlight');
+      if (q) q.value = String(val);
+      if (s) s.value = String(val);
+      this.config.targetHighlight = parseInt(val, 10);
+      if (window.pipAudio) window.pipAudio.playSwitchSnap();
+      this.saveCurrentSettings(true);
+    };
+    document.getElementById('quick-select-target-highlight')?.addEventListener('change', (e) => syncTargetHighlight(e.target.value));
+    document.getElementById('select-target-highlight')?.addEventListener('change', (e) => syncTargetHighlight(e.target.value));
+
     // Sync and Auto-Save for QoL toggles (Quick Bar and Settings page)
     const qolToggles = [
       { quick: 'quick-toggle-alwaysrun', full: 'toggle-alwaysrun', key: 'alwaysRun' },
       { quick: 'quick-toggle-autoreload', full: 'toggle-autoreload', key: 'autoReload' },
-      { quick: 'quick-toggle-temple-tutorial', full: 'toggle-temple-tutorial', key: 'templeTutorial' }
+      { quick: 'quick-toggle-temple-tutorial', full: 'toggle-temple-tutorial', key: 'templeTutorial' },
+      { quick: 'quick-toggle-hl-master', full: 'toggle-hl-master', key: 'hlMaster' },
+      { quick: 'quick-toggle-hl-checklos', full: 'toggle-hl-checklos', key: 'hlCheckLOS' },
+      { quick: 'quick-toggle-qol-clickoutside', full: 'toggle-qol-clickoutside', key: 'qolClickOutside' }
     ];
 
     qolToggles.forEach(({ quick, full, key }) => {
@@ -154,25 +203,34 @@ class LauncherApp {
       elFull?.addEventListener('change', (e) => handleToggle(e.target.checked));
     });
 
-    // Sync and Auto-Save for QoL selects (Quick Bar and Settings page)
-    const qolSelects = [
-      { quick: 'quick-select-quicksave', full: 'select-quicksave', key: 'quickSavePage' }
-    ];
-
-    qolSelects.forEach(({ quick, full, key }) => {
-      const elQuick = document.getElementById(quick);
-      const elFull = document.getElementById(full);
-
-      const handleSelect = (val) => {
-        if (elQuick) elQuick.value = val;
-        if (elFull) elFull.value = val;
-        this.config[key] = val;
+    // Settings-only extra QoL toggles
+    ['toggle-hl-skipempty', 'toggle-qol-closeontakeall'].forEach(id => {
+      const key = (id === 'toggle-hl-skipempty') ? 'hlSkipEmpty' : 'qolCloseOnTakeAll';
+      const el = document.getElementById(id);
+      el?.addEventListener('change', (e) => {
+        this.config[key] = e.target.checked;
         if (window.pipAudio) window.pipAudio.playSwitchSnap();
         this.saveCurrentSettings(true);
-      };
+      });
+    });
 
-      elQuick?.addEventListener('change', (e) => handleSelect(e.target.value));
-      elFull?.addEventListener('change', (e) => handleSelect(e.target.value));
+    // Highlight category toggles event listeners
+    const hlToggleKeys = [
+      { id: 'toggle-hl-items', key: 'hlItems' },
+      { id: 'toggle-hl-containers', key: 'hlContainers' },
+      { id: 'toggle-hl-empty-cont', key: 'hlEmptyContainers' },
+      { id: 'toggle-hl-corpses', key: 'hlCorpses' },
+      { id: 'toggle-hl-empty-corp', key: 'hlEmptyCorpses' },
+      { id: 'toggle-hl-scenery', key: 'hlScenery' },
+      { id: 'toggle-hl-doors', key: 'hlDoors' }
+    ];
+    hlToggleKeys.forEach(({ id, key }) => {
+      const el = document.getElementById(id);
+      el?.addEventListener('change', (e) => {
+        this.config[key] = e.target.checked;
+        if (window.pipAudio) window.pipAudio.playSwitchSnap();
+        this.saveCurrentSettings(true);
+      });
     });
 
     // Sliders input
@@ -229,6 +287,28 @@ class LauncherApp {
       this.runIntegrityCheck();
     });
 
+    // Smart Health & Compatibility
+    document.getElementById('btn-run-smart-health')?.addEventListener('click', () => {
+      if (window.pipAudio) window.pipAudio.playRelayClick();
+      this.runSmartHealthCheck(true);
+    });
+    document.getElementById('btn-quick-doctor')?.addEventListener('click', () => {
+      this.switchView('feedback');
+      if (window.pipAudio) window.pipAudio.playTabSwitch();
+      this.runSmartHealthCheck(true);
+    });
+
+    const isolateHandler = async () => {
+      if (window.pipAudio) window.pipAudio.playSwitchSnap();
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.isolate_legacy_conflicts) {
+        const res = await window.pywebview.api.isolate_legacy_conflicts();
+        alert(res.message);
+        await this.runSmartHealthCheck(true);
+      }
+    };
+    document.getElementById('btn-quick-isolate')?.addEventListener('click', isolateHandler);
+    document.getElementById('btn-isolate-conflicts')?.addEventListener('click', isolateHandler);
+
     // Social Links
     document.querySelectorAll('.channel-card').forEach(card => {
       card.addEventListener('click', (e) => {
@@ -236,6 +316,47 @@ class LauncherApp {
         const url = card.dataset.url;
         if (url) this.openExternal(url);
       });
+    });
+
+    // Changelog View handlers
+    document.getElementById('btn-open-changelog-file')?.addEventListener('click', async () => {
+      if (window.pipAudio) window.pipAudio.playRelayClick();
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.open_changelog_file) {
+        await window.pywebview.api.open_changelog_file();
+      } else {
+        alert("Файл CHANGELOG_2026.txt расположен в корневой папке игры.");
+      }
+    });
+
+    document.getElementById('btn-copy-changelog')?.addEventListener('click', () => {
+      if (window.pipAudio) window.pipAudio.playSwitchSnap();
+      const container = document.getElementById('changelog-container');
+      if (container && this.rawChangelog) {
+        navigator.clipboard.writeText(this.rawChangelog).then(() => {
+          const btn = document.getElementById('btn-copy-changelog');
+          if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = '✓ СКОПИРОВАНО!';
+            setTimeout(() => { btn.textContent = orig; }, 1800);
+          }
+        });
+      }
+    });
+
+    const searchInput = document.getElementById('changelog-search-input');
+    searchInput?.addEventListener('input', (e) => {
+      const term = e.target.value.trim();
+      if (this.rawChangelog) {
+        this.renderChangelogText(this.rawChangelog, term);
+      }
+    });
+
+    document.getElementById('btn-reset-changelog-search')?.addEventListener('click', () => {
+      if (window.pipAudio) window.pipAudio.playRelayClick();
+      if (searchInput) searchInput.value = '';
+      if (this.rawChangelog) {
+        this.renderChangelogText(this.rawChangelog, '');
+      }
     });
   }
 
@@ -247,8 +368,10 @@ class LauncherApp {
     let isCompact = localStorage.getItem('nextgen_catalog_compact') === 'true';
     const updateUI = () => {
       container.classList.toggle('compact-view', isCompact);
-      btn.textContent = isCompact ? '☰ БЕЗ КАРТИНОК (КОМПАКТ)' : '📷 СО СКРИНШОТАМИ';
-      btn.classList.toggle('active', !isCompact);
+      btn.textContent = isCompact ? '[≡] СПИСОК (ТЕКСТ)' : '[▤] ПОСТЕРЫ: ВКЛ';
+      btn.title = isCompact ? 'Включить отображение постеров модификаций' : 'Переключить в компактный текстовый список';
+      btn.classList.remove('active');
+      btn.classList.toggle('view-active', !isCompact);
     };
 
     updateUI();
@@ -263,7 +386,63 @@ class LauncherApp {
   switchView(viewId) {
     this.currentView = viewId;
     this.navItems.forEach(n => n.classList.toggle('active', n.dataset.view === viewId));
-    this.views.forEach(v => v.classList.toggle('active', v.id === `view-${viewId}`));
+    this.views.forEach(v => v.classList.toggle('active', v.id === 'view-' + viewId));
+    if (viewId === 'feedback') {
+      this.runSmartHealthCheck(true);
+    }
+    if (viewId === 'changelog') {
+      this.loadChangelog();
+    }
+  }
+
+  async loadChangelog() {
+    const container = document.getElementById('changelog-container');
+    if (!container) return;
+
+    if (this.rawChangelog) {
+      this.renderChangelogText(this.rawChangelog);
+      return;
+    }
+
+    container.textContent = 'Чтение журнала изменений...';
+    try {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_changelog_text) {
+        const text = await window.pywebview.api.get_changelog_text();
+        this.rawChangelog = text;
+        this.renderChangelogText(text);
+      } else {
+        const resp = await fetch('../../CHANGELOG_2026.txt');
+        if (resp.ok) {
+          const text = await resp.text();
+          this.rawChangelog = text;
+          this.renderChangelogText(text);
+        } else {
+          container.textContent = 'Журнал изменений доступен в файле CHANGELOG_2026.txt в корне игры.';
+        }
+      }
+    } catch (e) {
+      container.textContent = 'Ошибка загрузки журнала: ' + e.message;
+    }
+  }
+
+  renderChangelogText(text, filterTerm = '') {
+    const container = document.getElementById('changelog-container');
+    if (!container) return;
+    if (!filterTerm) {
+      container.textContent = text;
+      return;
+    }
+
+    const term = filterTerm.toLowerCase();
+    const blocks = text.split(/--------------------------------------------------------------------------------/);
+    const matchedBlocks = blocks.slice(1).filter(b => b.toLowerCase().includes(term));
+
+    if (matchedBlocks.length === 0) {
+      container.textContent = `[ПОИСК ПО ЗАПРОСУ "${filterTerm}"]: Совпадений не найдено.\nНажмите "СБРОС" для возврата к полному списку.`;
+    } else {
+      container.textContent = `[НАЙДЕНО ${matchedBlocks.length} ИСПРАВЛЕНИЙ ПО ЗАПРОСУ "${filterTerm}"]:\n\n` + 
+        matchedBlocks.join('\n--------------------------------------------------------------------------------\n');
+    }
   }
 
   renderCatalog() {
@@ -366,7 +545,7 @@ class LauncherApp {
     // 1. Автоматическое сохранение выбранных настроек перед запуском
     await this.saveCurrentSettings(true);
 
-    if (window.pipAudio) window.pipAudio.playLaunchSiren();
+    if (window.pipAudio) window.pipAudio.playGameLaunch();
     
     const btn = profile === 'gameplay' 
       ? document.getElementById('btn-launch-gameplay') 
@@ -412,7 +591,26 @@ class LauncherApp {
 
   applyConfigToUI() {
     const selRes = document.getElementById('select-res');
-    if (selRes) selRes.value = this.config.resolution || '2560x1440';
+    if (selRes) {
+      if (this.config.nativeResolution) {
+        const nat = this.config.nativeResolution;
+        let exists = false;
+        for (let opt of selRes.options) {
+          if (opt.value === nat) {
+            exists = true;
+            opt.textContent = `${nat} (Нативное разрешение вашего монитора — Рекомендуется)`;
+            break;
+          }
+        }
+        if (!exists) {
+          const opt = document.createElement('option');
+          opt.value = nat;
+          opt.textContent = `${nat} (Нативное разрешение вашего монитора — Рекомендуется)`;
+          selRes.insertBefore(opt, selRes.firstChild);
+        }
+      }
+      selRes.value = this.config.resolution || this.config.nativeResolution || '1920x1080';
+    }
 
     const selMode = document.getElementById('select-mode');
     if (selMode) selMode.value = this.config.mode || 'borderless';
@@ -430,6 +628,8 @@ class LauncherApp {
 
     const selReShade = document.getElementById('select-reshade');
     if (selReShade) selReShade.value = this.config.reshade || 'off';
+    const selFps = document.getElementById('select-fps');
+    if (selFps) selFps.value = this.config.fpsLock || '60';
 
     const sMusic = document.getElementById('slider-music');
     if (sMusic) {
@@ -461,11 +661,55 @@ class LauncherApp {
     if (chkTutorial) chkTutorial.checked = templeTutVal;
     if (quickTutorial) quickTutorial.checked = templeTutVal;
 
-    const selQuickSave = document.getElementById('select-quicksave');
-    const quickSelQuickSave = document.getElementById('quick-select-quicksave');
-    const quickSaveVal = this.config.quickSavePage || 'off';
-    if (selQuickSave) selQuickSave.value = quickSaveVal;
-    if (quickSelQuickSave) quickSelQuickSave.value = quickSaveVal;
+    // Target highlight (0 = Off, 1 = Under cursor, 2 = All targets in combat)
+    const targetVal = this.config.targetHighlight !== undefined ? String(this.config.targetHighlight) : '2';
+    const qTarget = document.getElementById('quick-select-target-highlight');
+    const sTarget = document.getElementById('select-target-highlight');
+    if (qTarget) qTarget.value = targetVal;
+    if (sTarget) sTarget.value = targetVal;
+
+    // Master loot highlight (Shift / Caps Lock)
+    const hlMasterVal = this.config.hlMaster !== false;
+    const chkHlMaster = document.getElementById('toggle-hl-master');
+    const quickHlMaster = document.getElementById('quick-toggle-hl-master');
+    if (chkHlMaster) chkHlMaster.checked = hlMasterVal;
+    if (quickHlMaster) quickHlMaster.checked = hlMasterVal;
+
+    // CheckLOS line-of-sight check
+    const checkLOSVal = this.config.hlCheckLOS !== false;
+    const chkLOS = document.getElementById('toggle-hl-checklos');
+    const quickLOS = document.getElementById('quick-toggle-hl-checklos');
+    if (chkLOS) chkLOS.checked = checkLOSVal;
+    if (quickLOS) quickLOS.checked = checkLOSVal;
+
+    // Click outside closes inventory
+    const clickOutsideVal = this.config.qolClickOutside !== false;
+    const chkClickOut = document.getElementById('toggle-qol-clickoutside');
+    const quickClickOut = document.getElementById('quick-toggle-qol-clickoutside');
+    if (chkClickOut) chkClickOut.checked = clickOutsideVal;
+    if (quickClickOut) quickClickOut.checked = clickOutsideVal;
+
+    // Skip empty containers & Close on Take All
+    const chkSkipEmpty = document.getElementById('toggle-hl-skipempty');
+    if (chkSkipEmpty) chkSkipEmpty.checked = this.config.hlSkipEmpty !== false;
+
+    const chkTakeAll = document.getElementById('toggle-qol-closeontakeall');
+    if (chkTakeAll) chkTakeAll.checked = this.config.qolCloseOnTakeAll !== false;
+
+    // Highlighting category toggles
+    const hlKeys = [
+      { id: 'toggle-hl-items', key: 'hlItems' },
+      { id: 'toggle-hl-containers', key: 'hlContainers' },
+      { id: 'toggle-hl-empty-cont', key: 'hlEmptyContainers' },
+      { id: 'toggle-hl-corpses', key: 'hlCorpses' },
+      { id: 'toggle-hl-empty-corp', key: 'hlEmptyCorpses' },
+      { id: 'toggle-hl-scenery', key: 'hlScenery' },
+      { id: 'toggle-hl-doors', key: 'hlDoors' }
+    ];
+    hlKeys.forEach(({ id, key }) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = this.config[key] !== false;
+    });
   }
 
   async saveCurrentSettings(silent = false) {
@@ -482,18 +726,45 @@ class LauncherApp {
     if (selScale) this.config.scale = selScale.value;
     if (selFilter) this.config.filtering = selFilter.value;
     if (selReShade) this.config.reshade = selReShade.value;
+    const selFps = document.getElementById('select-fps');
+    if (selFps) this.config.fpsLock = selFps.value;
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
+
+    const selTarget = document.getElementById('select-target-highlight') || document.getElementById('quick-select-target-highlight');
+    if (selTarget) this.config.targetHighlight = parseInt(selTarget.value, 10);
 
     const chkReload = document.getElementById('toggle-autoreload') || document.getElementById('quick-toggle-autoreload');
     const chkRun = document.getElementById('toggle-alwaysrun') || document.getElementById('quick-toggle-alwaysrun');
     const chkTutorial = document.getElementById('toggle-temple-tutorial') || document.getElementById('quick-toggle-temple-tutorial');
-    const selQuickSave = document.getElementById('select-quicksave') || document.getElementById('quick-select-quicksave');
+    const chkHlMaster = document.getElementById('toggle-hl-master') || document.getElementById('quick-toggle-hl-master');
+    const chkLOS = document.getElementById('toggle-hl-checklos') || document.getElementById('quick-toggle-hl-checklos');
+    const chkClickOut = document.getElementById('toggle-qol-clickoutside') || document.getElementById('quick-toggle-qol-clickoutside');
+    const chkSkipEmpty = document.getElementById('toggle-hl-skipempty');
+    const chkTakeAll = document.getElementById('toggle-qol-closeontakeall');
 
     if (chkReload) this.config.autoReload = chkReload.checked;
     if (chkRun) this.config.alwaysRun = chkRun.checked;
     if (chkTutorial) this.config.templeTutorial = chkTutorial.checked;
-    if (selQuickSave) this.config.quickSavePage = selQuickSave.value;
+    if (chkHlMaster) this.config.hlMaster = chkHlMaster.checked;
+    if (chkLOS) this.config.hlCheckLOS = chkLOS.checked;
+    if (chkClickOut) this.config.qolClickOutside = chkClickOut.checked;
+    if (chkSkipEmpty) this.config.hlSkipEmpty = chkSkipEmpty.checked;
+    if (chkTakeAll) this.config.qolCloseOnTakeAll = chkTakeAll.checked;
+
+    const hlKeysSave = [
+      { id: 'toggle-hl-items', key: 'hlItems' },
+      { id: 'toggle-hl-containers', key: 'hlContainers' },
+      { id: 'toggle-hl-empty-cont', key: 'hlEmptyContainers' },
+      { id: 'toggle-hl-corpses', key: 'hlCorpses' },
+      { id: 'toggle-hl-empty-corp', key: 'hlEmptyCorpses' },
+      { id: 'toggle-hl-scenery', key: 'hlScenery' },
+      { id: 'toggle-hl-doors', key: 'hlDoors' }
+    ];
+    hlKeysSave.forEach(({ id, key }) => {
+      const el = document.getElementById(id);
+      if (el) this.config[key] = el.checked;
+    });
 
     const headerRes = document.getElementById('header-res-pill');
     if (headerRes && this.config.resolution) {
@@ -552,14 +823,20 @@ class LauncherApp {
     container.innerHTML = '';
     saves.forEach(s => {
       const card = document.createElement('div');
-      card.className = 'save-slot-card';
+      card.className = `save-slot-card ${s.hasData ? 'has-data' : 'is-empty'}`;
+      card.style.background = s.hasData ? 'rgba(0, 255, 102, 0.04)' : 'rgba(0, 0, 0, 0.4)';
+      card.style.border = s.hasData ? '1px solid rgba(0, 255, 102, 0.35)' : '1px solid var(--border-muted)';
+      card.style.borderRadius = '4px';
+      card.style.padding = '12px';
+      card.style.transition = 'all 0.15s ease';
+
       card.innerHTML = `
-        <div class="save-slot-header">
-          <span>СЛОТ ${s.slot}</span>
-          <span style="color: ${s.hasData ? 'var(--phosphor-bright)' : 'var(--border-muted)'};">${s.hasData ? '● ЗАНЯТ' : '○ ПУСТО'}</span>
+        <div class="save-slot-header" style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-family: var(--font-mono); font-weight: bold; color: var(--phosphor-primary);">[СЛОТ ${s.slot}]</span>
+          <span style="color: ${s.hasData ? 'var(--phosphor-bright)' : 'var(--phosphor-dim)'}; font-weight: bold; font-size: 11px;">${s.hasData ? '[● ЗАНЯТ]' : '[○ ПУСТО]'}</span>
         </div>
-        <div class="save-slot-name">${s.title || 'Свободный слот'}</div>
-        <div class="save-slot-meta">${s.timestamp || 'Нет данных'} | Размер: ${s.size || '0 КБ'}</div>
+        <div class="save-slot-name" style="color: ${s.hasData ? '#ffffff' : 'var(--phosphor-dim)'}; font-size: 13px; font-weight: bold; margin: 4px 0; letter-spacing: 0.5px;">${s.title || '[Свободный слот]'}</div>
+        <div class="save-slot-meta" style="font-size: 11px; color: var(--phosphor-dim);">${s.timestamp ? `Время: ${s.timestamp} | ${s.size}` : 'Данные отсутствуют'}</div>
       `;
       container.appendChild(card);
     });
@@ -707,6 +984,82 @@ class LauncherApp {
       alertMsg += `\n\nТакже отчет сохранен в файл: ${diag.path}`;
     }
     alert(alertMsg);
+  }
+
+  async runSmartHealthCheck(renderDetails = false) {
+    const quickBanner = document.getElementById('quick-health-banner');
+    const quickIcon = document.getElementById('quick-health-icon');
+    const quickTitle = document.getElementById('quick-health-title');
+    const quickDesc = document.getElementById('quick-health-desc');
+    const quickIsolateBtn = document.getElementById('btn-quick-isolate');
+
+    const badge = document.getElementById('smart-health-badge');
+    const isolateBtn = document.getElementById('btn-isolate-conflicts');
+    const resultsContainer = document.getElementById('smart-health-results');
+
+    if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.check_smart_health) {
+      if (quickDesc) quickDesc.textContent = 'Движок готов к сессии';
+      return;
+    }
+
+    try {
+      const res = await window.pywebview.api.check_smart_health();
+      if (res.status === 'success') {
+        // 1. Update quick banner on Launch screen
+        if (quickBanner) {
+          quickBanner.className = 'quick-health-bar ' + res.overall;
+        }
+        if (quickIcon) {
+          quickIcon.textContent = res.overall === 'ok' ? '[✓]' : res.overall === 'warning' ? '[!]' : '[✗]';
+        }
+        if (quickTitle) {
+          quickTitle.textContent = res.status_text;
+        }
+        if (quickDesc) {
+          if (res.overall === 'ok') {
+            quickDesc.textContent = 'Полный доступ UAC, оригинальные архивы DAT2 и чистые скрипты.';
+          } else if (res.overall === 'warning') {
+            quickDesc.textContent = res.has_foreign_mods 
+              ? 'Обнаружены посторонние скрипты (' + res.foreign_count + ' шт.) от старых модов.' 
+              : 'Обнаружены некритичные предупреждения окружения.';
+          } else {
+            quickDesc.textContent = 'Критические блокировки! Проверьте папку игры через диагностику.';
+          }
+        }
+        if (quickIsolateBtn) {
+          quickIsolateBtn.style.display = res.has_foreign_mods ? 'inline-block' : 'none';
+        }
+
+        // 2. Update Doctor section badge and isolate button
+        if (badge) {
+          badge.style.display = 'inline-block';
+          badge.textContent = res.overall === 'ok' ? '100% СОВМЕСТИМО' : res.overall === 'warning' ? 'ВНИМАНИЕ' : 'БЛОКИРОВКА';
+          badge.className = res.overall === 'ok' ? 'badge badge-canon' : 'badge badge-warning';
+        }
+        if (isolateBtn) {
+          isolateBtn.style.display = res.has_foreign_mods ? 'inline-block' : 'none';
+        }
+
+        // 3. Render detailed audit cards if requested or in doctor view
+        if (resultsContainer && (renderDetails || resultsContainer.style.display === 'block')) {
+          resultsContainer.style.display = 'block';
+          let html = '';
+          res.checks.forEach(c => {
+            const bClass = c.status === 'ok' ? 'badge-ok' : c.status === 'warning' ? 'badge-warn' : c.status === 'critical' ? 'badge-crit' : 'badge-ok';
+            html += '<div class="health-audit-item ' + c.status + '">';
+            html += '<div class="health-audit-header">';
+            html += '<span class="health-audit-name">' + c.title + '</span>';
+            html += '<span class="health-audit-badge ' + bClass + '">' + c.badge + '</span>';
+            html += '</div>';
+            html += '<div class="health-audit-msg">' + c.message + '</div>';
+            html += '</div>';
+          });
+          resultsContainer.innerHTML = html;
+        }
+      }
+    } catch (err) {
+      console.warn('Smart health check failed:', err);
+    }
   }
 
   async runIntegrityCheck() {

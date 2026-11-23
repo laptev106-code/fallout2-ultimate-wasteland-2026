@@ -164,7 +164,8 @@
    ------------------------------------------------------------- */
 .catalog-filters {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -174,11 +175,12 @@
   border: 1px solid var(--border-muted);
   color: var(--phosphor-dim);
   font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 6px 14px;
-  border-radius: 16px;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all var(--duration-fast);
+  letter-spacing: 0.5px;
 }
 
 .filter-pill:hover,
@@ -191,8 +193,8 @@
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
 }
 
 .catalog-grid.compact-view {
@@ -226,6 +228,7 @@
   transition: all var(--duration-fast);
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .mod-card:hover {
@@ -235,10 +238,12 @@
 }
 
 .mod-thumb-container {
-  height: 160px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   background: var(--bg-abyss);
   overflow: hidden;
   position: relative;
+  border-bottom: 1px solid rgba(43, 245, 88, 0.2);
 }
 
 .mod-thumb-img {
@@ -249,7 +254,7 @@
 }
 
 .mod-card:hover .mod-thumb-img {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .mod-info {
@@ -268,37 +273,44 @@
 
 .mod-cat-badge {
   font-size: 10px;
-  background: var(--border-muted);
+  background: rgba(0, 255, 102, 0.08);
   color: var(--phosphor-primary);
-  padding: 2px 6px;
-  border-radius: 2px;
+  border: 1px solid rgba(0, 255, 102, 0.25);
+  padding: 2px 7px;
+  border-radius: 3px;
   font-weight: bold;
+  letter-spacing: 0.5px;
 }
 
 .mod-card-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--phosphor-bright);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
 }
 
 .mod-card-desc {
-  font-size: 11px;
+  font-size: 12px;
   color: #a0c4b2;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  flex: 1;
+  line-height: 1.45;
+  margin-bottom: 10px;
 }
 
 .mod-cancels-box {
   font-size: 11px;
   color: #c4ded0;
   line-height: 1.4;
-  margin-bottom: 10px;
-  padding: 6px 8px;
-  background: rgba(0, 20, 10, 0.4);
-  border-top: 1px solid var(--border-muted);
-  border-bottom: 1px solid var(--border-muted);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+  background: rgba(0, 20, 10, 0.45);
+  border: 1px solid rgba(43, 245, 88, 0.15);
+  border-radius: 4px;
 }
 
 .cancels-highlight {
@@ -307,12 +319,14 @@
 }
 
 .mod-card-footer {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--phosphor-dim);
-  border-top: 1px solid var(--border-muted);
-  padding-top: 8px;
+  border-top: 1px solid rgba(43, 245, 88, 0.15);
+  padding-top: 10px;
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 /* -------------------------------------------------------------
@@ -761,4 +775,46 @@
   color: var(--text-muted);
   line-height: 1.3;
 }
+
+.qol-select-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qol-inline-select {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  background: rgba(8, 14, 10, 0.85) !important;
+  border: 1px solid rgba(43, 245, 88, 0.4) !important;
+  color: var(--green-primary) !important;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.qol-inline-select:focus {
+  border-color: var(--green-primary) !important;
+  box-shadow: 0 0 8px rgba(43, 245, 88, 0.3) !important;
+}
+
+.qol-unified-highlight-card {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  background: rgba(14, 22, 16, 0.75);
+  border: 1px solid rgba(43, 245, 88, 0.35);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.qol-unified-highlight-card:hover {
+  background: rgba(20, 32, 22, 0.88);
+  border-color: rgba(43, 245, 88, 0.55);
+  box-shadow: 0 0 12px rgba(43, 245, 88, 0.18);
+}
+
 
