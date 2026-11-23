@@ -237,6 +237,14 @@ class EngineAuditor:
             else:
                 self.log_warn('L0_DIALOG_MUSIC', 'ddraw.ini EnableMusicInDialogue not enabled.')
 
+            # Check ElevatorsFile
+            m_elev = re.search(r'^\s*ElevatorsFile\s*=\s*([^\r\n;]+)', content, re.MULTILINE | re.IGNORECASE)
+            if m_elev:
+                elev_val = m_elev.group(1).strip()
+                self.log_pass('L0_ELEVATORS_INI', f'ddraw.ini ElevatorsFile={elev_val} (Custom EPA/Abbey sublevel elevators active).')
+            else:
+                self.log_fail('L0_ELEVATORS_INI_DISABLED', 'ddraw.ini ElevatorsFile is commented out (EPA elevators 24..28 will fail/crash)!')
+
         # Check f2_res.ini
         f2_res_ini = os.path.join(self.profile, 'f2_res.ini')
         if os.path.isfile(f2_res_ini):
@@ -676,6 +684,16 @@ class EngineAuditor:
                 self.log_pass('L7_SCRNSET_CLEAN', 'scrnset.msg screen settings dialogue verified clean of external mod relics.')
         else:
             self.log_fail('L7_SCRNSET_ABSENT', 'scrnset.msg not found in VFS!')
+
+        # Verify fo2tweaks.ini Miria level matching & max stages
+        f2t_path = os.path.join(self.profile, 'mods', 'fo2tweaks.ini')
+        if os.path.isfile(f2t_path):
+            with open(f2t_path, 'r', encoding='utf-8', errors='ignore') as f:
+                f2t_txt = f.read()
+            if '16777380=4' in f2t_txt and '16777380=8,4' in f2t_txt:
+                self.log_pass('L7_FO2TWEAKS_MIRIA_STAGES', 'fo2tweaks.ini correctly configured with Enhanced Miria 4 progression stages (16777380=4).')
+            else:
+                self.log_fail('L7_FO2TWEAKS_MIRIA_MISSING', 'fo2tweaks.ini lacks Enhanced Miria level matching configuration!')
 
 
     def run_all(self):
