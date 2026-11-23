@@ -83,6 +83,7 @@ class LauncherBridge:
             "alwaysRun": True,
             "autoReload": True,
             "templeTutorial": True,
+            "quickSavePage": "off",
             "reshade": "off"
         }
 
@@ -131,16 +132,26 @@ class LauncherBridge:
             except Exception:
                 pass
 
-        # ddraw.ini (TempleTutorial)
+        # ddraw.ini (TempleTutorial & AutoQuickSave)
         ddraw_cfg = os.path.join(self.gameplay_dir, "ddraw.ini")
         if os.path.exists(ddraw_cfg):
             try:
+                auto_qs = "0"
+                auto_page = "1"
                 with open(ddraw_cfg, "r", encoding="cp1251", errors="ignore") as f:
                     for line in f:
                         line_s = line.strip()
                         if line_s.startswith("TempleTutorial=") or line_s.startswith("TempleTutorial ="):
                             val = line_s.split("=")[1].strip()
                             cfg["templeTutorial"] = (val == "1")
+                        elif line_s.startswith("AutoQuickSave=") or line_s.startswith("AutoQuickSave ="):
+                            auto_qs = line_s.split("=")[1].strip()
+                        elif line_s.startswith("AutoQuickSavePage=") or line_s.startswith("AutoQuickSavePage ="):
+                            auto_page = line_s.split("=")[1].strip()
+                if auto_qs == "1":
+                    cfg["quickSavePage"] = auto_page
+                else:
+                    cfg["quickSavePage"] = "off"
             except Exception:
                 pass
 
@@ -246,6 +257,17 @@ class LauncherBridge:
             running_val = 1 if cfg.get("alwaysRun", True) else 0
             temple_tut_val = 1 if cfg.get("templeTutorial", True) else 0
 
+            qs_page_choice = str(cfg.get("quickSavePage", "off"))
+            if qs_page_choice in ["7", "9"]:
+                auto_quicksave_val = 1
+                auto_quicksave_page_val = int(qs_page_choice)
+            elif qs_page_choice.isdigit() and int(qs_page_choice) > 0:
+                auto_quicksave_val = 1
+                auto_quicksave_page_val = int(qs_page_choice)
+            else:
+                auto_quicksave_val = 0
+                auto_quicksave_page_val = 1
+
             target_dirs = [self.gameplay_dir]
             if os.path.exists(self.hd_dir):
                 target_dirs.append(self.hd_dir)
@@ -283,7 +305,9 @@ class LauncherBridge:
                     "ExtraCRC": "0xffd65e6d,0xe1680293,0xf18aa577",
                     "BoostScriptDialogLimit": 1,
                     "HiResMode": 1,
-                    "TempleTutorial": temple_tut_val
+                    "TempleTutorial": temple_tut_val,
+                    "AutoQuickSave": auto_quicksave_val,
+                    "AutoQuickSavePage": auto_quicksave_page_val
                 }, encoding="cp1251")
 
                 # 3. fallout2.cfg

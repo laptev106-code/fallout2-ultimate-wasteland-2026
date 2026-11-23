@@ -154,6 +154,27 @@ class LauncherApp {
       elFull?.addEventListener('change', (e) => handleToggle(e.target.checked));
     });
 
+    // Sync and Auto-Save for QoL selects (Quick Bar and Settings page)
+    const qolSelects = [
+      { quick: 'quick-select-quicksave', full: 'select-quicksave', key: 'quickSavePage' }
+    ];
+
+    qolSelects.forEach(({ quick, full, key }) => {
+      const elQuick = document.getElementById(quick);
+      const elFull = document.getElementById(full);
+
+      const handleSelect = (val) => {
+        if (elQuick) elQuick.value = val;
+        if (elFull) elFull.value = val;
+        this.config[key] = val;
+        if (window.pipAudio) window.pipAudio.playSwitchSnap();
+        this.saveCurrentSettings(true);
+      };
+
+      elQuick?.addEventListener('change', (e) => handleSelect(e.target.value));
+      elFull?.addEventListener('change', (e) => handleSelect(e.target.value));
+    });
+
     // Sliders input
     const sliderMusic = document.getElementById('slider-music');
     const labelMusic = document.getElementById('val-music');
@@ -439,6 +460,12 @@ class LauncherApp {
     const templeTutVal = this.config.templeTutorial !== false;
     if (chkTutorial) chkTutorial.checked = templeTutVal;
     if (quickTutorial) quickTutorial.checked = templeTutVal;
+
+    const selQuickSave = document.getElementById('select-quicksave');
+    const quickSelQuickSave = document.getElementById('quick-select-quicksave');
+    const quickSaveVal = this.config.quickSavePage || 'off';
+    if (selQuickSave) selQuickSave.value = quickSaveVal;
+    if (quickSelQuickSave) quickSelQuickSave.value = quickSaveVal;
   }
 
   async saveCurrentSettings(silent = false) {
@@ -461,10 +488,12 @@ class LauncherApp {
     const chkReload = document.getElementById('toggle-autoreload') || document.getElementById('quick-toggle-autoreload');
     const chkRun = document.getElementById('toggle-alwaysrun') || document.getElementById('quick-toggle-alwaysrun');
     const chkTutorial = document.getElementById('toggle-temple-tutorial') || document.getElementById('quick-toggle-temple-tutorial');
+    const selQuickSave = document.getElementById('select-quicksave') || document.getElementById('quick-select-quicksave');
 
     if (chkReload) this.config.autoReload = chkReload.checked;
     if (chkRun) this.config.alwaysRun = chkRun.checked;
     if (chkTutorial) this.config.templeTutorial = chkTutorial.checked;
+    if (selQuickSave) this.config.quickSavePage = selQuickSave.value;
 
     const headerRes = document.getElementById('header-res-pill');
     if (headerRes && this.config.resolution) {

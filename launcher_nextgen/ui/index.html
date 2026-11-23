@@ -152,6 +152,18 @@
                     <span class="qol-subtext">Подсказки старейшин в храме по тактике боя, ловушкам и выживанию</span>
                   </div>
                 </label>
+                <div class="qol-toggle-item" style="cursor: default; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <span class="qol-label-text">Цикличный сейв (F5)</span>
+                    <select id="quick-select-quicksave" class="form-select" style="width: auto; padding: 2px 6px; font-size: 11px; height: 26px; border-color: rgba(43,245,88,0.4);">
+                      <option value="off">Откл (1 слот)</option>
+                      <option value="7">Стр. 7 (10 слотов)</option>
+                      <option value="8">Стр. 8 (10 слотов)</option>
+                      <option value="9">Стр. 9 (10 слотов)</option>
+                    </select>
+                  </div>
+                  <span class="qol-subtext">Выделяет указанную страницу под 10 автосейвов, защищая ручные сейвы</span>
+                </div>
               </div>
             </div>
           </section>
@@ -291,6 +303,19 @@
                     <input id="toggle-temple-tutorial" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
                     <span style="font-size: 13px; color: var(--text-main);">Обучающие подсказки в Храме Испытаний (советы по механике, клавишам и выживанию)</span>
                   </label>
+                </div>
+
+                <div class="form-group" style="margin-top: 14px;">
+                  <div class="form-label-block">
+                    <span class="form-label">ЦИКЛИЧНЫЕ БЫСТРЫЕ СЕЙВЫ (F5 AutoQuickSave):</span>
+                    <span class="form-hint">Выделяет указанную страницу под 10 ротируемых слотов F5 (например, Стр. 7: слоты 70..79). Защищает ручные сейвы на других страницах от перезаписи.</span>
+                  </div>
+                  <select id="select-quicksave" class="form-select" style="max-width: 320px;">
+                    <option value="off">Отключено (1 фиксированный слот F5)</option>
+                    <option value="7">Страница 7 (10 слотов: 70 — 79)</option>
+                    <option value="8">Страница 8 (10 слотов: 80 — 89)</option>
+                    <option value="9">Страница 9 (10 слотов: 90 — 99)</option>
+                  </select>
                 </div>
               </div>
 
