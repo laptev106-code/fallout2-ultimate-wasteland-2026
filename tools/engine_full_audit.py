@@ -644,6 +644,40 @@ class EngineAuditor:
             else:
                 self.log_fail('L7_NPC_ARMOR_GECKO_MISSING', 'npcarmor.ini does not recognize Fire Gecko Armor (PID 652)!')
 
+        # Verify combatai.msg Miria combat floats
+        cai_info = vfs.get(r'text\russian\game\combatai.msg')
+        if cai_info:
+            cai_txt, _ = read_vfs_text(cai_info)
+            if cai_txt and '{42800}' in cai_txt and '{42920}' in cai_txt:
+                self.log_pass('L7_COMBATAI_MIRIA', 'combatai.msg includes all 139 Miria combat dialogue floats (42800..42973).')
+            else:
+                self.log_fail('L7_COMBATAI_MIRIA_MISSING', 'combatai.msg is missing Miria combat dialogue floats (42800..42973)!')
+        else:
+            self.log_fail('L7_COMBATAI_ABSENT', 'combatai.msg not found in VFS!')
+
+        # Verify pro_crit.msg companion level progression
+        crit_info = vfs.get(r'text\russian\game\pro_crit.msg')
+        if crit_info:
+            crit_txt, _ = read_vfs_text(crit_info)
+            if crit_txt and '{55000}' in crit_txt and '{55300}' in crit_txt:
+                self.log_pass('L7_PRO_CRIT_MIRIA', 'pro_crit.msg includes all Miria progression levels (PIDs 550..553).')
+            else:
+                self.log_fail('L7_PRO_CRIT_MIRIA_MISSING', 'pro_crit.msg is missing Miria progression levels (55000..55300)!')
+        else:
+            self.log_fail('L7_PRO_CRIT_ABSENT', 'pro_crit.msg not found in VFS!')
+
+        # Verify scrnset.msg clean from Nevada artifacts
+        scrn_info = vfs.get(r'text\russian\game\scrnset.msg')
+        if scrn_info:
+            scrn_txt, _ = read_vfs_text(scrn_info)
+            if scrn_txt and 'Fallout: Nevada' in scrn_txt:
+                self.log_fail('L7_SCRNSET_NEVADA', 'scrnset.msg contains leftover Fallout: Nevada text on line 57!')
+            else:
+                self.log_pass('L7_SCRNSET_CLEAN', 'scrnset.msg screen settings dialogue verified clean of external mod relics.')
+        else:
+            self.log_fail('L7_SCRNSET_ABSENT', 'scrnset.msg not found in VFS!')
+
+
     def run_all(self):
         """Execute full test suite."""
         print(f"\n{'='*75}")
