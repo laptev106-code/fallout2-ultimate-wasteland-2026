@@ -696,6 +696,81 @@ class EngineAuditor:
                 self.log_fail('L7_FO2TWEAKS_MIRIA_MISSING', 'fo2tweaks.ini lacks Enhanced Miria level matching configuration!')
 
 
+    def check_level8_regression_lock(self, vfs):
+        """Level 8: Regression Lock for all approved fixes (FIX-68..FIX-75)."""
+        # 1. Zero null bytes and valid sections in INI/CFG files
+        ini_checks = [
+            ('ddraw.ini', 20000, [b'[Main]', b'[Graphics]', b'[Misc]', b'[Debugging]']),
+            ('f2_res.ini', 5000, [b'[MAIN]', b'[INPUT]', b'[MAPS]']),
+            ('fallout2.cfg', 400, [b'[system]', b'[preferences]']),
+            (os.path.join('mods', 'fo2tweaks.ini'), 4000, [b'[main]']),
+        ]
+        corrupt = []
+        for rel, min_sz, secs in ini_checks:
+            p = os.path.join(self.profile, rel)
+            if not os.path.isfile(p):
+                corrupt.append(f'{rel}:missing')
+                continue
+            raw = open(p, 'rb').read()
+            if b'\x00' in raw or len(raw) < min_sz or any(s not in raw for s in secs):
+                corrupt.append(f'{rel}:corrupt')
+        if corrupt:
+            self.log_fail('L8_INI_INTEGRITY', f'Corrupted or truncated config files: {corrupt}')
+        else:
+            self.log_pass('L8_INI_INTEGRITY', 'All INI/CFG files intact with zero null bytes and valid sections.')
+
+        # 2. ddraw.ini critical invariants (ExtraCRC, WorldMapSlots=21, BackgroundMouse=1, InstantWeaponEquip=0, Foxx skill cursors 478..484)
+        dd_txt = open(os.path.join(self.profile, 'ddraw.ini'), encoding='cp1251', errors='ignore').read()
+        if ('0xffd65e6d' in dd_txt
+                and re.search(r'^\s*WorldMapSlots\s*=\s*21\b', dd_txt, re.M)
+                and re.search(r'^\s*BackgroundMouse\s*=\s*1\b', dd_txt, re.M)
+                and re.search(r'^\s*InstantWeaponEquip\s*=\s*0\b', dd_txt, re.M)
+                and re.search(r'^\s*Lockpick\s*=\s*478\b', dd_txt, re.M)
+                and re.search(r'^\s*Repair\s*=\s*484\b', dd_txt, re.M)):
+            self.log_pass('L8_DDRAW_LOCKS', 'ddraw.ini locks verified (ExtraCRC, WorldMapSlots=21, BackgroundMouse=1, InstantWeaponEquip=0, SkillCursors=478..484).')
+        else:
+            self.log_fail('L8_DDRAW_LOCKS', 'ddraw.ini missing ExtraCRC, WorldMapSlots=21, BackgroundMouse=1, InstantWeaponEquip=0, or SkillCursors=478..484.')
+
+        # 3. fallout2.cfg language=russian, player_speedup=1, cycle_speed_factor=1.55
+        cfg_txt = open(os.path.join(self.profile, 'fallout2.cfg'), encoding='cp1251', errors='ignore').read()
+        if re.search(r'^\s*language\s*=\s*russian\b', cfg_txt, re.M) and re.search(r'^\s*player_speedup\s*=\s*1\b', cfg_txt, re.M) and re.search(r'^\s*cycle_speed_factor\s*=\s*1\.55', cfg_txt, re.M):
+            self.log_pass('L8_CFG_SPEED_LANG', 'fallout2.cfg verified (language=russian, player_speedup=1, cycle_speed_factor=1.550000).')
+        else:
+            self.log_fail('L8_CFG_SPEED_LANG', 'fallout2.cfg regression (expected language=russian, player_speedup=1, cycle_speed_factor=1.55).')
+
+        # 4. Skill cursors in art/intrface/intrface.lst (485+ lines, CURScrak..CURSrepr)
+        ilst_key = r'art\intrface\intrface.lst'
+        if ilst_key in vfs:
+            ilst_txt, _ = read_vfs_text(vfs[ilst_key])
+            if 'curscrak.frm' in ilst_txt.lower() and 'cursrepr.frm' in ilst_txt.lower():
+                self.log_pass('L8_SKILL_CURSORS', 'art/intrface/intrface.lst contains Foxx skilldex cursors (CURScrak..CURSrepr).')
+            else:
+                self.log_fail('L8_SKILL_CURSORS', 'art/intrface/intrface.lst missing Foxx skilldex cursors!')
+        else:
+            self.log_fail('L8_SKILL_CURSORS', 'art/intrface/intrface.lst missing from VFS!')
+
+        # 5. gl_highlighting.int INI path check
+        hl_key = r'scripts\gl_highlighting.int'
+        if hl_key in vfs:
+            hl_txt, _ = read_vfs_text(vfs[hl_key])
+            if 'mods\\gl_highlighting.ini' in hl_txt:
+                self.log_pass('L8_HIGHLIGHT_INI_PATH', 'gl_highlighting.int contains valid mods\\gl_highlighting.ini path.')
+            else:
+                self.log_fail('L8_HIGHLIGHT_INI_PATH', 'gl_highlighting.int has broken INI path!')
+
+        # 6. No loose .msg shadowing in data/text/
+        dt_dir = os.path.join(self.profile, 'data', 'text')
+        loose_msgs = []
+        if os.path.isdir(dt_dir):
+            for dp, _, fns in os.walk(dt_dir):
+                for fn in fns:
+                    if fn.lower().endswith('.msg'):
+                        loose_msgs.append(fn)
+        if loose_msgs:
+            self.log_fail('L8_NO_LOOSE_MSG', f'Found {len(loose_msgs)} loose .msg files in data/text/ shadowing DATs: {loose_msgs[:4]}')
+        else:
+            self.log_pass('L8_NO_LOOSE_MSG', 'Zero loose .msg files in data/text/ (no VFS shadowing).')
+
     def run_all(self):
         """Execute full test suite."""
         print(f"\n{'='*75}")
@@ -737,6 +812,9 @@ class EngineAuditor:
 
         print(f"[*] Running Level 7: Linguistic Integrity & EcCo Mechanics...")
         self.check_level7_linguistic_and_mechanics(vfs)
+
+        print(f"[*] Running Level 8: Regression Lock (Approved Invariants)...")
+        self.check_level8_regression_lock(vfs)
 
         # Print Report
         print(f"\n--- AUDIT RESULTS FOR: {self.name} ---")

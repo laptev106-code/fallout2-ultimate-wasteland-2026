@@ -1,0 +1,191 @@
+import subprocess
+import os
+
+tools_dir = r"e:\FALLOUT Ult pjt\tools"
+compiler = os.path.join(tools_dir, "compile.exe")
+
+ssl_code = """/*
+   Glasses Mod for Fallout 2 (Ultimate Wasteland Edition 2026)
+   Allows wearing Mirrored Shades (+1 CH) and Spectacles (+1 PE)
+   by dragging them onto the player paperdoll/portrait or using from inventory.
+   Fully bilingual: English & Russian.
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_glasses"
+#include "define.h"
+#include "sfall.h"
+
+#define PID_SPECTACLES       (415)
+#define PID_MIRROR_SHADES    (433)
+
+#define SGVAR_WORN_GLASSES   "GL_GLASS"
+
+procedure start;
+procedure invenmove_handler;
+procedure useobjon_handler;
+procedure useobj_handler;
+procedure removeinven_handler;
+procedure toggle_glasses(variable pid);
+procedure apply_glasses(variable pid);
+procedure remove_glasses(variable pid);
+
+procedure start begin
+   if game_loaded then begin
+      register_hook_proc(HOOK_INVENTORYMOVE, invenmove_handler);
+      register_hook_proc(HOOK_USEOBJON, useobjon_handler);
+      register_hook_proc(HOOK_USEOBJ, useobj_handler);
+      register_hook_proc(HOOK_REMOVEINVENOBJ, removeinven_handler);
+   end
+end
+
+procedure apply_glasses(variable pid) begin
+   variable lang;
+   lang := get_ini_string("fallout2.cfg|system|language");
+
+   if (pid == PID_MIRROR_SHADES) then begin
+      set_critter_stat(dude_obj, STAT_ch, 1);
+      set_sfall_global(SGVAR_WORN_GLASSES, PID_MIRROR_SHADES);
+      if (lang == "english") then
+         display_msg("You put on the mirrored shades (+1 Charisma).");
+      else
+         display_msg("Вы надели темные очки (+1 к Харизме).");
+   end
+   else if (pid == PID_SPECTACLES) then begin
+      set_critter_stat(dude_obj, STAT_pe, 1);
+      set_sfall_global(SGVAR_WORN_GLASSES, PID_SPECTACLES);
+      if (lang == "english") then
+         display_msg("You put on the spectacles (+1 Perception).");
+      else
+         display_msg("Вы надели очки (+1 к Восприятию).");
+   end
+end
+
+procedure remove_glasses(variable pid) begin
+   if (pid == PID_MIRROR_SHADES) then begin
+      set_critter_stat(dude_obj, STAT_ch, -1);
+   end
+   else if (pid == PID_SPECTACLES) then begin
+      set_critter_stat(dude_obj, STAT_pe, -1);
+   end
+   set_sfall_global(SGVAR_WORN_GLASSES, 0);
+end
+
+procedure toggle_glasses(variable pid) begin
+   variable current_worn, lang;
+   lang := get_ini_string("fallout2.cfg|system|language");
+   current_worn := get_sfall_global_int(SGVAR_WORN_GLASSES);
+
+   if (current_worn == pid) then begin
+      call remove_glasses(current_worn);
+      if (lang == "english") then
+         display_msg("You took off your glasses.");
+      else
+         display_msg("Вы сняли очки.");
+   end
+   else if (current_worn != 0) then begin
+      call remove_glasses(current_worn);
+      call apply_glasses(pid);
+   end
+   else begin
+      call apply_glasses(pid);
+   end
+end
+
+procedure invenmove_handler begin
+   variable slot, item, pid;
+   slot := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (slot == 8 and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0);
+      end
+   end
+end
+
+procedure useobjon_handler begin
+   variable target, user, item, pid;
+   target := get_sfall_arg;
+   user := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (target == dude_obj and user == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0);
+      end
+   end
+end
+
+procedure useobj_handler begin
+   variable user, item, pid;
+   user := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (user == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0);
+      end
+   end
+end
+
+procedure removeinven_handler begin
+   variable owner, item, pid, current_worn, remaining, lang;
+   owner := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (owner == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      current_worn := get_sfall_global_int(SGVAR_WORN_GLASSES);
+      if (current_worn == pid) then begin
+         remaining := obj_is_carrying_obj_pid(dude_obj, pid);
+         if (remaining <= 1) then begin
+            call remove_glasses(current_worn);
+            lang := get_ini_string("fallout2.cfg|system|language");
+            if (lang == "english") then
+               display_msg("You took off your glasses.");
+            else
+               display_msg("Вы сняли очки.");
+         end
+      end
+   end
+end
+"""
+
+ssl_file = os.path.join(tools_dir, "gl_glasses.ssl")
+with open(ssl_file, "w", encoding="cp1251") as f:
+    f.write(ssl_code)
+
+out_int = "gl_glasses.int"
+cmd = [
+    compiler,
+    "-p",
+    "-q",
+    "-s",
+    "-Iheaders",
+    "-O2",
+    "gl_glasses.ssl",
+    "-o", out_int
+]
+
+print("Compiling gl_glasses...")
+res = subprocess.run(cmd, cwd=tools_dir, capture_output=True, text=True)
+print("STDOUT:", res.stdout)
+print("STDERR:", res.stderr)
+print("Return code:", res.returncode)
+
+int_path = os.path.join(tools_dir, out_int)
+if os.path.exists(int_path):
+    print("SUCCESS! Compiled:", int_path, "Size:", os.path.getsize(int_path))
+    # Deploy to both profiles and DATA
+    from build_dual_language_pack import write_dual
+    with open(int_path, "rb") as f:
+        write_dual(r"scripts\gl_glasses.int", f.read())
+else:
+    print("FAILED! File not created")

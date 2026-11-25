@@ -1,0 +1,10 @@
+
+#define SCRIPT_REALNAME "test_opcodes"
+#include "define.h"
+procedure talk_p_proc;
+procedure talk_p_proc begin
+    start_gdialog(999, self_obj, 4, 158, 10);
+    gSay_Start;
+    gSay_End;
+    end_dialogue;
+end

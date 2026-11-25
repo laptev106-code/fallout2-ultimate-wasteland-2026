@@ -1,0 +1,1247 @@
+#line 1 "gl_laststand.ssl"
+#line 7 "gl_laststand.ssl"
+#pragma sce
+#line 10 "gl_laststand.ssl"
+#line 1 "headers/define.h"
+#line 13 "headers/define.h"
+#line 1 "global.h"
+#line 14 "headers/define.h"
+#line 1 "itempid.h"
+#line 15 "headers/define.h"
+#line 1 "scripts.h"
+#line 16 "headers/define.h"
+#line 1 "teams.h"
+#line 17 "headers/define.h"
+#line 1 "condtion.h"
+#line 45 "condtion.h"
+variable ProtoOfItemGiven;
+variable ValueOfRollCheck:= 1 ;
+#line 18 "headers/define.h"
+#line 19 "headers/define.h"
+#line 1 "aipacket.h"
+#line 20 "headers/define.h"
+#line 1 "exppoint.h"
+#line 21 "headers/define.h"
+#line 1 "scenepid.h"
+#line 18 "scenepid.h"
+variable Scenery_Creation;
+variable Scenery_Creation_Hex;
+variable Scenery_Creation_Count;
+variable Temp_Scenery_Creation_Hex;
+variable Scenery_Creation_Ptr;
+#line 22 "headers/define.h"
+#line 1 "maps.h"
+#line 23 "headers/define.h"
+#line 1 "animcomd.h"
+#line 24 "headers/define.h"
+#line 1 "critrpid.h"
+#line 25 "headers/define.h"
+#line 1 "artfid.h"
+#line 26 "headers/define.h"
+#line 1 "party.h"
+#line 164 "party.h"
+variable PartyHealingItem;
+#line 701 "party.h"
+procedure checkPartyMembersNearDoor begin
+   if ( ( party_member_obj( (16777278) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777278) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777376) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777376) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777377) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777377) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777305) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777305) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777313) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777313) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777323) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777323) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777352) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777352) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777378) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777378) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777368) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777368) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777379) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777379) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777380) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777380) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777295) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777295) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777381) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777381) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777407) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777407) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777411) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777411) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777412) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777412) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777413) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777413) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777481) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777481) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777558) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777558) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777600) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777600) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777718) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777718) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777719) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777719) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777720) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777720) ) ) <= (5) ) then begin return 1; end end
+   return 0;
+end
+#line 27 "headers/define.h"
+#line 1 "reaction.h"
+#line 28 "headers/define.h"
+#line 29 "headers/define.h"
+#line 1 "sfall.h"
+#line 30 "headers/define.h"
+#line 200 "headers/define.h"
+#line 1 "define_pre.h"
+#line 201 "headers/define.h"
+#line 927 "headers/define.h"
+#line 1 "upu.h"
+#line 14 "upu.h"
+procedure check_filesystem_override begin
+   variable fs_override := get_ini_setting("ddraw.ini|Misc|UseFileSystemOverride");
+   if fs_override != 1 then begin
+      debug_msg( "gl_laststand" + ": " + "UseFileSystemOverride is disabled, enabling" + "\n") ;
+      sfall_func2("set_ini_setting", "ddraw.ini|Misc|UseFileSystemOverride", 1) ;
+      float_msg(dude_obj,  "gl_laststand"  + ": filesystem override was disabled, some features failed to load. The setting is corrected. EXIT AND RE-LAUNCH THE GAME now.",  (-2) );
+      return false;
+   end
+   return true;
+end
+
+
+procedure create_and_use_itempid_on(variable target, variable itempid) begin
+   variable item;
+   item :=  create_object_sid(itempid,tile_num(target),elevation(target),-1) ;
+   set_self(target);
+   set_self(target);
+   use_obj_on_obj(item, target);
+   set_self(0);
+end
+
+procedure is_human(variable who) begin
+   variable type;
+   type :=  metarule( 51 , who) ;
+   if type ==  0  or type ==  1  or type ==  2  then return true;
+   return false;
+end
+#line 62 "upu.h"
+procedure closest_party_member(variable obj) begin
+   variable who, cur_distance, min_distance := -1, closest_who := false;
+
+   if len_array( party_member_list(0) ) == 1 then return false;
+
+   foreach who in  party_member_list(0)  begin
+      if (who != dude_obj) and (who != obj) then begin
+         cur_distance := tile_distance_objs(obj, who);
+         if (min_distance == -1) or (cur_distance < min_distance) then begin
+            min_distance := cur_distance;
+            closest_who := who;
+         end
+      end
+   end
+   return closest_who;
+end
+#line 83 "upu.h"
+procedure dude_mod_skill(variable skill, variable amount) begin
+   if ( metarule( 40 , skill)  and (amount % 2)) then begin
+
+      if (amount > 0) then amount++;
+      else amount--;
+   end
+   critter_mod_skill(dude_obj, skill, amount);
+end
+
+
+
+
+
+
+
+procedure self_is_evil begin
+   variable evil_critters := [
+
+
+      "bcdardog",
+      "bcdargrd",
+      "bcdarion",
+      "bcgengrd",
+      "bckarla",
+      "bcphil",
+      "dcslvgrt",
+      "ecmstden",
+      "ecmstnew",
+      "fcbadpea",
+      "fcdaveh",
+      "fcelrind",
+      "fcjuavki",
+      "fclopan",
+      "fcoz7",
+      "fcoz9",
+      "ncbismen",
+      "ncdrgdlr",
+      "ncmormen",
+      "ncramire",
+      "ncsalmen",
+      "ocmatt",
+      "qcfrank",
+      "rchakes",
+      "scbuster",
+      "sclenny",
+      "scmerk",
+      "scmira",
+      "scmrkgrd",
+      "scoswald",
+      "scrawpat",
+      "scskeete",
+      "scslvgrd",
+      "scvortis"
+   ];
+   if  (scan_array(evil_critters, "gl_laststand" ) != -1)  then return true;
+   return false;
+end
+
+
+procedure beacon_rep begin
+   variable rep := global_var( (0) );
+   if has_trait( (0) , dude_obj,  (95) ) then rep := rep * 2;
+   return rep;
+end
+
+procedure cult_rep begin
+   variable rep := beacon_rep;
+   if  has_trait( (0) , dude_obj, (39) )  then begin
+      rep := abs(rep);
+      if self_is_evil then rep := -rep;
+   end
+   return rep;
+end
+
+procedure perceived_rep begin
+   variable rep := beacon_rep;
+   if self_is_evil then rep := -rep;
+   if  has_trait( (0) , dude_obj, (39) )  then rep := abs(rep);
+   return rep;
+end
+
+
+
+
+
+procedure move_quest_items begin
+   if  get_ini_setting( "mods\\upu.ini" + "|" + "main" + "|" + "wipe_inventory")  != 1 then return 0;
+   if  metarule( 14 , 0)  then return 0;
+   variable tmp_box :=  create_object_sid( (128) ,5,0,-1) ;
+   variable pid;
+   variable pids := [
+      (448) ,
+      (252) ,
+      (471) ,
+      (447) ,
+      (97) ,
+
+      (253) ,
+      (254) ,
+      (456) ,
+      (356) ,
+      (257) ,
+      (255) ,
+      (340) ,
+
+      (476) ,
+      (422) ,
+      (256) ,
+      (366) ,
+      (302) ,
+      (99) ,
+      (258) ,
+      (488) ,
+      (337) ,
+      (335) ,
+      (336) ,
+      (479) ,
+      (307) ,
+      (495) ,
+      (341) ,
+      (431) ,
+      (432) ,
+      (303) ,
+      (96) ,
+      (306) ,
+      (468) ,
+      (339) ,
+      (492) ,
+      (298) ,
+      (377) ,
+      (414) ,
+      (446) ,
+      (266) ,
+      (267) ,
+      (338) ,
+      (223) ,
+      (305) ,
+
+
+
+      (229) ,
+      (333) ,
+
+      (534) ,
+      (537) ,
+      (544) ,
+      (566) ,
+      (573) ,
+      (592) ,
+      (596)
+
+   ];
+   foreach pid in pids begin
+      if (obj_is_carrying_obj_pid(self_obj, pid) > 0) then begin
+         variable special_item := obj_carrying_pid_obj(self_obj, pid);
+         rm_obj_from_inven(self_obj, special_item);
+         add_obj_to_inven(tmp_box, special_item);
+      end
+   end
+   variable trash_box :=  create_object_sid( (128) ,0,0,-1) ;
+   move_obj_inven_to_obj(self_obj, trash_box);
+   destroy_object(trash_box);
+   return tmp_box;
+end
+
+procedure restore_critical_items(variable tmp_box) begin
+   if tmp_box == 0 then return;
+   move_obj_inven_to_obj(tmp_box, self_obj);
+   destroy_object(tmp_box);
+end
+#line 928 "headers/define.h"
+#line 1 "rpu.h"
+#line 21 "rpu.h"
+procedure is_lockpick_elec(variable item) begin
+  switch (obj_pid(item)) begin
+    case  (77) : return true;
+    case  (411) : return true;
+    default: return false;
+  end
+end
+procedure is_lockpick_mech(variable item) begin
+  switch (obj_pid(item)) begin
+    case  (84) : return true;
+    case  (410) : return true;
+    default: return false;
+  end
+end
+procedure is_lockpick(variable item) begin
+  if is_lockpick_mech(item) then return true;
+  if is_lockpick_elec(item) then return true;
+  return false;
+end
+#line 44 "rpu.h"
+procedure dude_is_addicted() begin
+  if global_var( (296) )
+    or global_var( (21) )
+    or global_var( (22) )
+    or global_var( (23) )
+    or global_var( (24) )
+    or global_var( (25) )
+    or global_var( (26) )
+    or global_var( (295) )
+  then return true;
+  return false;
+end
+#line 929 "headers/define.h"
+#line 1 "party2.h"
+
+
+
+
+
+procedure party_size_humans begin
+   variable n := 0, type, who;
+   foreach who in  party_member_list(0)  begin
+      type :=  metarule( 51 , who) ;
+      if type ==  0  or type ==  1  then n+=1;
+   end
+   return n;
+end
+#line 20 "party2.h"
+procedure party_has_injured(variable only_organic = true) begin
+   foreach (variable who in  party_member_list(0) ) begin
+      if (who == dude_obj) then continue;
+      if (only_organic) then begin
+         variable pid;
+         pid = obj_pid(who);
+         if (pid ==  (16777352) ) or (pid ==  (16777687) ) or ( metarule( 51 , who)  ==  10 ) then continue;
+      end
+      if  (get_critter_stat(who, (35) ) < get_critter_stat(who, (7) ))  then return true;
+   end
+   return false;
+end
+#line 38 "party2.h"
+procedure party_injured_count(variable only_organic = true) begin
+   variable count = 0;
+   foreach (variable who in  party_member_list(0) ) begin
+      if (who == dude_obj) then continue;
+      if (only_organic) then begin
+         variable pid;
+         pid = obj_pid(who);
+         if (pid ==  (16777352) ) or (pid ==  (16777687) ) or ( metarule( 51 , who)  ==  10 ) then continue;
+      end
+      if  (get_critter_stat(who, (35) ) < get_critter_stat(who, (7) ))  then count += 1;
+   end
+   return count;
+end
+#line 930 "headers/define.h"
+#line 11 "gl_laststand.ssl"
+#line 1 "headers/command.h"
+#line 20 "headers/command.h"
+#line 1 "reppoint.h"
+#line 12 "reppoint.h"
+variable tmp_gen_rep := 0;
+#line 21 "headers/command.h"
+#line 27 "headers/command.h"
+variable global_temp;
+#line 157 "headers/command.h"
+variable dest_tile;
+variable step_tile;
+#line 218 "headers/command.h"
+procedure party_is_armed() begin
+   foreach (variable who in  party_member_list(0) ) begin
+      if obj_pid(who) ==  (16777368)  then continue;
+      if  (((obj_item_subtype(critter_inven_obj(who, (1) ))) == (3) ) or ((obj_item_subtype(critter_inven_obj(who, (2) ))) == (3) ))  then return true;
+   end
+   return false;
+end
+#line 502 "headers/command.h"
+procedure roll_vs_stat(variable who, variable stat, variable mod) begin
+   variable rnd = random(1, 100);
+   variable success = is_success(do_check(who, stat, mod));
+
+   if success then begin
+
+       if (rnd + (get_critter_stat(who,  (6) ) - 5)) > 95 then return  3 ;
+       else return  2 ;
+   end else begin
+
+     if rnd > 95 then return  0 ;
+   end
+   return  1 ;
+end
+#line 588 "headers/command.h"
+variable in_dialog;
+variable forced_node;
+#line 892 "headers/command.h"
+variable restock_amt;
+variable restock_obj;
+variable restock_trash;
+variable removed_qty;
+#line 1365 "headers/command.h"
+#line 1 "command_extra.h"
+
+
+
+
+
+
+
+
+procedure vault_boxer_style(variable enable) begin
+  variable style_item_pid;
+  if not  ( (get_critter_stat(dude_obj, (34) )) == (0) )  then return;
+
+  switch get_sfall_global_int("HApStyle") begin
+    case  1 : style_item_pid :=  (594) ;
+    case  2 : style_item_pid :=  (595) ;
+    case  0 : style_item_pid :=  (593) ;
+    default: style_item_pid :=  (593) ;
+  end
+  if enable then begin
+    if (obj_carrying_pid_obj(dude_obj,style_item_pid) == 0) then begin
+      variable armor :=  create_object_sid(style_item_pid,0,0,-1) ;
+      add_obj_to_inven(dude_obj,armor);
+      wield_obj_critter(dude_obj, armor);
+    end
+  end else begin
+    if ( (obj_item_subtype(critter_inven_obj(dude_obj, (0) )) == (0) ) ) then begin restock_obj := critter_inven_obj(dude_obj, (0) ); debug_msg( "gl_laststand" + ": " + "armour pid == "+obj_pid(restock_obj) + "\n") ; rm_obj_from_inven(dude_obj, restock_obj); add_obj_to_inven(dude_obj, restock_obj); end
+    destroy_object(obj_carrying_pid_obj(dude_obj,style_item_pid));
+  end
+  refresh_pc_art;
+end
+
+procedure doVaultBoxerAppearance begin
+  if  get_ini_setting( "mods\\rpu.ini" + "|" + "main" + "|" + "vault_boxer" )  and  get_ini_setting("ddraw.ini|Misc|EnableHeroAppearanceMod")  then begin
+    set_global_var( (770) ,1);
+    call vault_boxer_style(true);
+  end
+end
+
+procedure removeVaultBoxerAppearance begin
+  variable enabled :=  get_ini_setting( "mods\\rpu.ini" + "|" + "main" + "|" + "vault_boxer" ) ;
+  if  get_ini_setting( "mods\\rpu.ini" + "|" + "main" + "|" + "vault_boxer" )  and  get_ini_setting("ddraw.ini|Misc|EnableHeroAppearanceMod")  then begin
+    set_global_var( (770) ,0);
+    call vault_boxer_style(false);
+  end
+end
+#line 1366 "headers/command.h"
+#line 1376 "headers/command.h"
+procedure close_and_lock_self begin
+   if obj_is_open(self_obj) then begin
+
+      if obj_is_locked(self_obj) then begin
+         obj_unlock(self_obj);
+      end
+      obj_close(self_obj);
+   end
+   obj_lock(self_obj);
+end
+#line 12 "gl_laststand.ssl"
+#line 1 "headers/sfall/sfall.h"
+#line 13 "gl_laststand.ssl"
+#line 1 "headers/sfall/define_extra.h"
+#line 14 "gl_laststand.ssl"
+#line 1 "headers/sfall/lib.arrays.h"
+#line 18 "headers/sfall/lib.arrays.h"
+#line 1 "sfall.h"
+#line 19 "headers/sfall/lib.arrays.h"
+#line 24 "headers/sfall/lib.arrays.h"
+procedure map_contains_key(variable arrayMap, variable key);
+
+
+procedure array_push(variable array, variable item);
+
+
+procedure array_pop(variable array);
+
+
+procedure array_keys(variable array);
+
+
+procedure array_values(variable array);
+
+
+procedure fix_array_deep(variable array, variable levels := 1);
+
+
+procedure array_fixed(variable array, variable levels := 1);
+
+
+
+
+procedure array_slice(variable array, variable index, variable count);
+
+
+
+procedure array_cut(variable array, variable index, variable count);
+
+
+procedure array_diff(variable arr1, variable arr2);
+
+
+procedure copy_array(variable src, variable srcPos, variable dest, variable dstPos, variable size);
+
+
+procedure clone_array(variable array);
+
+
+procedure arrays_equal(variable arr1, variable arr2);
+
+
+procedure array_max(variable arr);
+
+
+procedure array_min(variable arr);
+
+
+procedure array_sum(variable arr);
+
+
+procedure array_random_value(variable arr);
+
+
+procedure array_fill(variable arr, variable pos, variable count, variable value);
+#line 83 "headers/sfall/lib.arrays.h"
+procedure array_append(variable arr1, variable arr2);
+
+procedure get_empty_array_index(variable array);
+#line 91 "headers/sfall/lib.arrays.h"
+procedure add_array_set(variable array, variable item);
+procedure remove_array_set(variable array, variable item);
+
+
+procedure array_transform(variable arr, variable valueFunc);
+
+
+procedure array_transform_kv(variable arr, variable keyFunc, variable valueFunc);
+#line 119 "headers/sfall/lib.arrays.h"
+procedure add_array_block(variable arr, variable blocksize);
+
+
+procedure remove_array_block(variable arr, variable blocksize, variable index);
+#line 137 "headers/sfall/lib.arrays.h"
+procedure load_create_array(variable name, variable size);
+
+procedure get_saved_array_new(variable name, variable size);
+
+
+procedure save_collection(variable name, variable arr);
+
+procedure load_collection(variable name);
+#line 159 "headers/sfall/lib.arrays.h"
+procedure map_contains_key(variable arrayMap, variable key) begin
+   variable i;
+   for (i := 0; i < len_array(arrayMap); i++) begin
+      if (array_key(arrayMap, i) == key) then return true;
+   end
+   return false;
+end
+#line 172 "headers/sfall/lib.arrays.h"
+procedure get_empty_array_index(variable array) begin
+   variable zero := false;
+   variable i := 0;
+   while i < len_array(array) and not(zero) do begin
+      if (array[i] == 0) then begin
+         zero := true;
+      end else begin
+         i++;
+      end
+   end
+   return i;
+end
+#line 191 "headers/sfall/lib.arrays.h"
+procedure array_push(variable array, variable item) begin
+   variable n;
+   n := len_array(array);
+   resize_array(array, n + 1);
+   set_array(array, n, item);
+   return array;
+end
+#line 204 "headers/sfall/lib.arrays.h"
+procedure array_pop(variable array) begin
+   variable n, ret;
+   n := len_array(array) - 1;
+   if (n >= 0) then begin
+      ret := get_array(array, n);
+      resize_array(array, n);
+      return ret;
+   end
+   return 0;
+end
+#line 220 "headers/sfall/lib.arrays.h"
+procedure array_keys(variable array) begin
+   variable tmp, i, len;
+   len := len_array(array);
+   tmp :=  (temp_array(len, 0)) ;
+   i := 0;
+   while (i < len) do begin
+      set_array(tmp, i, array_key(array, i));
+      i++;
+   end
+   return tmp;
+end
+#line 237 "headers/sfall/lib.arrays.h"
+procedure array_values(variable array) begin
+   variable v, tmp, i, len;
+   len := len_array(array);
+   tmp :=  (temp_array(len, 0)) ;
+   i := 0;
+   while (i < len) do begin
+      set_array(tmp, i, get_array(array, array_key(array, i)));
+      i++;
+   end
+   return tmp;
+end
+#line 255 "headers/sfall/lib.arrays.h"
+procedure array_fixed(variable array, variable levels) begin
+   call fix_array_deep(array, levels);
+   return array;
+end
+#line 265 "headers/sfall/lib.arrays.h"
+procedure fix_array_deep(variable array, variable levels) begin
+   fix_array(array);
+   if (levels > 1) then begin
+      foreach (variable subArray in array) begin
+         call fix_array_deep(subArray, levels - 1);
+      end
+   end
+end
+#line 281 "headers/sfall/lib.arrays.h"
+procedure array_slice(variable array, variable index, variable count) begin
+   variable tmp, i, n;
+   n := len_array(array);
+   if (n <= 0) then return  (temp_array(0, 0)) ;
+   if (index < 0) then
+      index := n + index;
+   if (count < 0) then
+      count := n - index + count;
+   else if (index + count > n) then
+      count := n - index;
+   tmp :=  (temp_array(count, 0)) ;
+   for (i := 0; i < count; i++) begin
+      tmp[i] := array[index + i];
+   end
+   return tmp;
+end
+#line 305 "headers/sfall/lib.arrays.h"
+procedure array_cut(variable array, variable index, variable count) begin
+   variable i, n;
+   n := len_array(array);
+   if (n <= 0) then return;
+   if (index < 0) then
+      index := n + index;
+   if (count < 0) then
+      count := n - index + count;
+   else if (index + count > n) then
+      count := n - index;
+   for (i := index; i < (n - count); i++) begin
+      array[i] := array[i + count];
+   end
+   resize_array(array, n - count);
+   return array;
+end
+#line 328 "headers/sfall/lib.arrays.h"
+procedure array_diff(variable arr1, variable arr2) begin
+   variable i, v, isMap;
+   isMap :=  (array_key(arr1, -1) == 1) ;
+   foreach (v in arr2) begin
+      i := scan_array(arr1, v);
+      if (i != -1) then begin
+         if (isMap) then
+            set_array(arr1, i, 0) ;
+         else
+            call array_cut(arr1, i, 1);
+      end
+   end
+   return arr1;
+end
+#line 351 "headers/sfall/lib.arrays.h"
+procedure copy_array(variable src, variable srcPos, variable dest, variable dstPos, variable size) begin
+  variable i := 0;
+  if (srcPos + size > len_array(src)) then size := len_array(src) - srcPos;
+  while (i < size) do begin
+    dest[dstPos + i] := src[srcPos + i];
+    i++;
+  end
+end
+#line 365 "headers/sfall/lib.arrays.h"
+procedure clone_array(variable array) begin
+   variable new, k, v;
+   if ( (array_key(array, -1) == 1) ) then
+      new :=  (temp_array(-1, 0)) ;
+   else
+      new :=  (temp_array(len_array(array), 0)) ;
+   foreach k: v in array begin
+      new[k] := v;
+   end
+   return new;
+end
+#line 383 "headers/sfall/lib.arrays.h"
+procedure arrays_equal(variable arr1, variable arr2) begin
+   variable n, i, k1, k2;
+   if ( (array_key(arr1, -1) == 1)  !=  (array_key(arr2, -1) == 1) ) then
+      return false;
+   n := len_array(arr1);
+   if (n != len_array(arr2)) then
+      return false;
+   i := 0;
+   while (i < n) do begin
+      k1 := array_key(arr1, i);
+      k2 := array_key(arr2, i);
+      if (k1 != k2) then
+         return false;
+      if (get_array(arr1, k1) != get_array(arr2, k2)) then
+         return false;
+      i++;
+   end
+   return true;
+end
+#line 408 "headers/sfall/lib.arrays.h"
+procedure array_max(variable arr) begin
+   variable v, max;
+   max := 0;
+   foreach v in arr begin
+      if (max == 0 or v > max) then
+         max := v;
+   end
+   return max;
+end
+#line 423 "headers/sfall/lib.arrays.h"
+procedure array_min(variable arr) begin
+   variable v, min;
+   min := 0;
+   foreach v in arr begin
+      if (min == 0 or v < min) then
+         min := v;
+   end
+   return min;
+end
+#line 438 "headers/sfall/lib.arrays.h"
+procedure array_sum(variable arr) begin
+   variable v, sum;
+   sum := 0;
+   foreach v in arr begin
+      sum += v;
+   end
+   return sum;
+end
+#line 452 "headers/sfall/lib.arrays.h"
+procedure array_random_value(variable arr) begin
+   return get_array(arr, array_key(arr, random(0, len_array(arr) - 1)));
+end
+#line 466 "headers/sfall/lib.arrays.h"
+procedure add_array_set(variable array, variable item) begin
+   variable i := 0;
+   variable len;
+   variable exist := false;
+   variable zero := false;
+   len := len_array(array);
+
+
+   while i < len and not(zero) do begin
+      if (array[i] == 0) then begin
+         zero := true;
+         i--;
+      end else if (array[i] == item) then exist := true;
+      i++;
+   end
+   if not(exist) then begin
+
+      if (i == len) then begin
+         resize_array(array, len +  (10) );
+      end
+      set_array(array, i, item);
+      return true;
+   end
+   return false;
+end
+#line 498 "headers/sfall/lib.arrays.h"
+procedure remove_array_set(variable array, variable item) begin
+   variable i := 0;
+   variable len;
+   variable found_at := -1;
+   variable zero := false;
+
+   len := len_array(array);
+
+   while (i < len and not(zero)) do begin
+      if (array[i] == 0) then begin
+         zero := true;
+         i--;
+      end else if (array[i] == item) then found_at := i;
+      i++;
+   end
+   if (found_at != -1) then begin
+      array[found_at] := array[i - 1];
+      array[i - 1] := 0;
+      return true;
+   end
+   return false;
+end
+#line 530 "headers/sfall/lib.arrays.h"
+procedure array_filter(variable arr, variable filterFunc, variable negate := false) begin
+   variable k, v,
+      isMap :=  (array_key(arr, -1) == 1) ,
+      retArr :=  (temp_array(-1, 0))  if isMap else  (temp_array(0, 0)) ;
+   foreach (k: v in arr) begin
+      if ((filterFunc(v) != 0) == (not negate)) then begin
+         if (isMap) then
+            set_array(retArr, k, v);
+         else
+            call array_push(retArr, v);
+      end
+   end
+   return retArr;
+end
+#line 551 "headers/sfall/lib.arrays.h"
+procedure array_transform(variable arr, variable valueFunc) begin
+   variable k, v, retArr :=  (temp_array(-1, 0))  if  (array_key(arr, -1) == 1)  else temp_array(len_array(arr), 0);
+   foreach (k: v in arr) begin
+      retArr[k] := valueFunc(v);
+   end
+   return retArr;
+end
+#line 566 "headers/sfall/lib.arrays.h"
+procedure array_transform_kv(variable arr, variable keyFunc, variable valueFunc) begin
+   variable k, v, retArr :=  (temp_array(-1, 0)) ;
+   foreach (k: v in arr) begin
+      retArr[keyFunc(k)] := valueFunc(v);
+   end
+   return retArr;
+end
+#line 579 "headers/sfall/lib.arrays.h"
+procedure array_to_set(variable arr, variable value := 1) begin
+   variable v, retArr :=  (temp_array(-1, 0)) ;
+   foreach (v in arr) begin
+      retArr[v] := value;
+   end
+   return retArr;
+end
+#line 597 "headers/sfall/lib.arrays.h"
+procedure add_array_block(variable arr, variable blocksize) begin
+   variable begin
+      index := 0;
+      zero := false;
+      tile;
+      elev;
+   end
+
+   index := 0;
+   while index < len_array(arr) and not(zero) do begin
+      if (get_array(arr, index) ==  (-1) ) then begin
+
+         zero := true;
+      end else begin
+         index += blocksize;
+      end
+   end
+   if (index == len_array(arr)) then begin
+      resize_array(arr, index + blocksize);
+   end
+   set_array(arr, index, index);
+   return index;
+end
+#line 628 "headers/sfall/lib.arrays.h"
+procedure remove_array_block(variable arr, variable blocksize, variable index) begin
+   variable len;
+   len := len_array(arr);
+   if (index + blocksize == len) then begin
+
+      resize_array(arr, len - blocksize);
+   end else begin
+
+      set_array(arr, index,  (-1) );
+
+      call array_fill(arr, index + 1, blocksize - 1, 0);
+   end
+end
+#line 651 "headers/sfall/lib.arrays.h"
+procedure array_fill(variable arr, variable pos, variable count, variable value) begin
+   variable i := 0;
+   if (count == -1 or (pos + count > len_array(arr))) then count := len_array(arr) - pos;
+   while (i < count) do begin
+      arr[pos + i] := value;
+      i++;
+   end
+   return arr;
+end
+#line 667 "headers/sfall/lib.arrays.h"
+procedure array_append(variable arr1, variable arr2) begin
+   variable arr1_len;
+   if ( (array_key(arr1, -1) == 1) ) then begin
+      variable k, v;
+      foreach (k: v in arr2) begin
+         arr1[k] := v;
+      end
+   end else begin
+      arr1_len := len_array(arr1);
+      resize_array(arr1, arr1_len + len_array(arr2));
+      call copy_array(arr2, 0, arr1, arr1_len, len_array(arr2));
+   end
+   return arr1;
+end
+#line 696 "headers/sfall/lib.arrays.h"
+procedure load_create_array(variable name, variable size) begin
+   variable arr;
+   arr := load_array(name);
+   if (arr == 0) then begin
+      arr := create_array(size, 0);
+      save_array(name, arr);
+   end
+   return arr;
+end
+#line 712 "headers/sfall/lib.arrays.h"
+procedure get_saved_array_new(variable name, variable size) begin
+   variable arr;
+   arr := load_array(name);
+   if (arr) then
+      free_array(arr);
+   arr := create_array(size, 0);
+   save_array(name, arr);
+   return arr;
+end
+#line 729 "headers/sfall/lib.arrays.h"
+procedure save_collection(variable name, variable arr) begin
+   variable k, v, keys, oldKeys;
+   keys := array_keys(arr);
+   oldKeys := load_array(name);
+   if (oldKeys) then begin
+      call array_diff(oldKeys, keys);
+      foreach (k in oldKeys)
+         free_array(load_array( ""+name+"."+k ));
+   end
+   save_array(name, keys);
+   foreach (k: v in arr) begin
+      save_array( ""+name+"."+k , v);
+   end
+end
+#line 749 "headers/sfall/lib.arrays.h"
+procedure load_collection(variable name) begin
+   variable k, v, keys, arr;
+   keys := load_array(name);
+   if (keys) then begin
+      arr :=  (create_array(-1, 0)) ;
+      foreach k in keys begin
+         set_array(arr, k, load_array( ""+name+"."+k ));
+      end
+      return arr;
+   end
+   return 0;
+end
+#line 775 "headers/sfall/lib.arrays.h"
+procedure debug_array_str_deep(variable arr, variable levels, variable prefix := false) begin
+
+
+
+   variable i := 0, ii, k, v, s, len;
+   len := len_array(arr);
+   if ( (array_key(arr, -1) == 1) ) then begin
+      s := ("Map("+len+"): {") if prefix else "{";
+      while i < len do begin
+         if (levels > 1) then s += "\n";
+         k := array_key(arr, i);
+         v := get_array(arr, k);
+         ii := 0; while (ii < levels - 1) do begin s += "   "; ii++; end
+         s += k + ": " +  (v if (levels <= 1 or typeof(v) != (1) or not (len_array(v) != -1) ) else debug_array_str_deep(v, levels - 1)) ;
+         if i < (len - 1) then s += ", ";
+         i++;
+      end
+
+      if (levels > 1) then s += "\n";
+      s += "}";
+   end else begin
+      s := ("List("+len+"): [") if prefix else "[";
+      while i < len do begin
+         if (levels > 1) then s += "\n";
+         v := get_array(arr, i);
+         ii := 0; while (ii < levels - 1) do begin s += "   "; ii++; end
+         s +=  (v if (levels <= 1 or typeof(v) != (1) or not (len_array(v) != -1) ) else debug_array_str_deep(v, levels - 1)) ;
+         if i < (len - 1) then s += ", ";
+         i++;
+      end
+
+      if (levels > 1) then s += "\n";
+      s += "]";
+   end
+   return s;
+
+
+
+end
+
+
+procedure _PURGE_all_saved_arrays begin
+   variable saved, key;
+   saved :=  (load_array("...all_arrays...")) ;
+   foreach (key in saved)
+      free_array(load_array(key));
+end
+#line 15 "gl_laststand.ssl"
+#line 1 "headers/aipacket.h"
+#line 16 "gl_laststand.ssl"
+
+
+
+variable enraged_list;
+variable cfg_loaded;
+variable cfg_kite_dist;
+variable cfg_base_chance;
+variable cfg_fearless_brutes;
+variable cfg_float_msg;
+
+procedure start;
+procedure load_config;
+procedure combatturn_handler;
+procedure trigger_last_stand(variable cr, variable target);
+procedure get_last_stand_phrase;
+procedure get_closest_player_target(variable cr);
+procedure has_usable_ranged_weapon(variable cr);
+procedure is_civilian_or_coward(variable cr);
+
+procedure load_config begin
+   variable val;
+   if (cfg_loaded) then return;
+
+
+   val := get_ini_setting( "mods\\gl_laststand.ini"  + "|Settings|KitingDistance");
+   if (val > 0) then cfg_kite_dist := val; else cfg_kite_dist := 12;
+
+
+   val := get_ini_setting( "mods\\gl_laststand.ini"  + "|Settings|LastStandBaseChance");
+   if (val >= 0) then cfg_base_chance := val; else cfg_base_chance := 8;
+
+
+   val := get_ini_setting( "mods\\gl_laststand.ini"  + "|Settings|FearlessBrutes");
+   if (val >= 0) then cfg_fearless_brutes := val; else cfg_fearless_brutes := 1;
+
+
+   val := get_ini_setting( "mods\\gl_laststand.ini"  + "|Settings|FloatCombatMessages");
+   if (val >= 0) then cfg_float_msg := val; else cfg_float_msg := 1;
+
+   cfg_loaded := 1;
+end
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      enraged_list := 0;
+      cfg_loaded := 0;
+      call load_config;
+      register_hook_proc( (27) , combatturn_handler);
+   end
+end
+
+procedure get_last_stand_phrase begin
+   variable r;
+   r := random(1, 12);
+   if (r == 1) then return "Живым не сдамся! Я заберу тебя с собой!";
+   if (r == 2) then return "К черту все! Сдохнем вместе!";
+   if (r == 3) then return "Мне уже нечего терять! На куски разорву!";
+   if (r == 4) then return "Думаешь, я побегу?! Умри, тварь!";
+   if (r == 5) then return "Ты ляжешь в эту землю раньше меня!";
+   if (r == 6) then return "Всех не перебьешь! Получай, ублюдок!";
+   if (r == 7) then return "За Пустошь! Сдохни!";
+   if (r == 8) then return "Я вырву твое сердце перед смертью!";
+   if (r == 9) then return "Это мой последний бой, но ты пойдешь со мной!";
+   if (r == 10) then return "А-а-а-а! Сдохни-и-и!";
+   if (r == 11) then return "Ни шагу назад! Убью!";
+   return "Давай, стреляй! Я все равно доберусь до твоей глотки!";
+end
+
+procedure get_closest_player_target(variable cr) begin
+   variable best_target, min_dist, dist, p_list, who;
+   best_target := dude_obj;
+   min_dist := tile_distance_objs(cr, dude_obj);
+   p_list :=  party_member_list(0) ;
+   if (p_list != 0) then begin
+      foreach (who in p_list) begin
+         if (who != 0 and who != cr) then begin
+            if (not  (critter_state(who) bwand (1) ) ) then begin
+               dist := tile_distance_objs(cr, who);
+               if (dist < min_dist) then begin
+                  min_dist := dist;
+                  best_target := who;
+               end
+            end
+         end
+      end
+   end
+   return best_target;
+end
+
+procedure has_usable_ranged_weapon(variable cr) begin
+   variable item, range, mag_size, ammo_cnt;
+   item := critter_inven_obj(cr,  (1) );
+   if (item == 0 or obj_item_subtype(item) !=  (3) ) then begin
+      item := critter_inven_obj(cr,  (2) );
+   end
+   if (item == 0 or obj_item_subtype(item) !=  (3) ) then return false;
+
+
+   range := get_proto_data(obj_pid(item),  (52) );
+   if (range <= 2) then return false;
+
+
+   mag_size := get_proto_data(obj_pid(item),  (96) );
+   if (mag_size > 0) then begin
+      ammo_cnt := get_weapon_ammo_count(item);
+      if (ammo_cnt <= 0) then return false;
+   end
+
+   return true;
+end
+
+procedure is_civilian_or_coward(variable cr) begin
+   variable ai;
+   ai := has_trait( (1) , cr,  (5) );
+   if (ai ==  (2)  or ai ==  (3)  or ai ==  (4) ) then return true;
+   if (ai ==  (14)  or ai ==  (15)  or ai ==  (25)  or ai ==  (33) ) then return true;
+   if (ai ==  (35)  or ai ==  (45)  or ai ==  (49) ) then return true;
+   if (ai ==  (179)  or ai ==  (180)  or ai ==  (184) ) then return true;
+   return false;
+end
+
+procedure trigger_last_stand(variable cr, variable target) begin
+   variable phrase;
+
+   critter_set_flee_state(cr, 0);
+
+
+   if (cfg_float_msg) then begin
+      phrase := get_last_stand_phrase;
+      float_msg(cr, phrase,  (2) );
+   end
+
+
+   attack_complex(target,0,1,0,0,30000,0,0) ;
+end
+
+procedure combatturn_handler begin
+   variable event_type, cr, ktype, cur_hp, max_hp, hp_percent, dist, roll, chance, target, c_state;
+   event_type := get_sfall_arg;
+   cr := get_sfall_arg;
+
+
+   if (event_type < 0) then begin
+      if (enraged_list != 0) then begin
+         free_array(enraged_list);
+         enraged_list := 0;
+      end
+      return;
+   end
+
+
+   if (event_type != 1 or cr == 0 or cr == dude_obj) then return;
+
+
+   if (party_member_obj(obj_pid(cr)) != 0) then return;
+
+
+   call load_config;
+
+
+   ktype := get_proto_data(obj_pid(cr),  (396) );
+
+
+   target := get_closest_player_target(cr);
+
+
+   if (cfg_fearless_brutes and (ktype == 3 or ktype == 10 or ktype == 13 or ktype == 16)) then begin
+      if (critter_is_fleeing(cr)) then begin
+         critter_set_flee_state(cr, 0);
+         attack_complex(target,0,1,0,0,30000,0,0) ;
+      end
+      return;
+   end
+
+
+   if (ktype == 0 or ktype == 1 or ktype == 4) then begin
+
+      if (get_critter_stat(cr,  (4) ) < 4) then return;
+
+
+      if (is_civilian_or_coward(cr)) then return;
+
+
+      c_state := critter_state(cr);
+      if (c_state bwand  64 ) then return;
+      if ((c_state bwand  16 ) and (c_state bwand  32 )) then return;
+
+      cur_hp := get_critter_stat(cr,  (35) );
+      max_hp := get_critter_stat(cr,  (7) );
+      if (max_hp <= 0) then return;
+      hp_percent := (cur_hp * 100) / max_hp;
+
+
+      if (hp_percent <= 22 or cur_hp <= 15) then begin
+         dist := tile_distance_objs(cr, target);
+
+
+
+
+         if (dist >= cfg_kite_dist and critter_is_fleeing(cr)) then begin
+            if (has_usable_ranged_weapon(cr)) then begin
+               critter_set_flee_state(cr, 0);
+               attack_complex(target,0,1,0,0,30000,0,0) ;
+               return;
+            end
+
+         end
+
+
+
+         if (enraged_list == 0) then enraged_list := create_array(0, 0);
+         if (scan_array(enraged_list, cr) != -1) then return;
+
+
+         chance := cfg_base_chance;
+         if (get_critter_stat(cr,  (0) ) >= 7) then chance := chance + 2;
+         if (get_critter_stat(cr,  (2) ) >= 7) then chance := chance + 2;
+
+         roll := random(1, 100);
+         if (roll <= chance) then begin
+            call array_push(enraged_list, cr);
+            call trigger_last_stand(cr, target);
+         end
+      end
+   end
+end

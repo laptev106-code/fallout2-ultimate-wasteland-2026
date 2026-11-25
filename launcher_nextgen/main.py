@@ -46,9 +46,87 @@ class LauncherBridge:
         self.config_file = os.path.join(self.root_dir, "launcher_config.json")
         os.makedirs(self.backups_dir, exist_ok=True)
         self._window = None
+        try:
+            self.enforce_hardware_thermal_guards(self.gameplay_dir)
+            if os.path.exists(self.hd_dir):
+                self.enforce_hardware_thermal_guards(self.hd_dir)
+        except Exception:
+            pass
 
     def set_window(self, window):
         self._window = window
+
+    def _validate_and_heal_ini(self, target_dir: str):
+        """Самовосстановление поврежденных INI-файлов из золотого эталона (Backups/golden_configs)."""
+        golden_dir = os.path.join(self.backups_dir, "golden_configs")
+        if not os.path.exists(golden_dir):
+            golden_dir = os.path.join(self.root_dir, "templates", "golden_configs")
+        if not os.path.exists(golden_dir):
+            return
+
+        checks = [
+            (os.path.join(target_dir, "ddraw.ini"), os.path.join(golden_dir, "ddraw.ini"), 20000, [b"[Main]", b"[Graphics]", b"[Misc]", b"[Debugging]"]),
+            (os.path.join(target_dir, "f2_res.ini"), os.path.join(golden_dir, "f2_res.ini"), 5000, [b"[MAIN]", b"[INPUT]", b"[MAPS]"]),
+            (os.path.join(target_dir, "mods", "fo2tweaks.ini"), os.path.join(golden_dir, "fo2tweaks.ini"), 4000, [b"[main]"]),
+        ]
+        healed = False
+        for dst, src, min_size, req_sections in checks:
+            if not os.path.exists(src):
+                continue
+            needs_heal = False
+            if not os.path.exists(dst):
+                needs_heal = True
+            else:
+                try:
+                    raw = open(dst, "rb").read()
+                    if len(raw) < min_size or b"\x00" in raw or any(sec not in raw for sec in req_sections):
+                        needs_heal = True
+                except Exception:
+                    needs_heal = True
+            if needs_heal:
+                try:
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    shutil.copy2(src, dst)
+                    healed = True
+                except Exception as e:
+                    print(f"Golden INI heal error for {dst}: {e}")
+        if healed and os.path.exists(self.config_file):
+            try:
+                with open(self.config_file, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                self.save_config(cfg)
+            except Exception:
+                pass
+
+    def enforce_hardware_thermal_guards(self, target_dir: str):
+        """Аппаратный сторож: автовосстановление эталонных INI и фиксация защиты от перегрева GPU перед запуском."""
+        self._validate_and_heal_ini(target_dir)
+        try:
+            ddraw_path = os.path.join(target_dir, "ddraw.ini")
+            if os.path.exists(ddraw_path):
+                self._safe_write_ini_key(ddraw_path, {
+                    "GPUSync": 0,
+                    "LimitFPS": 1,
+                    "ProcessorIdle": 1,
+                    "OverrideArtCacheSize": 1,
+                    "AnimationsAtOnceLimit": 120,
+                    "TimeLimit": -3,
+                    "AllowUnsafeScripting": 2
+                }, encoding="cp1251")
+            f2_res_path = os.path.join(target_dir, "f2_res.ini")
+            if os.path.exists(f2_res_path):
+                self._safe_write_ini_key(f2_res_path, {
+                    "EXTRA_WIN_MSG_CHECKS": 1,
+                    "ALT_MOUSE_INPUT": 0,
+                    "CPU_USAGE_FIX": 0
+                }, encoding="cp1251")
+            fo2tweaks_path = os.path.join(target_dir, "mods", "fo2tweaks.ini")
+            if os.path.exists(fo2tweaks_path):
+                self._safe_write_ini_key(fo2tweaks_path, {
+                    "highlighting": 0
+                }, encoding="utf-8")
+        except Exception as e:
+            print(f"Thermal guard enforcement warning for {target_dir}: {e}")
 
     def launch_profile(self, profile: str) -> dict:
         """Запуск выбранного игрового профиля с проверкой всех процессов движка."""
@@ -84,8 +162,25 @@ class LauncherBridge:
                     "message": f"Исполняемый файл не найден на диске: {target_exe}"
                 }
 
+            # Принудительная аппаратная верификация термопрофиля перед запуском движка
+            self.enforce_hardware_thermal_guards(target_cwd)
+
             # 3. Запуск дочернего процесса
             subprocess.Popen([target_exe], cwd=target_cwd)
+
+            # 4. Автоматическое безопасное закрытие лаунчера (разгрузка CPU/RAM и отключение звука)
+            import threading, time
+            def delayed_exit():
+                time.sleep(1.2)
+                try:
+                    if self._window:
+                        self._window.destroy()
+                except Exception:
+                    pass
+                os._exit(0)
+
+            threading.Thread(target=delayed_exit, daemon=True).start()
+
             return {"status": "success", "profile": profile, "exe": os.path.basename(target_exe)}
         except Exception as e:
             return {"status": "error", "message": f"Критический сбой запуска: {str(e)}"}
@@ -114,6 +209,11 @@ class LauncherBridge:
             "alwaysRun": True,
             "autoReload": True,
             "templeTutorial": True,
+            "autoQuickSave": "0",
+            "autoDoors": True,
+            "mapBlurFx": True,
+            "wastelandVoices": True,
+            "lastStandSurrender": True,
             "reshade": "off",
             "fpsLock": "60",
             "targetHighlight": 2,
@@ -186,6 +286,9 @@ class LauncherBridge:
                         elif line_s.startswith("skip_empty=") or line_s.startswith("skip_empty ="):
                             val = line_s.split("=")[1].strip()
                             cfg["hlSkipEmpty"] = (val == "1")
+                        elif line_s.startswith("autodoors=") or line_s.startswith("autodoors ="):
+                            val = line_s.split("=")[1].strip()
+                            cfg["autoDoors"] = (val == "1")
             except Exception:
                 pass
 
@@ -205,7 +308,7 @@ class LauncherBridge:
             except Exception:
                 pass
 
-        # ddraw.ini (TempleTutorial)
+        # ddraw.ini (TempleTutorial, AutoQuickSave)
         ddraw_cfg = os.path.join(self.gameplay_dir, "ddraw.ini")
         if os.path.exists(ddraw_cfg):
             try:
@@ -215,6 +318,49 @@ class LauncherBridge:
                         if line_s.startswith("TempleTutorial=") or line_s.startswith("TempleTutorial ="):
                             val = line_s.split("=")[1].strip()
                             cfg["templeTutorial"] = (val == "1")
+                        elif line_s.startswith("AutoQuickSave=") or line_s.startswith("AutoQuickSave ="):
+                            val = line_s.split("=")[1].strip()
+                            if val in ("0", "7", "8", "9"):
+                                cfg["autoQuickSave"] = val
+            except Exception:
+                pass
+
+        # gl_map_blur_fx.ini
+        blur_cfg = os.path.join(self.gameplay_dir, "mods", "gl_map_blur_fx.ini")
+        if os.path.exists(blur_cfg):
+            try:
+                with open(blur_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        line_s = line.strip()
+                        if line_s.startswith("Enable=") or line_s.startswith("Enable ="):
+                            cfg["mapBlurFx"] = (line_s.split("=")[1].strip() == "1")
+                            break
+            except Exception:
+                pass
+
+        # wasteland_voices.ini
+        voices_cfg = os.path.join(self.gameplay_dir, "mods", "wasteland_voices.ini")
+        if os.path.exists(voices_cfg):
+            try:
+                with open(voices_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        line_s = line.strip()
+                        if line_s.startswith("EnableMod=") or line_s.startswith("EnableMod ="):
+                            cfg["wastelandVoices"] = (line_s.split("=")[1].strip() == "1")
+                            break
+            except Exception:
+                pass
+
+        # gl_laststand.ini
+        laststand_cfg = os.path.join(self.gameplay_dir, "mods", "gl_laststand.ini")
+        if os.path.exists(laststand_cfg):
+            try:
+                with open(laststand_cfg, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        line_s = line.strip()
+                        if line_s.startswith("EnableSurrender=") or line_s.startswith("EnableSurrender ="):
+                            cfg["lastStandSurrender"] = (line_s.split("=")[1].strip() == "1")
+                            break
             except Exception:
                 pass
 
@@ -241,6 +387,9 @@ class LauncherBridge:
         with open(file_path, "r", encoding=encoding, errors="ignore") as f:
             lines = f.readlines()
 
+        if not lines:
+            return
+
         unhandled_keys = set(key_values.keys())
         new_lines = []
 
@@ -262,8 +411,10 @@ class LauncherBridge:
             for k in unhandled_keys:
                 new_lines.append(f"{k}={key_values[k]}\n")
 
-        with open(file_path, "w", encoding=encoding, errors="ignore") as f:
+        tmp_path = file_path + ".tmp"
+        with open(tmp_path, "w", encoding=encoding, errors="ignore") as f:
             f.writelines(new_lines)
+        os.replace(tmp_path, file_path)
 
     def save_config(self, cfg: dict) -> dict:
         """Безопасная синхронизация графики, масштабирования и звука во все профили (Gameplay и HD)."""
@@ -294,21 +445,6 @@ class LauncherBridge:
                 except Exception:
                     refresh_rate_val = 60
 
-            if mode == "windowed":
-                f2_windowed = 1
-                f2_borderless = 0
-                ddraw_mode = 5
-                cfg_windowed = 1
-            else:  # fullscreen / borderless (современный полноэкранный режим без мерцания монитора)
-                f2_windowed = 1
-                f2_borderless = 1
-                ddraw_mode = 6
-                cfg_windowed = 0
-
-            filter_val = 2 if cfg.get("filtering") == "bilinear" else 0
-            music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
-            sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
-
             # Вычисление параметров масштабирования под монитор
             if scale_choice == "2x":
                 f2_w = w // 2
@@ -326,9 +462,36 @@ class LauncherBridge:
                 f2_scale_2x = 0
                 ce_scale = 1
 
+            filter_val = 2 if cfg.get("filtering") == "bilinear" else 0
+            music_vol = int((cfg.get("musicVol", 80) / 100.0) * 32767)
+            sfx_vol = int((cfg.get("sfxVol", 80) / 100.0) * 32767)
+
+            if mode == "windowed":
+                f2_windowed = 1
+                f2_borderless = 0
+                ddraw_mode = 5
+                cfg_windowed = 1
+            elif f2_w < 1280:
+                # В режиме Mode=4 видеокарта не поддерживает нестандартные половинные режимы вроде 960x540
+                f2_windowed = 1
+                f2_borderless = 1
+                ddraw_mode = 6
+                cfg_windowed = 0
+            else:  # fullscreen (эксклюзивный DX9 Mode=4 для аппаратного VSync 60 FPS без перегрева GPU)
+                f2_windowed = 0
+                f2_borderless = 0
+                ddraw_mode = 4
+                cfg_windowed = 0
+
             auto_reload_val = 1 if cfg.get("autoReload", False) else 0
             running_val = 1 if cfg.get("alwaysRun", True) else 0
             temple_tut_val = 1 if cfg.get("templeTutorial", True) else 0
+            auto_quicksave_raw = str(cfg.get("autoQuickSave", "0"))
+            auto_quicksave_val = int(auto_quicksave_raw) if auto_quicksave_raw in ("0", "7", "8", "9") else 0
+            auto_doors_val = 1 if cfg.get("autoDoors", True) else 0
+            map_blur_val = 1 if cfg.get("mapBlurFx", True) else 0
+            wasteland_voices_val = 1 if cfg.get("wastelandVoices", True) else 0
+            last_stand_surrender_val = 1 if cfg.get("lastStandSurrender", True) else 0
             target_highlight_val = int(cfg.get("targetHighlight", 2))
             hl_master_val = 1 if cfg.get("hlMaster", True) else 0
             hl_checklos_val = 1 if cfg.get("hlCheckLOS", True) else 0
@@ -359,6 +522,7 @@ class LauncherBridge:
                     "COLOUR_BITS": 32,
                     "REFRESH_RATE": refresh_rate_val,
                     "EXTRA_WIN_MSG_CHECKS": 1,
+                    "ALT_MOUSE_INPUT": 0,
                     "CPU_USAGE_FIX": 0
                 }, encoding="cp1251")
 
@@ -367,8 +531,10 @@ class LauncherBridge:
                 self._safe_write_ini_key(ddraw_path, {
                     "Mode": ddraw_mode,
                     "LimitFPS": limit_fps_val,
+                    "GPUSync": 0,
+                    "ProcessorIdle": 1,
                     "OverrideArtCacheSize": 1,
-                    "AnimationsAtOnceLimit": 64,
+                    "AnimationsAtOnceLimit": 120,
                     "TimeLimit": -3,
                     "AllowUnsafeScripting": 2,
                     "EnableMusicInDialogue": 1,
@@ -379,6 +545,15 @@ class LauncherBridge:
                     "WindowData": 0,
                     "BackgroundKeyboard": 1,
                     "BackgroundMouse": 1,
+                    "MouseSensitivity": 65,
+                    "InstantWeaponEquip": 0,
+                    "Lockpick": 478,
+                    "Steal": 479,
+                    "Traps": 480,
+                    "FirstAid": 481,
+                    "Doctor": 482,
+                    "Science": 483,
+                    "Repair": 484,
                     "SpeedInventoryPCRotation": 300,
                     "CombatPanelAnimDelay": 90,
                     "WorldMapEncounterRate": 14,
@@ -387,16 +562,20 @@ class LauncherBridge:
                     "ExtraCRC": "0xffd65e6d,0xe1680293,0xf18aa577",
                     "BoostScriptDialogLimit": 1,
                     "HiResMode": 1,
-                    "TempleTutorial": temple_tut_val
+                    "TempleTutorial": temple_tut_val,
+                    "AutoQuickSave": auto_quicksave_val
                 }, encoding="cp1251")
 
                 # 3. fallout2.cfg
                 fallout_cfg = os.path.join(target_dir, "fallout2.cfg")
                 self._safe_write_ini_key(fallout_cfg, {
+                    "language": "russian",
                     "music_volume": music_vol,
                     "sndfx_volume": sfx_vol,
                     "speech_volume": sfx_vol,
-                    "combat_speed": 85,
+                    "combat_speed": 50,
+                    "player_speedup": 1,
+                    "cycle_speed_factor": "1.550000",
                     "running": running_val,
                     "resolution_x": w,
                     "resolution_y": h,
@@ -411,6 +590,7 @@ class LauncherBridge:
                 if os.path.exists(fo2tweaks_path):
                     self._safe_write_ini_key(fo2tweaks_path, {
                         "auto_reload": auto_reload_val,
+                        "autodoors": auto_doors_val,
                         "highlighting": 0,
                         "check_los": hl_checklos_val,
                         "skip_empty": hl_skipempty_val
@@ -436,6 +616,27 @@ class LauncherBridge:
                     self._safe_write_ini_key(gl_qol_path, {
                         "ClickOutsideClosesInventory": qol_clickoutside_val,
                         "CloseOnTakeAllKey": qol_closeontakeall_val
+                    }, encoding="utf-8")
+
+                # 4.3. gl_map_blur_fx.ini (Размытие фона в окнах)
+                blur_path = os.path.join(target_dir, "mods", "gl_map_blur_fx.ini")
+                if os.path.exists(blur_path):
+                    self._safe_write_ini_key(blur_path, {
+                        "Enable": map_blur_val
+                    }, encoding="utf-8")
+
+                # 4.4. wasteland_voices.ini (Живые голоса Пустоши)
+                voices_path = os.path.join(target_dir, "mods", "wasteland_voices.ini")
+                if os.path.exists(voices_path):
+                    self._safe_write_ini_key(voices_path, {
+                        "EnableMod": wasteland_voices_val
+                    }, encoding="utf-8")
+
+                # 4.5. gl_laststand.ini (Тактика ИИ и сдача раненых)
+                laststand_path = os.path.join(target_dir, "mods", "gl_laststand.ini")
+                if os.path.exists(laststand_path):
+                    self._safe_write_ini_key(laststand_path, {
+                        "EnableSurrender": last_stand_surrender_val
                     }, encoding="utf-8")
 
             # 5. Управление ReShade для Direct3D 9 в Gameplay-профиле
@@ -1028,9 +1229,10 @@ class LauncherBridge:
         except Exception as e:
             return {"status": "error", "message": f"Сбой при изоляции: {str(e)}"}
 
-    def open_saves_folder(self):
-        """Открытие папки сохранений в проводнике Windows."""
-        saves_dir = os.path.join(self.gameplay_dir, "DATA", "SAVEGAME")
+    def open_saves_folder(self, profile="gameplay"):
+        """Открытие папки сохранений выбранного профиля в проводнике Windows."""
+        target_dir = self.gameplay_dir if profile == "gameplay" else self.hd_dir
+        saves_dir = os.path.join(target_dir, "DATA", "SAVEGAME")
         os.makedirs(saves_dir, exist_ok=True)
         os.startfile(saves_dir)
 

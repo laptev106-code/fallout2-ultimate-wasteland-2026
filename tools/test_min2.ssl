@@ -1,0 +1,9 @@
+#pragma sce
+#include "sfall.h"
+
+procedure start begin
+   variable obj;
+   foreach obj in list_as_array(LIST_GROUNDITEMS) begin
+      set_outline(obj, 0);
+   end
+end

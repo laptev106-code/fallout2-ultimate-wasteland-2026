@@ -1,0 +1,54 @@
+#pragma sce
+#define SCRIPT_REALNAME "gl_map_blur_fx"
+
+#include "headers/define.h"
+#include "headers/sfall/sfall.h"
+#include "headers/sfall/define_extra.h"
+
+#define INI_FILE "mods\\gl_map_blur_fx.ini"
+
+variable shader := 0;
+
+procedure start begin
+   variable val, mask;
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      if (not graphics_funcs_available) then return;
+
+      val := get_ini_setting(INI_FILE + "|Settings|Enable");
+      if (val == 0) then return;
+
+      mask := 0;
+      val := get_ini_setting(INI_FILE + "|Settings|Inventory");
+      if (val < 0 or val == 1) then mask := mask bwor INVENTORY;
+
+      val := get_ini_setting(INI_FILE + "|Settings|Containers");
+      if (val < 0 or val == 1) then mask := mask bwor INTFACELOOT;
+
+      val := get_ini_setting(INI_FILE + "|Settings|Barter");
+      if (val < 0 or val == 1) then mask := mask bwor BARTER;
+
+      val := get_ini_setting(INI_FILE + "|Settings|UseScreen");
+      if (val < 0 or val == 1) then mask := mask bwor INTFACEUSE;
+
+      val := get_ini_setting(INI_FILE + "|Settings|Dialog");
+      if (val < 0 or val == 1) then mask := mask bwor (DIALOG bwor DIALOGVIEW);
+
+      val := get_ini_setting(INI_FILE + "|Settings|Pause");
+      if (val < 0 or val == 1) then mask := mask bwor (ESCMENU bwor OPTIONS bwor SAVEGAME bwor LOADGAME bwor PAUSEWIN);
+
+      val := get_ini_setting(INI_FILE + "|Settings|CharacterScreen");
+      if (val < 0 or val == 1) then mask := mask bwor CHARSCREEN;
+
+      val := get_ini_setting(INI_FILE + "|Settings|PipBoy");
+      if (val < 0 or val == 1) then mask := mask bwor PIPBOY;
+
+      if (not mask) then return;
+
+      shader := load_shader("mapblur.fx");
+      if (not shader) then shader := load_shader("MapBlur.fx");
+      if (not shader) then return;
+
+      set_shader_mode(shader, mask);
+   end
+end

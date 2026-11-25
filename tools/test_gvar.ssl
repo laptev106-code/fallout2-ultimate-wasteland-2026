@@ -1,0 +1,9 @@
+
+#define SCRIPT_REALNAME "test_gvar"
+#include "define.h"
+procedure start;
+procedure start begin
+    set_global_var(50, 1);
+    if (global_var(50) == 1) then begin
+    end
+end

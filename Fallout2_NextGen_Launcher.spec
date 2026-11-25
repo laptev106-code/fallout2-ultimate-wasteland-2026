@@ -39,5 +39,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['launcher_nextgen/ui/assets/green_remaster_13.ico'],
+    icon=['launcher_nextgen/ui/assets/vault13_icon.ico'],
 )

@@ -2,7 +2,11 @@
    Fallout 2 Ultimate Wasteland Edition 2026
    Quality of Life Interface Enhancements (gl_qol_interface.ssl)
    - Click outside inventory/container to close (Fast Exit)
-   - Expanded Done / ГОТОВО clickable hit-box
+   - STRICTLY EXCLUDES BARTER (SHOP), DIALOGUE, AND COMBAT to allow
+     mouse quantity selection and trade confirmation without interference!
+   - Fully aware of dual-column inventory (ExpandInventory=1: 570px/673px)
+   - Fully aware of InventoryFilter category tabs (left & right side panels)
+   - Expanded Done /        clickable hit-box for inventory
    - Optional Auto-Close on Take All / Empty Container
 */
 
@@ -19,8 +23,9 @@
 variable cfg_loaded := 0;
 variable cfg_click_outside := 1;
 variable cfg_expanded_done := 1;
-variable cfg_auto_close_empty := 0;
+variable cfg_auto_close_empty := 1;
 variable cfg_take_all_close := 1;
+variable cfg_space_combat_toggle := 1;
 
 procedure start;
 procedure load_config;
@@ -39,10 +44,13 @@ procedure load_config begin
    if (val >= 0) then cfg_expanded_done := val; else cfg_expanded_done := 1;
 
    val := get_ini_setting(INI_FILE + "|Settings|AutoCloseEmptyContainers");
-   if (val >= 0) then cfg_auto_close_empty := val; else cfg_auto_close_empty := 0;
+   if (val >= 0) then cfg_auto_close_empty := val; else cfg_auto_close_empty := 1;
 
    val := get_ini_setting(INI_FILE + "|Settings|CloseOnTakeAllKey");
    if (val >= 0) then cfg_take_all_close := val; else cfg_take_all_close := 1;
+
+   val := get_ini_setting(INI_FILE + "|Settings|SpacebarEntersCombat");
+   if (val >= 0) then cfg_space_combat_toggle := val; else cfg_space_combat_toggle := 1;
 
    cfg_loaded := 1;
 end
@@ -59,15 +67,23 @@ end
 
 procedure mouseclick_handler begin
    variable pressed, button, mx, my, wx, wy, ww, wh, gmode;
+   variable eff_ww, eff_wh, min_safe_x, max_safe_x, min_safe_y, max_safe_y;
+   variable l_obj;
+
    pressed := get_sfall_arg;
    button  := get_sfall_arg;
 
-   // Trigger only on left mouse click press (button 0, pressed 1)
-   if (pressed != 1 or button != 0) then return;
+   // Handle left mouse button
+   if (button != 0) then return;
 
-   // Check if inventory or container window is open
    gmode := get_game_mode;
-   if ((gmode bwand (INVENTORY bwor INTFACELOOT bwor INTFACEUSE bwor BARTER)) == 0) then return;
+
+   // 1. ABSOLUTE EXCLUSIONS: Never intercept clicks during Barter (Store), Dialogue, or Combat!
+   // In Barter, the player is buying/selling items and using the quantity selection slider/dialog.
+   if (gmode bwand (BARTER bwor DIALOG bwor COMBAT bwor PCOMBAT bwor COUNTERWIN bwor INTFACEUSE)) then return;
+
+   // 2. Only operate during standard Inventory or Container Loot screens
+   if ((gmode bwand (INVENTORY bwor INTFACELOOT)) == 0) then return;
    if (not intface_is_shown(WINTYPE_INV)) then return;
 
    call load_config;
@@ -80,20 +96,56 @@ procedure mouseclick_handler begin
    mx := get_mouse_x;
    my := get_mouse_y;
 
+   // Calculate effective dimensions taking into account dual-column inventory (ExpandInventory=1)
+   // INVBOX2.frm = 570x377, LOOT2.frm = 673x376
+   eff_ww := ww;
+   if (eff_ww < 570) then eff_ww := 570;
+   if ((gmode bwand INTFACELOOT) and (eff_ww < 673)) then eff_ww := 673;
+
+   eff_wh := wh;
+   if (eff_wh < 376) then eff_wh := 376;
+
+   // When mouse button is RELEASED (pressed == 0) on Take All button in container:
+   // If container is now empty, automatically close the loot window!
+   if (pressed == 0 and (gmode bwand INTFACELOOT)) then begin
+      if (cfg_auto_close_empty or cfg_take_all_close) then begin
+         l_obj := loot_obj;
+         if (l_obj != 0) then begin
+            if (inven_ptr(l_obj, 0) == 0) then begin
+               tap_key(1); // Close container
+               return;
+            end
+         end
+      end
+      return;
+   end
+
+   if (pressed != 1) then return;
+
    // 1. Click outside the inventory/loot window bounds -> Close immediately
+   // Safe margins protect:
+   // - Left side category filter tabs (Weapons, Ammo, Armor, Drugs, Tools, Misc, Caps): wx - 75 .. wx
+   // - Right side container filter tabs: wx + eff_ww .. wx + eff_ww + 75
+   // - Top swap party/container bar: wy - 45 .. wy
+   // - Bottom drop-all/take-all panel: wy + eff_wh .. wy + eff_wh + 50
    if (cfg_click_outside) then begin
-      if (mx < wx or mx >= (wx + ww) or my < wy or my >= (wy + wh)) then begin
+      min_safe_x := wx - 75;
+      max_safe_x := wx + eff_ww + 75;
+      min_safe_y := wy - 45;
+      max_safe_y := wy + eff_wh + 50;
+
+      // Only close when click is strictly OUTSIDE the interface and all its tabs/panels
+      if (mx < min_safe_x or mx > max_safe_x or my < min_safe_y or my > max_safe_y) then begin
          tap_key(1); // Simulate ESC
          set_sfall_return(0);
          return;
       end
    end
 
-   // 2. Click in the expanded Done / ГОТОВО text area (bottom-right plate, left of the red button)
-   // Native red button (wx + ww - 35 .. wx + ww - 5) is handled by the vanilla engine itself.
-   // This covers the entire large "ГОТОВО" / "DONE" text plate seamlessly without double ESC events.
+   // 2. Click in the expanded Done /        text area (bottom-right plate, left of the red button)
+   // Native red button (wx + eff_ww - 35 .. wx + eff_ww - 5) is handled by the engine.
    if (cfg_expanded_done) then begin
-      if (mx >= (wx + ww - 135) and mx <= (wx + ww - 36) and my >= (wy + wh - 48) and my <= (wy + wh - 6)) then begin
+      if (mx >= (wx + eff_ww - 140) and mx <= (wx + eff_ww - 36) and my >= (wy + eff_wh - 48) and my <= (wy + eff_wh - 6)) then begin
          tap_key(1); // Simulate ESC / Done
          set_sfall_return(0);
          return;
@@ -102,19 +154,44 @@ procedure mouseclick_handler begin
 end
 
 procedure keypress_handler begin
-   variable pressed, scancode, gmode;
+   variable pressed, scancode, gmode, l_obj;
    pressed  := get_sfall_arg;
    scancode := get_sfall_arg;
 
-   if (not cfg_take_all_close or pressed != 1) then return;
+   if (pressed != 1) then return;
 
-   // Key 'D' (scancode 32) is standard Take All key in InventoryFilter
-   if (scancode == 32) then begin
-      gmode := get_game_mode;
-      if (gmode bwand INTFACELOOT) then begin
-         if (cfg_auto_close_empty) then begin
-            tap_key(1);
+   call load_config;
+   gmode := get_game_mode;
+
+   // 1. Hotkey 'D' (scancode 32): Take All in Container Loot screen
+   if (scancode == 32 and (gmode bwand INTFACELOOT)) then begin
+      if (cfg_auto_close_empty or cfg_take_all_close) then begin
+         l_obj := loot_obj;
+         if (l_obj != 0) then begin
+            if (inven_ptr(l_obj, 0) == 0) then begin
+               tap_key(1); // Close container if already empty
+            end
          end
+      end
+      return;
+   end
+
+   // 2. Spacebar (scancode 57):
+   // In combat -> engine naturally ends turn (COMBAT or PCOMBAT flag active).
+   // Out of combat -> pressing Spacebar initiates Combat Mode ('A' key / scancode 30)!
+   if (scancode == 57) then begin
+      if (cfg_space_combat_toggle) then begin
+         // If already in combat, do nothing - let engine process Space as End Turn
+         if (gmode bwand (COMBAT bwor PCOMBAT)) then return;
+
+         // If in special menus, dialogs, inventory, worldmap, automap, pipboy, do nothing
+         if ((gmode != 0) and (gmode != LOCALMAP)) then return;
+         if (intface_is_shown(WINTYPE_INV)) then return;
+
+         // Out of combat peaceful exploration -> initiate combat by simulating 'A' (scancode 30)
+         tap_key(30);
+         set_sfall_return(0); // Intercept spacebar so it doesn't double-trigger
+         return;
       end
    end
 end
@@ -131,7 +208,6 @@ procedure invenmove_handler begin
    if (gmode bwand INTFACELOOT) then begin
       l_obj := loot_obj;
       if (l_obj != 0) then begin
-         // If container is now completely empty
          if (inven_ptr(l_obj, 0) == 0) then begin
             tap_key(1);
          end

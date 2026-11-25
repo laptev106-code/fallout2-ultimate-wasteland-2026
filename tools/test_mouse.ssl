@@ -1,0 +1,12 @@
+#pragma sce
+#define SCRIPT_REALNAME "test_mouse"
+#include "define.h"
+#include "sfall.h"
+procedure start begin
+   variable mx, my, win;
+   mx := get_mouse_x;
+   my := get_mouse_y;
+   win := get_window_under_mouse;
+   tap_key(1);
+end
+

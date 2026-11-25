@@ -70,6 +70,9 @@ procedure Node024;
 procedure Node025;
 procedure Node026;
 procedure Node027;
+procedure Node030;
+procedure Node031;
+procedure Node032;
 
 /* Local Variables which are saved. All Local Variables need to be
    prepended by LVAR_ */
@@ -335,6 +338,9 @@ procedure Node011 begin
       if (dude_caps >= 2000) then begin
          GOption(351, Node012, 004);
       end
+      if ((has_skill(dude_obj, SKILL_REPAIR) >= 60) or (has_skill(dude_obj, SKILL_SCIENCE) >= 60)) then begin
+         GOption(800, Node030, 004);
+      end
       NOption(352, Node003, 004);
    end
    NOption(353, Node999, 004);
@@ -458,4 +464,65 @@ procedure Node027 begin
    Reply(650);
    NOption(651, Node999, 004);
    NOption(652, Node999, -003);
+end
+
+#define dude_has_tools ((obj_is_carrying_obj_pid(dude_obj, PID_SUPER_TOOL_KIT) > 0) or (obj_is_carrying_obj_pid(dude_obj, PID_MULTI_TOOL) > 0))
+#define dude_has_cells ((obj_is_carrying_obj_pid(dude_obj, PID_SMALL_ENERGY_CELL) >= 20) or (obj_is_carrying_obj_pid(dude_obj, PID_MICRO_FUSION_CELL) >= 10))
+
+procedure Node030 begin
+   Reply(810);
+   if (dude_has_tools and dude_has_cells) then begin
+      GOption(820, Node031, 004);
+   end
+   if (dude_caps >= 750) then begin
+      GOption(821, Node032, 004);
+   end
+   NOption(822, Node999, 004);
+end
+
+procedure Node031 begin
+   gfade_out(ONE_GAME_SECOND);
+      game_time_advance(ONE_GAME_HOUR * 2);
+      set_smitty_part(state_smitty_part_given);
+      set_car_part_pip(car_part_pip_done);
+      set_global_var(GVAR_PLAYER_GOT_CAR, 1);
+      give_exp_points(800);
+      display_mstr(830);
+      if (obj_is_carrying_obj_pid(dude_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(dude_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end else if (obj_is_carrying_obj_pid(self_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(self_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end else if (obj_is_carrying_obj_pid(den_smitty_box_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(den_smitty_box_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end
+      if (obj_is_carrying_obj_pid(dude_obj, PID_MICRO_FUSION_CELL) >= 10) then begin
+         remove_pid_qty(dude_obj, PID_MICRO_FUSION_CELL, 10)
+      end else if (obj_is_carrying_obj_pid(dude_obj, PID_SMALL_ENERGY_CELL) >= 20) then begin
+         remove_pid_qty(dude_obj, PID_SMALL_ENERGY_CELL, 20)
+      end
+   gfade_in(ONE_GAME_SECOND);
+   Reply(840);
+   NOption(371, Node990, 004);
+end
+
+procedure Node032 begin
+   gfade_out(ONE_GAME_SECOND);
+      game_time_advance(ONE_GAME_HOUR * 2);
+      set_smitty_part(state_smitty_part_given);
+      set_car_part_pip(car_part_pip_done);
+      self_caps_adjust(750);
+      dude_caps_adjust(-750);
+      set_global_var(GVAR_PLAYER_GOT_CAR, 1);
+      give_exp_points(500);
+      display_mstr(830);
+      if (obj_is_carrying_obj_pid(dude_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(dude_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end else if (obj_is_carrying_obj_pid(self_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(self_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end else if (obj_is_carrying_obj_pid(den_smitty_box_obj, PID_CAR_FUEL_CELL_CONTROLLER) > 0) then begin
+         remove_pid_qty(den_smitty_box_obj, PID_CAR_FUEL_CELL_CONTROLLER, 1)
+      end
+   gfade_in(ONE_GAME_SECOND);
+   Reply(840);
+   NOption(371, Node990, 004);
 end

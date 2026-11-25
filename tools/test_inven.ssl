@@ -1,0 +1,12 @@
+#define SCRIPT_REALNAME "test_inven"
+#include "headers/define.h"
+#include "headers/sfall/sfall.h"
+
+procedure start begin
+   variable val, l_obj;
+   l_obj := loot_obj;
+   if (l_obj) then begin
+      val := inven_count(l_obj);
+      val := inven_ptr(l_obj, 0);
+   end
+end

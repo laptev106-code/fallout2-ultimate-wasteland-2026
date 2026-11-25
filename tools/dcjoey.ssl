@@ -78,6 +78,9 @@ procedure Node022;
 procedure Node023;
 procedure Node024;
 procedure Node025;
+procedure Node030;
+procedure Node031;
+procedure Node032;
 /*
 procedure Node026;
 procedure Node027;
@@ -407,7 +410,7 @@ procedure Node002 begin
    ndebug("gave_locket == "+gave_locket+" / get_anna_locket_pip(anna_locket_pip_assigned) == "+get_anna_locket_pip(anna_locket_pip_assigned)+" / mom_fingered_joey == "+mom_fingered_joey);
    if (get_anna_locket_pip(anna_locket_pip_done) == false) then begin
       if (gave_locket == false) and (obj_is_carrying_obj_pid(dude_obj, PID_ANNA_GOLD_LOCKET) == 0) then begin
-         if ((get_anna_locket_pip(anna_locket_pip_assigned)) and (mom_fingered_joey)) then begin
+         if (get_anna_locket_pip(anna_locket_pip_assigned) or (mom_fingered_joey)) then begin
             NOption(157,Node003,004);
          end
       end
@@ -437,7 +440,37 @@ procedure Node005 begin
    NOption(169,Node006,004);
    NOption(170,Node993,004);
    NOption(171,Node992,006);
+   if ((has_skill(dude_obj, SKILL_SPEECH) >= 55) or (dude_iq >= 7)) then begin
+      NOption(800, Node030, 004);
+   end
+   if (dude_iq >= 6) then begin
+      NOption(810, Node031, 004);
+   end
 end
+
+procedure Node030 begin
+   ndebug("Node030");
+   Reply(801);
+   NOption(802, Node032, 004);
+   NOption(170, Node993, 004);
+end
+
+procedure Node031 begin
+   ndebug("Node031");
+   Reply(811);
+   NOption(802, Node032, 004);
+   NOption(170, Node993, 004);
+end
+
+procedure Node032 begin
+   ndebug("Node032");
+   give_exp_points(350);
+   display_mstr(820);
+   call Node989;
+   Reply(803);
+   NOption(178, Node999, 004);
+end
+
 procedure Node006 begin
    ndebug("Node006");
    Reply(172);
@@ -466,7 +499,7 @@ procedure Node009 begin
    ndebug("gave_locket == "+gave_locket+" / get_anna_locket_pip(anna_locket_pip_assigned) == "+get_anna_locket_pip(anna_locket_pip_assigned)+" / mom_fingered_joey == "+mom_fingered_joey);
    if (get_anna_locket_pip(anna_locket_pip_done) == false) then begin
       if (gave_locket == false) then begin
-         if ((get_anna_locket_pip(anna_locket_pip_assigned)) and (mom_fingered_joey)) then begin
+         if (get_anna_locket_pip(anna_locket_pip_assigned) or (mom_fingered_joey)) then begin
             NOption(186,Node003,004);
          end
       end
@@ -523,7 +556,7 @@ procedure Node016 begin
    ndebug("gave_locket == "+gave_locket+" / get_anna_locket_pip(anna_locket_pip_assigned) == "+get_anna_locket_pip(anna_locket_pip_assigned)+" / mom_fingered_joey == "+mom_fingered_joey);
    if (get_anna_locket_pip(anna_locket_pip_done) == false) then begin
       if (gave_locket == false) then begin
-         if ((get_anna_locket_pip(anna_locket_pip_assigned)) and (mom_fingered_joey)) then begin
+         if (get_anna_locket_pip(anna_locket_pip_assigned) or (mom_fingered_joey)) then begin
             NOption(157,Node003,004);
          end
       end

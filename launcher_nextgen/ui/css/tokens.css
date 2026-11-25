@@ -6,6 +6,13 @@
   --phosphor-bright: #66ffaa;
   --phosphor-dim: #107738;
   --phosphor-dark: #0a4020;
+  --green-primary: #00ff66;
+  --pip-green: #00ff66;
+
+  /* Text Hierarchy (High Contrast on Dark Phosphor Terminal) */
+  --text-main: #d8f2e2;
+  --text-secondary: #9bc4ad;
+  --text-muted: #7aa38c;
   
   /* Amber Warning Palette */
   --amber-primary: #ffb000;

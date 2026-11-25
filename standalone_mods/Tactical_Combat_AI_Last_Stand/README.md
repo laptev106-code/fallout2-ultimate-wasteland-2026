@@ -1,7 +1,8 @@
-﻿# Tactical Combat AI: Desperation Last Stand & Cautious Retreat
-**Version:** 1.0 Hardened  
+﻿# [ТЕСТИРУЕТСЯ] Tactical Combat AI: Desperation Last Stand & Cautious Retreat
+**Version:** 1.0 Hardened [ТЕСТИРУЕТСЯ]  
 **Author:** Antigravity Engine Team  
 **Game:** Fallout 2 (Compatible with Vanilla, RPU, EcCo, Nevada, Sonora, Olympus 2207)  
+**Status:** [ТЕСТИРУЕТСЯ] (Интегрировано в сборку 2026 для полевых тестов)  
 **Requirements:** sFall 4.x or 5.x (included with RPU / modern Fallout 2 installations)
 
 ---

@@ -1,0 +1,14 @@
+#define SCRIPT_REALNAME "test_head"
+#include "headers/define.h"
+#define NAME 1
+#include "headers/command.h"
+
+procedure start;
+procedure talk_p_proc;
+
+procedure start begin
+end
+
+procedure talk_p_proc begin
+    start_gdialog(NAME, self_obj, 4, 64, -1);
+end

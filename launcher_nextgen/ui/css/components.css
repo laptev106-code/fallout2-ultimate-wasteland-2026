@@ -211,12 +211,28 @@
 }
 
 .view-toggle-btn {
-  border-color: var(--phosphor-primary) !important;
-  color: var(--phosphor-primary) !important;
+  background: rgba(0, 255, 102, 0.05) !important;
+  border: 1px solid rgba(43, 245, 88, 0.4) !important;
+  color: var(--phosphor-dim) !important;
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .view-toggle-btn:hover {
-  background: rgba(0, 255, 102, 0.15) !important;
+  background: rgba(0, 255, 102, 0.14) !important;
+  border-color: var(--phosphor-primary) !important;
+  color: var(--phosphor-bright) !important;
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.2);
+}
+
+.view-toggle-btn.view-active {
+  background: rgba(0, 255, 102, 0.08) !important;
+  border-color: var(--phosphor-primary) !important;
+  color: var(--phosphor-primary) !important;
 }
 
 .mod-card {
@@ -335,6 +351,26 @@
 .config-container {
   max-width: 900px;
   margin: 0 auto;
+}
+
+.settings-sticky-bar {
+  position: sticky;
+  bottom: -24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(5, 8, 6, 0.95);
+  border-top: 1px solid var(--border-active);
+  padding: 14px 18px;
+  margin: 12px -18px -24px -18px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.75);
+}
+
+.settings-autosave-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .section-box {

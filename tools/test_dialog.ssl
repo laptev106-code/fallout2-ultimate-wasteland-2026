@@ -1,0 +1,1 @@
+procedure start; procedure start begin start_gdialog(100, 0, 4, 100, 10); end

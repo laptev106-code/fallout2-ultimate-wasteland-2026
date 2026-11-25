@@ -1,0 +1,8 @@
+#pragma sce
+#define SCRIPT_REALNAME "test_tap"
+#include "define.h"
+#include "sfall.h"
+procedure start begin
+   tap_key(1);
+end
+

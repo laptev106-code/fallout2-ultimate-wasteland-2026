@@ -50,6 +50,7 @@ class LauncherApp {
     this.views = document.querySelectorAll('.view-page');
     this.crtToggleBtn = document.getElementById('btn-toggle-crt');
     this.audioToggleBtn = document.getElementById('btn-toggle-sound');
+    this.humToggleBtn = document.getElementById('btn-toggle-hum');
     this.modalOverlay = document.getElementById('modal-overlay');
 
     // Dynamic catalog counter and badges
@@ -85,26 +86,62 @@ class LauncherApp {
       });
     });
 
-    // CRT Toggle
+    // CRT Mode Toggle: NEW (натуральный) -> CLASSIC (старый) -> OFF
     if (this.crtToggleBtn) {
-      this.crtToggleBtn.addEventListener('click', () => {
+      const applyCrtMode = (mode) => {
         const crt = document.getElementById('crt-overlay');
-        if (crt) {
-          const isHidden = crt.style.display === 'none';
-          crt.style.display = isHidden ? 'block' : 'none';
-          this.crtToggleBtn.textContent = isHidden ? 'CRT: ON' : 'CRT: OFF';
+        document.body.classList.remove('crt-mode-new', 'crt-mode-classic', 'crt-mode-off');
+        if (mode === 'off') {
+          if (crt) crt.style.display = 'none';
+          document.body.classList.add('crt-mode-off');
+          this.crtToggleBtn.textContent = 'CRT: OFF';
+        } else if (mode === 'classic') {
+          if (crt) crt.style.display = 'block';
+          document.body.classList.add('crt-mode-classic');
+          this.crtToggleBtn.textContent = 'CRT: CLASSIC';
+        } else {
+          if (crt) crt.style.display = 'block';
+          document.body.classList.add('crt-mode-new');
+          this.crtToggleBtn.textContent = 'CRT: NEW';
         }
+        localStorage.setItem('nextgen_crt_mode', mode);
+      };
+
+      const savedCrt = localStorage.getItem('nextgen_crt_mode') || 'new';
+      applyCrtMode(savedCrt);
+
+      this.crtToggleBtn.addEventListener('click', () => {
+        const cur = localStorage.getItem('nextgen_crt_mode') || 'new';
+        const next = cur === 'new' ? 'classic' : (cur === 'classic' ? 'off' : 'new');
+        applyCrtMode(next);
         if (window.pipAudio) window.pipAudio.playSwitchSnap();
       });
     }
 
     // Audio Toggle
     if (this.audioToggleBtn) {
+      if (window.pipAudio) {
+        this.audioToggleBtn.textContent = window.pipAudio.enabled ? 'SOUND: ON' : 'SOUND: OFF';
+      }
       this.audioToggleBtn.addEventListener('click', () => {
         if (window.pipAudio) {
           const enabled = window.pipAudio.toggleSound();
           this.audioToggleBtn.textContent = enabled ? 'SOUND: ON' : 'SOUND: OFF';
           if (enabled) window.pipAudio.playSwitchSnap();
+        }
+      });
+    }
+
+    // Lamp Hum Toggle (Independent ambient CRT hum switch)
+    if (this.humToggleBtn) {
+      if (window.pipAudio) {
+        this.humToggleBtn.textContent = window.pipAudio.humEnabled ? 'HUM: ON' : 'HUM: OFF';
+      }
+      this.humToggleBtn.addEventListener('click', () => {
+        if (window.pipAudio) {
+          const humOn = window.pipAudio.toggleHum();
+          this.humToggleBtn.textContent = humOn ? 'HUM: ON' : 'HUM: OFF';
+          if (window.pipAudio.enabled) window.pipAudio.playSwitchSnap();
         }
       });
     }
@@ -158,7 +195,7 @@ class LauncherApp {
       this.saveCurrentSettings();
     });
 
-    ['select-res', 'select-mode', 'select-scale', 'select-filter', 'select-reshade', 'select-fps'].forEach(id => {
+    ['select-res', 'select-mode', 'select-scale', 'select-filter', 'select-reshade', 'select-fps', 'select-quicksave'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => {
         this.saveCurrentSettings(true);
       });
@@ -203,9 +240,15 @@ class LauncherApp {
       elFull?.addEventListener('change', (e) => handleToggle(e.target.checked));
     });
 
-    // Settings-only extra QoL toggles
-    ['toggle-hl-skipempty', 'toggle-qol-closeontakeall'].forEach(id => {
-      const key = (id === 'toggle-hl-skipempty') ? 'hlSkipEmpty' : 'qolCloseOnTakeAll';
+    // Settings-only extra QoL & mod toggles
+    [
+      { id: 'toggle-hl-skipempty', key: 'hlSkipEmpty' },
+      { id: 'toggle-qol-closeontakeall', key: 'qolCloseOnTakeAll' },
+      { id: 'toggle-autodoors', key: 'autoDoors' },
+      { id: 'toggle-mapblur', key: 'mapBlurFx' },
+      { id: 'toggle-wasteland-voices', key: 'wastelandVoices' },
+      { id: 'toggle-laststand-surrender', key: 'lastStandSurrender' }
+    ].forEach(({ id, key }) => {
       const el = document.getElementById(id);
       el?.addEventListener('change', (e) => {
         this.config[key] = e.target.checked;
@@ -233,18 +276,22 @@ class LauncherApp {
       });
     });
 
-    // Sliders input
+    // Sliders: update label on input, persist to INI on change (avoids 30x/sec disk writes)
     const sliderMusic = document.getElementById('slider-music');
     const labelMusic = document.getElementById('val-music');
     sliderMusic?.addEventListener('input', (e) => {
-      labelMusic.textContent = `${e.target.value}%`;
+      if (labelMusic) labelMusic.textContent = `${e.target.value}%`;
+    });
+    sliderMusic?.addEventListener('change', () => {
       this.saveCurrentSettings(true);
     });
 
     const sliderSfx = document.getElementById('slider-sfx');
     const labelSfx = document.getElementById('val-sfx');
     sliderSfx?.addEventListener('input', (e) => {
-      labelSfx.textContent = `${e.target.value}%`;
+      if (labelSfx) labelSfx.textContent = `${e.target.value}%`;
+    });
+    sliderSfx?.addEventListener('change', () => {
       this.saveCurrentSettings(true);
     });
 
@@ -387,11 +434,40 @@ class LauncherApp {
     this.currentView = viewId;
     this.navItems.forEach(n => n.classList.toggle('active', n.dataset.view === viewId));
     this.views.forEach(v => v.classList.toggle('active', v.id === 'view-' + viewId));
+    this.switchPipBoyChannel(viewId);
     if (viewId === 'feedback') {
       this.runSmartHealthCheck(true);
     }
     if (viewId === 'changelog') {
       this.loadChangelog();
+    }
+  }
+
+  switchPipBoyChannel(viewId) {
+    const channels = {
+      launch:    { ch: 'CH-01', img: 'assets/vault_boy_thumbsup.png', label: 'PIP-BOY 2000 // ВСЁ ОТЛИЧНО!' },
+      catalog:   { ch: 'CH-02', img: 'assets/vault_boy_catalog.png',  label: 'CH-02 // АРХИВ МОДОВ' },
+      settings:  { ch: 'CH-03', img: 'assets/vault_boy_settings.png', label: 'CH-03 // КАЛИБРОВКА' },
+      saves:     { ch: 'CH-04', img: 'assets/vault13_icon.png',       label: 'CH-04 // БАНК ДАННЫХ' },
+      feedback:  { ch: 'CH-05', img: 'assets/vault_boy_feedback.png', label: 'CH-05 // РАДИОУЗЕЛ' },
+      changelog: { ch: 'CH-06', img: 'assets/vault_boy_catalog.png',  label: 'CH-06 // ЛЕТОПИСЬ' }
+    };
+    const info = channels[viewId] || channels.launch;
+    const screen = document.getElementById('pipboy-tv-screen');
+    const imgEl = document.getElementById('pipboy-channel-img');
+    const badgeEl = document.getElementById('pipboy-channel-badge');
+    const labelEl = document.getElementById('pipboy-channel-label');
+
+    if (screen) {
+      screen.classList.remove('crt-channel-zap');
+      void screen.offsetWidth; // Force reflow for instant re-trigger
+      screen.classList.add('crt-channel-zap');
+    }
+    if (badgeEl) badgeEl.textContent = info.ch;
+    if (labelEl) labelEl.textContent = info.label;
+    if (imgEl) {
+      imgEl.onerror = () => { imgEl.src = 'assets/vault_boy_thumbsup.png'; };
+      imgEl.src = info.img;
     }
   }
 
@@ -461,7 +537,7 @@ class LauncherApp {
       card.className = 'mod-card';
       card.innerHTML = `
         <div class="mod-thumb-container">
-          <img class="mod-thumb-img" src="assets/posters/${mod.id}.png" alt="${mod.title}" loading="lazy" onerror="this.src='assets/new_reno_hero.png'">
+          <img class="mod-thumb-img" src="assets/posters/${mod.id}.png" alt="${mod.title}" loading="lazy" decoding="async" onerror="this.src='assets/new_reno_hero.png'">
         </div>
         <div class="mod-info">
           <div class="mod-header-row">
@@ -542,45 +618,75 @@ class LauncherApp {
   }
 
   async launchProfile(profile) {
+    if (this.isLaunching) return;
+    this.isLaunching = true;
+
     // 1. Автоматическое сохранение выбранных настроек перед запуском
     await this.saveCurrentSettings(true);
 
-    if (window.pipAudio) window.pipAudio.playGameLaunch();
+    // 2. Мгновенно отключаем CRT-гул и воспроизводим механический лязг гермошлюза
+    if (window.pipAudio) {
+      window.pipAudio.stopCrtHum();
+      window.pipAudio.playGameLaunch();
+    }
     
     const btn = profile === 'gameplay' 
       ? document.getElementById('btn-launch-gameplay') 
       : document.getElementById('btn-launch-hd');
       
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `ЗАПУСК ДВИЖКА...`;
-    btn.style.opacity = '0.7';
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = `<span>⏳ ЗАПУСК ИГРЫ...</span>`;
+      btn.style.opacity = '0.85';
+    }
 
     try {
       if (window.pywebview && window.pywebview.api) {
         const result = await window.pywebview.api.launch_profile(profile);
         if (result && result.status === 'error') {
+          this.isLaunching = false;
           alert(`Внимание: ${result.message}`);
+          if (btn) {
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+          }
+          if (window.pipAudio) window.pipAudio.startCrtHum();
+        } else {
+          if (btn) {
+            btn.innerHTML = `<span>✓ ИГРА ЗАПУЩЕНА (ВЫХОД)</span>`;
+          }
         }
       } else {
         console.log(`[Dev Simulation] Launched profile: ${profile}`);
+        setTimeout(() => {
+          this.isLaunching = false;
+          if (btn) {
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+          }
+          if (window.pipAudio) window.pipAudio.startCrtHum();
+        }, 3000);
       }
     } catch (e) {
+      this.isLaunching = false;
       console.error("Launch error:", e);
       alert(`Ошибка запуска профиля ${profile}: ${e}`);
-    } finally {
-      setTimeout(() => {
+      if (btn) {
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
-      }, 2500);
+      }
+      if (window.pipAudio) window.pipAudio.startCrtHum();
     }
   }
 
   async loadInitialConfig() {
+    if (this._configLoaded) return;
     try {
       if (window.pywebview && window.pywebview.api) {
         const remoteCfg = await window.pywebview.api.read_config();
         if (remoteCfg) {
           this.config = remoteCfg;
+          this._configLoaded = true;
           this.applyConfigToUI();
         }
       }
@@ -630,6 +736,9 @@ class LauncherApp {
     if (selReShade) selReShade.value = this.config.reshade || 'off';
     const selFps = document.getElementById('select-fps');
     if (selFps) selFps.value = this.config.fpsLock || '60';
+
+    const selQuickSave = document.getElementById('select-quicksave');
+    if (selQuickSave) selQuickSave.value = String(this.config.autoQuickSave ?? '0');
 
     const sMusic = document.getElementById('slider-music');
     if (sMusic) {
@@ -689,12 +798,24 @@ class LauncherApp {
     if (chkClickOut) chkClickOut.checked = clickOutsideVal;
     if (quickClickOut) quickClickOut.checked = clickOutsideVal;
 
-    // Skip empty containers & Close on Take All
+    // Skip empty containers, Close on Take All, and mod toggles
     const chkSkipEmpty = document.getElementById('toggle-hl-skipempty');
     if (chkSkipEmpty) chkSkipEmpty.checked = this.config.hlSkipEmpty !== false;
 
     const chkTakeAll = document.getElementById('toggle-qol-closeontakeall');
     if (chkTakeAll) chkTakeAll.checked = this.config.qolCloseOnTakeAll !== false;
+
+    const chkAutoDoors = document.getElementById('toggle-autodoors');
+    if (chkAutoDoors) chkAutoDoors.checked = this.config.autoDoors !== false;
+
+    const chkMapBlur = document.getElementById('toggle-mapblur');
+    if (chkMapBlur) chkMapBlur.checked = this.config.mapBlurFx !== false;
+
+    const chkVoices = document.getElementById('toggle-wasteland-voices');
+    if (chkVoices) chkVoices.checked = this.config.wastelandVoices !== false;
+
+    const chkSurrender = document.getElementById('toggle-laststand-surrender');
+    if (chkSurrender) chkSurrender.checked = this.config.lastStandSurrender !== false;
 
     // Highlighting category toggles
     const hlKeys = [
@@ -728,6 +849,8 @@ class LauncherApp {
     if (selReShade) this.config.reshade = selReShade.value;
     const selFps = document.getElementById('select-fps');
     if (selFps) this.config.fpsLock = selFps.value;
+    const selQuickSave = document.getElementById('select-quicksave');
+    if (selQuickSave) this.config.autoQuickSave = selQuickSave.value;
     if (sMusic) this.config.musicVol = parseInt(sMusic.value, 10);
     if (sSfx) this.config.sfxVol = parseInt(sSfx.value, 10);
 
@@ -742,6 +865,10 @@ class LauncherApp {
     const chkClickOut = document.getElementById('toggle-qol-clickoutside') || document.getElementById('quick-toggle-qol-clickoutside');
     const chkSkipEmpty = document.getElementById('toggle-hl-skipempty');
     const chkTakeAll = document.getElementById('toggle-qol-closeontakeall');
+    const chkAutoDoors = document.getElementById('toggle-autodoors');
+    const chkMapBlur = document.getElementById('toggle-mapblur');
+    const chkVoices = document.getElementById('toggle-wasteland-voices');
+    const chkSurrender = document.getElementById('toggle-laststand-surrender');
 
     if (chkReload) this.config.autoReload = chkReload.checked;
     if (chkRun) this.config.alwaysRun = chkRun.checked;
@@ -751,6 +878,10 @@ class LauncherApp {
     if (chkClickOut) this.config.qolClickOutside = chkClickOut.checked;
     if (chkSkipEmpty) this.config.hlSkipEmpty = chkSkipEmpty.checked;
     if (chkTakeAll) this.config.qolCloseOnTakeAll = chkTakeAll.checked;
+    if (chkAutoDoors) this.config.autoDoors = chkAutoDoors.checked;
+    if (chkMapBlur) this.config.mapBlurFx = chkMapBlur.checked;
+    if (chkVoices) this.config.wastelandVoices = chkVoices.checked;
+    if (chkSurrender) this.config.lastStandSurrender = chkSurrender.checked;
 
     const hlKeysSave = [
       { id: 'toggle-hl-items', key: 'hlItems' },
@@ -912,7 +1043,7 @@ class LauncherApp {
 
   openSavesDir() {
     if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.open_saves_folder();
+      window.pywebview.api.open_saves_folder(this.savesProfile);
     }
   }
 

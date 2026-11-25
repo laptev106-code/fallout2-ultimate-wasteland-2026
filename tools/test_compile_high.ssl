@@ -1,0 +1,33 @@
+#pragma sce
+
+#include "main.h"
+
+variable persistent_active := 0;
+variable temp_shift_active := 0;
+
+procedure KeyPressHandler begin
+   variable pressed := get_sfall_arg;
+   variable scanCode := get_sfall_arg;
+
+   if (scanCode == 58 and pressed) then begin
+      persistent_active := not persistent_active;
+      if persistent_active then begin
+         set_global_script_repeat(8);
+         display_msg("Постоянная подсветка: ВКЛ");
+      end else begin
+         set_global_script_repeat(0);
+         display_msg("Постоянная подсветка: ВЫКЛ");
+      end
+   end
+end
+
+procedure start begin
+   if game_loaded then begin
+      register_hook_proc(HOOK_KEYPRESS, KeyPressHandler);
+      set_global_script_type(1);
+   end else begin
+      if persistent_active then begin
+         // repeat tick
+      end
+   end
+end

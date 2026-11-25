@@ -1,0 +1,9 @@
+#pragma sce
+#include "main.h"
+
+procedure start begin
+   variable obj;
+   foreach obj in list_as_array(1) begin
+      set_outline(obj, 0);
+   end
+end

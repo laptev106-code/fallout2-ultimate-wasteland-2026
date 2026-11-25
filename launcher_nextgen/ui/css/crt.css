@@ -5,6 +5,7 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  border-radius: 12px;
 }
 
 /* 1. Hardware Canvas Background for Wasteland Particles */
@@ -14,57 +15,298 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.72;
 }
 
-/* 2. CRT Scanline Raster */
+/* ----------------------------------------------------------------
+   2. NEW NATURAL CRT MODE (Default: .crt-mode-new)
+   Soft P39 green phosphor scanlines, subpixel shadow mask,
+   curved glass specular reflection, phosphor edge bleed, slow sync drift.
+   ---------------------------------------------------------------- */
 .crt-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 90;
   pointer-events: none;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.35) 50%
-  ), linear-gradient(
-    90deg,
-    rgba(255, 0, 0, 0.02),
-    rgba(0, 255, 0, 0.01),
-    rgba(0, 0, 255, 0.02)
-  );
-  background-size: 100% 3px, 4px 100%;
+  /* Soft sinusoidal scanlines + subtle phosphor aperture grille (zero harsh 3px stair-stepping) */
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.04) 45%,
+      rgba(0, 0, 0, 0.16) 55%,
+      rgba(0, 0, 0, 0.04) 90%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 255, 102, 0.012) 0px,
+      rgba(0, 255, 102, 0.012) 1px,
+      rgba(0, 18, 8, 0.022) 2px,
+      rgba(0, 255, 102, 0.008) 3px
+    );
+  background-size: 100% 3px, 3px 100%;
+  opacity: 0.92;
 }
 
-/* 3. Spherical Vignette & Glass Curvature */
+/* Subtle slow rolling sync bar (natural CRT refresh drift without eye-straining flicker) */
+.crt-overlay::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18%;
+  top: -20%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 255, 102, 0.022) 45%,
+    rgba(102, 255, 170, 0.032) 50%,
+    rgba(0, 255, 102, 0.018) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: crtRefreshDrift 9s linear infinite;
+}
+
+@keyframes crtRefreshDrift {
+  0% { top: -20%; }
+  100% { top: 115%; }
+}
+
+/* 3. Spherical Glass Curvature, Specular Reflection & Phosphor Edge Bleed */
 .crt-vignette {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 91;
   pointer-events: none;
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85), inset 0 0 30px rgba(0, 0, 0, 0.95);
-  border: 1px solid rgba(0, 255, 102, 0.15);
+  background:
+    /* Soft upper-left curved glass reflection */
+    radial-gradient(
+      ellipse 80% 50% at 18% 12%,
+      rgba(160, 255, 200, 0.035) 0%,
+      rgba(0, 255, 102, 0.012) 45%,
+      transparent 72%
+    ),
+    /* Spherical tube falloff */
+    radial-gradient(
+      ellipse at 50% 50%,
+      transparent 66%,
+      rgba(0, 6, 3, 0.24) 84%,
+      rgba(0, 0, 0, 0.68) 100%
+    );
+  box-shadow:
+    inset 0 0 75px rgba(0, 0, 0, 0.65),
+    inset 0 0 18px rgba(0, 255, 102, 0.07);
+  border: 1px solid rgba(0, 255, 102, 0.14);
 }
 
-/* 4. Subtle Screen Flicker Animation */
+/* 4. Physical Tube Bezel (Rounded CRT Glass Corners) */
+.crt-tube-bezel {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  pointer-events: none;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 36px rgba(0, 0, 0, 0.78),
+    inset 0 0 110px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(120, 255, 180, 0.08),
+    0 0 0 4px #060a08,
+    0 0 0 8px #020403;
+}
+
+/* Gentle breathing phosphor luminance (replaces harsh 0.18s strobe) */
 @keyframes crt-flicker {
-  0% { opacity: 0.992; }
-  50% { opacity: 1; }
-  100% { opacity: 0.995; }
+  0%, 100% { opacity: 0.996; }
+  50% { opacity: 1.0; }
 }
 
 .crt-flicker {
-  animation: crt-flicker 0.15s infinite;
+  animation: crt-flicker 2.4s ease-in-out infinite;
 }
 
-/* 5. Phosphor Bloom Glow */
+/* ----------------------------------------------------------------
+   CLASSIC CRT FALLBACK (.crt-mode-classic) — Exact Pre-Overhaul Look
+   ---------------------------------------------------------------- */
+body.crt-mode-classic .crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.28) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.015),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.015)
+  );
+  background-size: 100% 3px, 4px 100%;
+  opacity: 1;
+}
+
+body.crt-mode-classic .crt-overlay::before {
+  display: none;
+}
+
+body.crt-mode-classic .crt-vignette {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 65%,
+    rgba(0, 0, 0, 0.35) 82%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  box-shadow:
+    inset 0 0 100px rgba(0, 0, 0, 0.8),
+    inset 0 0 24px rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(0, 255, 102, 0.12);
+}
+
+body.crt-mode-classic .crt-tube-bezel {
+  box-shadow:
+    inset 0 0 45px rgba(0, 0, 0, 0.85),
+    inset 0 0 120px rgba(0, 0, 0, 0.65),
+    0 0 0 4px #060a08,
+    0 0 0 8px #020403;
+}
+
+body.crt-mode-off.crt-flicker {
+  animation: none;
+}
+
+/* 6. Анимированный экран Пип-Боя в боковом меню (Pip-Boy Hologram & Sweep Bar) */
+.crt-screen-frame {
+  position: relative;
+  border-radius: 6px;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 36, 16, 0.65) 0%, rgba(2, 8, 4, 0.95) 100%);
+  border: 1px solid rgba(0, 255, 102, 0.22);
+  box-shadow: inset 0 0 14px rgba(0, 255, 102, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  overflow: hidden;
+}
+
+.crt-screen-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.crt-scanline-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.55;
+}
+
+.crt-beam-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 22px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 255, 102, 0.28), transparent);
+  pointer-events: none;
+  z-index: 3;
+  animation: crtSweep 3.6s linear infinite;
+}
+
+.vaultboy-preview-img.crt-hologram {
+  width: 125px;
+  height: 125px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.75)) drop-shadow(0 0 20px rgba(0, 255, 102, 0.3));
+  animation: crtFloatBreathe 4.2s ease-in-out infinite, crtPhosphorPulse 2.8s ease-in-out infinite alternate;
+}
+
+.crt-channel-badge {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 5;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+  color: rgba(0, 255, 102, 0.78);
+  background: rgba(0, 14, 6, 0.75);
+  border: 1px solid rgba(0, 255, 102, 0.25);
+  padding: 1px 5px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* TV Channel Switch Effect (Horizontal collapse + phosphor static flash) */
+.crt-screen-frame.crt-channel-zap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(200, 255, 220, 0.45) 0px,
+      rgba(0, 0, 0, 0.65) 2px,
+      rgba(0, 255, 102, 0.35) 3px
+    );
+  pointer-events: none;
+  animation: crtChannelStatic 0.28s ease-out forwards;
+}
+
+.crt-screen-frame.crt-channel-zap .vaultboy-preview-img {
+  animation: crtChannelCollapse 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes crtChannelStatic {
+  0% { opacity: 0.95; }
+  45% { opacity: 0.65; }
+  100% { opacity: 0; }
+}
+
+@keyframes crtChannelCollapse {
+  0% { transform: scaleY(0.08) scaleX(1.22); opacity: 0.25; }
+  45% { transform: scaleY(1.06) scaleX(0.96); opacity: 0.9; }
+  100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+}
+
+@keyframes crtSweep {
+  0% { top: -25px; opacity: 0; }
+  10% { opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes crtFloatBreathe {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-3px) scale(1.02); }
+}
+
+@keyframes crtPhosphorPulse {
+  0% { filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.7)) brightness(0.98); }
+  50% { filter: drop-shadow(0 0 14px rgba(0, 255, 102, 0.95)) brightness(1.06); }
+  100% { filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.7)) brightness(0.98); }
+}
+
+.crt-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--phosphor-primary);
+  box-shadow: 0 0 6px var(--phosphor-glow);
+  display: inline-block;
+}
+
+/* 7. Phosphor Bloom Glow */
 .glow-text {
   text-shadow: 0 0 6px var(--phosphor-glow), 0 0 12px var(--phosphor-primary);
 }

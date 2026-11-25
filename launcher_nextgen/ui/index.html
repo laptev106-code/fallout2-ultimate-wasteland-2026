@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 3000 Mk IV</title>
+  <title>Fallout 2 Ultimate Wasteland Edition 2026 // Pip-Boy 2000 Plus</title>
   <link rel="icon" type="image/png" href="assets/vault13_icon.png">
   <link rel="shortcut icon" href="assets/vault13_icon.ico">
   <link rel="stylesheet" href="css/tokens.css">
@@ -16,24 +16,29 @@
     <!-- Hardware Canvas for Floating Radioactive Ash & Embers -->
     <canvas id="particles-canvas"></canvas>
 
-    <!-- CRT Overlay & Vignette -->
-    <div id="crt-overlay" class="crt-overlay"></div>
-    <div class="crt-vignette"></div>
+    <!-- CRT Tube Overlays: Scanlines, Convex Glass Vignette, Tube Bezel -->
+    <div id="crt-overlay" class="crt-overlay">
+      <div class="crt-vignette"></div>
+      <div class="crt-tube-bezel"></div>
+    </div>
 
     <div class="app-wrapper">
       <!-- 1. Header Bar -->
       <header class="app-header">
         <div class="brand-section">
-          <img src="assets/app_icon.png" alt="Pip-Boy Remaster" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 8px; filter: drop-shadow(0 0 8px rgba(0,255,130,0.5));">
+          <img src="assets/vault_tec_clean_emblem.svg" alt="Vault-Tec Logo" class="brand-vault-logo" style="height: 28px; width: 28px; vertical-align: middle; margin-right: 8px;">
           <span class="brand-logo glow-text">VAULT-TEC</span>
-          <span class="brand-badge">VAULT 13 // PIP-BOY 3000 MK IV</span>
+          <span class="brand-badge" style="display: inline-flex; align-items: center; gap: 6px;">
+            <img src="assets/vault13_icon.png" style="width: 18px; height: 18px; vertical-align: middle;" alt="Vault 13 Gear">
+            <span>VAULT 13 // PIP-BOY 2000 PLUS</span>
+          </span>
           <span style="font-size: 11px; color: var(--phosphor-dim);">// DIRECTORS CUT 2026</span>
         </div>
 
         <div class="header-status-pills">
           <div class="status-pill">
             <span class="status-dot"></span>
-            <span>ДВИЖОК: SFALL v4.4.8 (DX9)</span>
+            <span>ДВИЖОК: SFALL v5.1.5.1 (DX9)</span>
           </div>
           <div class="status-pill">
             <span class="status-dot" style="background-color: var(--cyan-primary); box-shadow: 0 0 6px rgba(0,229,255,0.5);"></span>
@@ -42,8 +47,9 @@
         </div>
 
         <div class="header-controls">
-          <button id="btn-toggle-sound" class="ctrl-btn" title="Включение/отключение щелчков реле">SOUND: ON</button>
-          <button id="btn-toggle-crt" class="ctrl-btn" title="Включение/отключение растра кинескопа">CRT: ON</button>
+          <button id="btn-toggle-sound" class="ctrl-btn" title="Включение/отключение звуков интерфейса">SOUND: ON</button>
+          <button id="btn-toggle-hum" class="ctrl-btn" title="Включение/отключение лампового фонового гула ЭЛТ">HUM: ON</button>
+          <button id="btn-toggle-crt" class="ctrl-btn" title="Переключение эффекта кинескопа: NEW (натуральный) / CLASSIC (старый) / OFF">CRT: NEW</button>
         </div>
       </header>
 
@@ -77,8 +83,15 @@
           </button>
 
           <div class="sidebar-vaultboy">
-            <img class="vaultboy-preview-img" src="assets/pipboy_gear_chatgpt.jpg" alt="Pip-Boy" style="border-radius: 6px; border: 1px solid var(--border-muted); filter: drop-shadow(0 0 10px rgba(0,255,130,0.3));">
-            <div class="vaultboy-tag">PIP-BOY 3000 // ВСЁ ОТЛИЧНО!</div>
+            <div id="pipboy-tv-screen" class="crt-screen-frame">
+              <div class="crt-scanline-overlay"></div>
+              <div class="crt-beam-sweep"></div>
+              <img id="pipboy-channel-img" src="assets/vault_boy_thumbsup.png" class="vaultboy-preview-img crt-hologram" alt="Vault Boy">
+            </div>
+            <div class="vaultboy-tag">
+              <span class="crt-status-dot"></span>
+              <span id="pipboy-channel-label">PIP-BOY 2000 // ВСЁ ОТЛИЧНО!</span>
+            </div>
           </div>
         </nav>
 
@@ -95,11 +108,11 @@
                 </div>
                 <div class="profile-content">
                   <div class="profile-title">GAMEPLAY ULTIMATE</div>
-                  <div class="profile-subtitle">Полная переработка и восстановленный контент на движке sfall</div>
+                  <div class="profile-subtitle">Полная переработка и восстановленный контент на движке sFall 5.1.5.1 + EcCo</div>
                   <div class="profile-story">
                     <p class="story-lead">В такой Fallout вы ещё не играли.</p>
-                    <p id="gameplay-story-desc">Глобальная переработка классической Пустоши, объединяющая 28 модификаций и каноничных модулей в единую стабильную систему. Здесь возвращены вырезанные локации (Аббатство, EPA, Деревня Дикарей, Убежище 23) и незаконченные квесты, добавлены 3D-головы ключевых лидеров Пустоши, новая спутница Ангелина Бишоп из Нью-Рено, напарники визуально меняют экипировку при смене брони, а саундтрек звучит в несжатом стерео 44.1 кГц.</p>
-                    <p class="story-tail">И многое, многое другое.</p>
+                    <p id="gameplay-story-desc">Глобальная переработка классической Пустоши, объединяющая 36 модификаций и каноничных модулей в единую стабильную систему. Возвращены вырезанные локации (Аббатство, АЗОС, Деревня Дикарей, Лагерь работорговцев) и незаконченные квесты, добавлены 247 говорящих голов, живые голоса поселений, смена брони напарников, тактический ИИ и студийный саундтрек 44.1 кГц.</p>
+                    <p class="story-tail">Без цензуры 1С — в духе оригинала 1998 года.</p>
                   </div>
                   <button id="btn-launch-gameplay" class="btn-launch">
                     <span>▶ ЗАПУСК GAMEPLAY ULTIMATE</span>
@@ -135,6 +148,7 @@
                 <span>БЫСТРЫЕ НАСТРОЙКИ ПУСТОШИ &amp; QoL (ДЕЙСТВУЮТ НА ОБА ПРОФИЛЯ)</span>
               </div>
               <div class="qol-toggles-grid">
+                <!-- 1. ВСЕГДА БЕГАТЬ -->
                 <label class="qol-toggle-item">
                   <input type="checkbox" id="quick-toggle-alwaysrun" class="qol-checkbox" checked>
                   <div class="qol-label-desc">
@@ -142,6 +156,8 @@
                     <span class="qol-subtext">Персонаж передвигается бегом по умолчанию без удержания Shift</span>
                   </div>
                 </label>
+
+                <!-- 2. АВТОПЕРЕЗАРЯДКА -->
                 <label class="qol-toggle-item">
                   <input type="checkbox" id="quick-toggle-autoreload" class="qol-checkbox">
                   <div class="qol-label-desc">
@@ -149,6 +165,51 @@
                     <span class="qol-subtext">Автоматически пополняет боезапас из рюкзака после окончания боя</span>
                   </div>
                 </label>
+
+                <!-- 3. ОБЪЕДИНЕННАЯ ТАКТИЧЕСКАЯ ПОДСВЕТКА (ОБЪЕДИНИ !!!) -->
+                <div class="qol-unified-highlight-card">
+                  <!-- Левая колонка: Подсветка предметов и Линия видимости CheckLOS -->
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                      <input type="checkbox" id="quick-toggle-hl-master" class="qol-checkbox" checked style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--green-primary); cursor: pointer;">
+                      <div class="qol-label-desc">
+                        <span class="qol-label-text">Подсветка предметов (Shift / Caps)</span>
+                        <span class="qol-subtext">Цветные контуры предметов, сундуков и тел при зажатом Shift</span>
+                      </div>
+                    </label>
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                      <input type="checkbox" id="quick-toggle-hl-checklos" class="qol-checkbox" checked style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--green-primary); cursor: pointer;">
+                      <div class="qol-label-desc">
+                        <span class="qol-label-text">Линия видимости (CheckLOS)</span>
+                        <span class="qol-subtext">Честный режим: скрывать подсветку за глухими стенами без рентгена</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- Правая колонка: Выделение целей в бою -->
+                  <div style="display: flex; flex-direction: column; gap: 6px; justify-content: center; height: 100%;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span class="qol-label-text">Выделение врагов в бою</span>
+                    </div>
+                    <select id="quick-select-target-highlight" class="form-select qol-inline-select">
+                      <option value="2" selected>Все цели в бою (Красный контур)</option>
+                      <option value="1">Цель под курсором (Фокус)</option>
+                      <option value="0">Отключено</option>
+                    </select>
+                    <span class="qol-subtext">Красный тактический контур вокруг целей в бою (sFall D3D9)</span>
+                  </div>
+                </div>
+
+                <!-- 4. ЗАКРЫТИЕ ИНВЕНТАРЯ КЛИКОМ ВНЕ ОКНА -->
+                <label class="qol-toggle-item">
+                  <input type="checkbox" id="quick-toggle-qol-clickoutside" class="qol-checkbox" checked>
+                  <div class="qol-label-desc">
+                    <span class="qol-label-text">Закрытие инвентаря кликом вне окна</span>
+                    <span class="qol-subtext">Клик в свободную область экрана закрывает инвентарь или сундук</span>
+                  </div>
+                </label>
+
+                <!-- 5. ОБУЧЕНИЕ В ХРАМЕ ИСПЫТАНИЙ -->
                 <label class="qol-toggle-item">
                   <input type="checkbox" id="quick-toggle-temple-tutorial" class="qol-checkbox" checked>
                   <div class="qol-label-desc">
@@ -156,18 +217,6 @@
                     <span class="qol-subtext">Подсказки старейшин в храме по тактике боя, ловушкам и выживанию</span>
                   </div>
                 </label>
-                <div class="qol-toggle-item" style="cursor: default; flex-direction: column; gap: 6px;">
-                  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <span class="qol-label-text">Цикличный сейв (F5)</span>
-                    <select id="quick-select-quicksave" class="form-select" style="width: auto; padding: 2px 6px; font-size: 11px; height: 26px; border-color: rgba(43,245,88,0.4);">
-                      <option value="off">Откл (1 слот)</option>
-                      <option value="7">Стр. 7 (10 слотов)</option>
-                      <option value="8">Стр. 8 (10 слотов)</option>
-                      <option value="9">Стр. 9 (10 слотов)</option>
-                    </select>
-                  </div>
-                  <span class="qol-subtext">Выделяет указанную страницу под 10 автосейвов, защищая ручные сейвы</span>
-                </div>
               </div>
             </div>
           </section>
@@ -175,15 +224,17 @@
           <!-- VIEW 2: КАТАЛОГ МОДОВ -->
           <section id="view-catalog" class="view-page">
             <div class="catalog-filters">
-              <button class="filter-pill active" data-filter="ALL">ВСЕ (28 МОДОВ)</button>
+              <button class="filter-pill active" data-filter="ALL">ВСЕ (36 МОДОВ)</button>
               <button class="filter-pill" data-filter="КВЕСТЫ">КВЕСТЫ И МИР</button>
               <button class="filter-pill" data-filter="ВИЗУАЛ">ВИЗУАЛ И АНИМАЦИИ</button>
               <button class="filter-pill" data-filter="СПУТНИКИ">НАПАРНИКИ</button>
               <button class="filter-pill" data-filter="ГЕЙМПЛЕЙ">ГЕЙМПЛЕЙ И QOL</button>
+              <button class="filter-pill" data-filter="КОМЬЮНИТИ">КОМЬЮНИТИ (ФОКС)</button>
+              <button class="filter-pill" data-filter="В РАЗРАБОТКЕ" style="color: #ffb000; border-color: rgba(255, 176, 0, 0.4);">[!] В РАЗРАБОТКЕ / ТЕСТ</button>
               <button class="filter-pill" data-filter="ЗВУК">ЗВУК 44.1 КГЦ</button>
               <button class="filter-pill" data-filter="ДВИЖОК">ДВИЖОК И ЯДРО</button>
               <button class="filter-pill" data-filter="ПЕРЕВОД">ПЕРЕВОД 18+</button>
-              <button id="btn-toggle-thumbs" class="filter-pill view-toggle-btn" style="margin-left: auto;">📷 СКРИНШОТЫ</button>
+              <button id="btn-toggle-thumbs" class="view-toggle-btn" style="margin-left: auto;" title="Переключение режима каталога: постеры или компактный текстовый список">[▤] ПОСТЕРЫ: ВКЛ</button>
             </div>
             <div id="catalog-cards-container" class="catalog-grid"></div>
           </section>
@@ -255,12 +306,11 @@
                     <option value="cinema">Атмосферный ReShade (Пресет #88 — глубокий контраст, объёмные тени)</option>
                   </select>
                 </div>
-              </div>
 
                 <div class="form-group">
                   <div class="form-label-block">
                     <span class="form-label">6. ОГРАНИЧЕНИЕ КАДРОВ (FPS LOCK):</span>
-                    <span class="form-hint">Устраняет холостой рендер на 3000+ FPS, предотвращает перегрев видеокарты и вой кулеров (как в конфигураторе Foxx).</span>
+                    <span class="form-hint">Устраняет холостой рендер на 3000+ FPS, предотвращает перегрев видеокарты и вой кулеров.</span>
                   </div>
                   <select id="select-fps" class="form-select">
                     <option value="60" selected>60 FPS (Энергосбережение / Тихая и холодная видеокарта — Рекомендуется)</option>
@@ -269,6 +319,7 @@
                     <option value="0">Без ограничений (Макс. FPS / Высокий нагрев GPU)</option>
                   </select>
                 </div>
+              </div>
 
               <div class="section-box">
                 <div class="section-title">ЗВУК И МУЗЫКАЛЬНЫЙ БАЛАНС</div>
@@ -322,17 +373,119 @@
                   </label>
                 </div>
 
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-autodoors" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Авто-открытие незапертых дверей при подходе персонажа (fo2tweaks)</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-qol-clickoutside" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Закрывать инвентарь и сундуки кликом по пустому месту экрана</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-qol-closeontakeall" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Автоматически закрывать пустой контейнер после кнопки «Забрать всё»</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-mapblur" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Мягкое размытие фона за диалогами, инвентарем и Pip-Boy (MapBlurFX)</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-wasteland-voices" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Живые голоса Пустоши — фоновые реплики жителей городов и напарников</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="diag-checkbox-label" style="margin-top: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-laststand-surrender" type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Тактический ИИ Last Stand: раненые враги могут сдаться или пойти в отчаянную атаку</span>
+                  </label>
+                </div>
+
                 <div class="form-group" style="margin-top: 14px;">
                   <div class="form-label-block">
-                    <span class="form-label">ЦИКЛИЧНЫЕ БЫСТРЫЕ СЕЙВЫ (F5 AutoQuickSave):</span>
+                    <span class="form-label">ЦИКЛИЧЕСКИЕ БЫСТРЫЕ СОХРАНЕНИЯ (F5 AutoQuickSave):</span>
                     <span class="form-hint">Выделяет указанную страницу под 10 ротируемых слотов F5 (например, Стр. 7: слоты 70..79). Защищает ручные сейвы на других страницах от перезаписи.</span>
                   </div>
                   <select id="select-quicksave" class="form-select" style="max-width: 320px;">
-                    <option value="off">Отключено (1 фиксированный слот F5)</option>
+                    <option value="0">Отключено (1 фиксированный слот F5)</option>
                     <option value="7">Страница 7 (10 слотов: 70 — 79)</option>
                     <option value="8">Страница 8 (10 слотов: 80 — 89)</option>
                     <option value="9">Страница 9 (10 слотов: 90 — 99)</option>
                   </select>
+                </div>
+              </div>
+
+              <div class="section-box">
+                <div class="section-title">ТАКТИЧЕСКАЯ ПОДСВЕТКА И РАДАР (Shift / Caps Lock)</div>
+                <div class="section-desc">Тонкая настройка подсветки лута, контейнеров, дверей и врагов в бою (gl_highlighting.ini).</div>
+
+                <div class="form-group">
+                  <div class="form-label-block">
+                    <span class="form-label">ВЫДЕЛЕНИЕ ВРАГОВ В БОЮ:</span>
+                    <span class="form-hint">Красный тактический контур вокруг целей в пошаговом бою.</span>
+                  </div>
+                  <select id="select-target-highlight" class="form-select">
+                    <option value="2" selected>Все цели в бою (Красный контур)</option>
+                    <option value="1">Цель под курсором (Фокус)</option>
+                    <option value="0">Отключено</option>
+                  </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; padding: 12px 0;">
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-master" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Общая подсветка (Shift / Caps Lock)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-checklos" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Линия видимости (без рентгена сквозь стены)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-skipempty" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Пропускать пустые ящики (fo2tweaks)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-items" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Предметы на земле (Желтый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-containers" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Контейнеры с лутом (Зеленый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-empty-cont" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Пустые контейнеры (Серый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-corpses" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Тела с добычей (Желтый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-empty-corp" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Пустые тела (Серый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-scenery" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Терминалы и объекты (Фиолетовый)</span>
+                  </label>
+                  <label class="diag-checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input id="toggle-hl-doors" type="checkbox" checked style="width: 17px; height: 17px; accent-color: var(--green-primary);">
+                    <span style="font-size: 13px; color: var(--text-main);">Запертые двери (Красный)</span>
+                  </label>
                 </div>
               </div>
 
@@ -365,7 +518,10 @@
                 </div>
               </div>
 
-              <button id="btn-save-settings" class="btn-primary">💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ</button>
+              <div class="settings-sticky-bar">
+                <button id="btn-save-settings" class="btn-primary" style="flex: 1;">💾 СОХРАНИТЬ И ПРИМЕНИТЬ НАСТРОЙКИ</button>
+                <span class="settings-autosave-hint">Изменения применяются автоматически</span>
+              </div>
             </div>
           </section>
 
@@ -415,7 +571,7 @@
                   <span style="font-size: 18px;">↗</span>
                 </a>
 
-                <a class="channel-card" data-url="https://boosty.to/fallout2_ultimate">
+                <a class="channel-card" data-url="https://boosty.to/fallout2ultimate">
                   <div class="channel-info">
                     <h4>⭐ BOOSTY АВТОРА</h4>
                     <p>Ранний доступ к новым билдам, эксклюзивные лонгриды и поддержка</p>
@@ -462,8 +618,8 @@
                 <div>
                   <label class="form-label" style="margin-bottom: 6px;">ПРОФИЛЬ СБОРКИ:</label>
                   <select id="report-profile" class="form-select" style="width: 100%;">
-                    <option value="Gameplay Ultimate (sfall v4.4.8 + RPU)">Gameplay Ultimate (sfall v4.4.8 + RPU)</option>
-                    <option value="HD Community Edition (SDL2)">HD Community Edition (SDL2)</option>
+                    <option value="Gameplay Ultimate (sFall 5.1.5.1 + RPU + EcCo)">Gameplay Ultimate (sFall 5.1.5.1 + RPU + EcCo)</option>
+                    <option value="HD Community Edition (sFall 5.1.5.1 + SDL2)">HD Community Edition (sFall 5.1.5.1 + SDL2)</option>
                   </select>
                 </div>
 
@@ -490,7 +646,7 @@
             <div class="feedback-layout" style="display: flex; flex-direction: column; gap: 12px; height: 100%;">
               <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-muted); padding-bottom: 8px;">
                 <div>
-                  <div class="section-title glow-text" style="font-size: 15px; margin-bottom: 3px;">ЖУРНАЛ ИЗМЕНЕНИЙ // РЕЕСТР ФИКСОВ FIX-01 .. FIX-65</div>
+                  <div class="section-title glow-text" style="font-size: 15px; margin-bottom: 3px;">ЖУРНАЛ ИЗМЕНЕНИЙ // РЕЕСТР ФИКСОВ FIX-01 .. FIX-74</div>
                   <div class="section-desc" style="font-size: 11px;">Полный аудит всех инженерных правок, сюжетных развилок, баланса EcCo и тактического ИИ 2026.</div>
                 </div>
                 <div style="display: flex; gap: 8px;">
@@ -515,7 +671,7 @@
 
       <!-- 3. Footer Bar -->
       <footer class="app-footer">
-        <div>ROBCO PIP-BOY OS v4.4.8 // TELEMETRY: NOMINAL</div>
+        <div>ROBCO PIP-BOY OS v5.1.5.1 // TELEMETRY: NOMINAL</div>
         <div>
           <span>СБОРКА: </span>
           <span style="color: var(--phosphor-bright);">DIRECTOR'S CUT 2026</span>

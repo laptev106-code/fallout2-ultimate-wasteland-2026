@@ -1,0 +1,537 @@
+#line 1 "gl_highlighting_persistent.ssl"
+#line 10 "gl_highlighting_persistent.ssl"
+#pragma sce
+#line 12 "gl_highlighting_persistent.ssl"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 13 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/global.h"
+#line 14 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/itempid.h"
+#line 15 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/scripts.h"
+#line 16 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/teams.h"
+#line 17 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/condtion.h"
+#line 45 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/condtion.h"
+variable ProtoOfItemGiven;
+variable ValueOfRollCheck:= 1 ;
+#line 18 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 19 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/aipacket.h"
+#line 20 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/exppoint.h"
+#line 21 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/scenepid.h"
+#line 18 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/scenepid.h"
+variable Scenery_Creation;
+variable Scenery_Creation_Hex;
+variable Scenery_Creation_Count;
+variable Temp_Scenery_Creation_Hex;
+variable Scenery_Creation_Ptr;
+#line 22 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/maps.h"
+#line 23 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/animcomd.h"
+#line 24 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/critrpid.h"
+#line 25 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/artfid.h"
+#line 26 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party.h"
+#line 164 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party.h"
+variable PartyHealingItem;
+#line 701 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party.h"
+procedure checkPartyMembersNearDoor begin
+   if ( ( party_member_obj( (16777278) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777278) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777376) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777376) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777377) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777377) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777305) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777305) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777313) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777313) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777323) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777323) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777352) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777352) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777378) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777378) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777368) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777368) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777379) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777379) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777380) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777380) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777295) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777295) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777381) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777381) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777407) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777407) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777411) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777411) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777412) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777412) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777413) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777413) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777481) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777481) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777558) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777558) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777600) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777600) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777718) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777718) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777719) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777719) ) ) <= (5) ) then begin return 1; end end
+   if ( ( party_member_obj( (16777720) ) != 0) ) then begin if (tile_distance_objs(self_obj, party_member_obj( (16777720) ) ) <= (5) ) then begin return 1; end end
+   return 0;
+end
+#line 27 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/reaction.h"
+#line 28 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 29 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/sfall.h"
+#line 30 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 200 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define_pre.h"
+#line 201 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 927 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/upu.h"
+#line 14 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/upu.h"
+procedure check_filesystem_override begin
+   variable fs_override := get_ini_setting("ddraw.ini|Misc|UseFileSystemOverride");
+   if fs_override != 1 then begin
+      debug_msg( "gl_highlighting" + ": " + "UseFileSystemOverride is disabled, enabling" + "\n") ;
+      sfall_func2("set_ini_setting", "ddraw.ini|Misc|UseFileSystemOverride", 1) ;
+      float_msg(dude_obj,  "gl_highlighting"  + ": filesystem override was disabled, some features failed to load. The setting is corrected. EXIT AND RE-LAUNCH THE GAME now.",  (-2) );
+      return false;
+   end
+   return true;
+end
+
+
+procedure create_and_use_itempid_on(variable target, variable itempid) begin
+   variable item;
+   item :=  create_object_sid(itempid,tile_num(target),elevation(target),-1) ;
+   set_self(target);
+   set_self(target);
+   use_obj_on_obj(item, target);
+   set_self(0);
+end
+
+procedure is_human(variable who) begin
+   variable type;
+   type :=  metarule( 51 , who) ;
+   if type ==  0  or type ==  1  or type ==  2  then return true;
+   return false;
+end
+#line 62 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/upu.h"
+procedure closest_party_member(variable obj) begin
+   variable who, cur_distance, min_distance := -1, closest_who := false;
+
+   if len_array( party_member_list(0) ) == 1 then return false;
+
+   foreach who in  party_member_list(0)  begin
+      if (who != dude_obj) and (who != obj) then begin
+         cur_distance := tile_distance_objs(obj, who);
+         if (min_distance == -1) or (cur_distance < min_distance) then begin
+            min_distance := cur_distance;
+            closest_who := who;
+         end
+      end
+   end
+   return closest_who;
+end
+#line 83 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/upu.h"
+procedure dude_mod_skill(variable skill, variable amount) begin
+   if ( metarule( 40 , skill)  and (amount % 2)) then begin
+
+      if (amount > 0) then amount++;
+      else amount--;
+   end
+   critter_mod_skill(dude_obj, skill, amount);
+end
+
+
+
+
+
+
+
+procedure self_is_evil begin
+   variable evil_critters := [
+
+
+      "bcdardog",
+      "bcdargrd",
+      "bcdarion",
+      "bcgengrd",
+      "bckarla",
+      "bcphil",
+      "dcslvgrt",
+      "ecmstden",
+      "ecmstnew",
+      "fcbadpea",
+      "fcdaveh",
+      "fcelrind",
+      "fcjuavki",
+      "fclopan",
+      "fcoz7",
+      "fcoz9",
+      "ncbismen",
+      "ncdrgdlr",
+      "ncmormen",
+      "ncramire",
+      "ncsalmen",
+      "ocmatt",
+      "qcfrank",
+      "rchakes",
+      "scbuster",
+      "sclenny",
+      "scmerk",
+      "scmira",
+      "scmrkgrd",
+      "scoswald",
+      "scrawpat",
+      "scskeete",
+      "scslvgrd",
+      "scvortis"
+   ];
+   if  (scan_array(evil_critters, "gl_highlighting" ) != -1)  then return true;
+   return false;
+end
+
+
+procedure beacon_rep begin
+   variable rep := global_var( (0) );
+   if has_trait( (0) , dude_obj,  (95) ) then rep := rep * 2;
+   return rep;
+end
+
+procedure cult_rep begin
+   variable rep := beacon_rep;
+   if  has_trait( (0) , dude_obj, (39) )  then begin
+      rep := abs(rep);
+      if self_is_evil then rep := -rep;
+   end
+   return rep;
+end
+
+procedure perceived_rep begin
+   variable rep := beacon_rep;
+   if self_is_evil then rep := -rep;
+   if  has_trait( (0) , dude_obj, (39) )  then rep := abs(rep);
+   return rep;
+end
+
+
+
+
+
+procedure move_quest_items begin
+   if  get_ini_setting( "mods\\upu.ini" + "|" + "main" + "|" + "wipe_inventory")  != 1 then return 0;
+   if  metarule( 14 , 0)  then return 0;
+   variable tmp_box :=  create_object_sid( (128) ,5,0,-1) ;
+   variable pid;
+   variable pids := [
+      (448) ,
+      (252) ,
+      (471) ,
+      (447) ,
+      (97) ,
+
+      (253) ,
+      (254) ,
+      (456) ,
+      (356) ,
+      (257) ,
+      (255) ,
+      (340) ,
+
+      (476) ,
+      (422) ,
+      (256) ,
+      (366) ,
+      (302) ,
+      (99) ,
+      (258) ,
+      (488) ,
+      (337) ,
+      (335) ,
+      (336) ,
+      (479) ,
+      (307) ,
+      (495) ,
+      (341) ,
+      (431) ,
+      (432) ,
+      (303) ,
+      (96) ,
+      (306) ,
+      (468) ,
+      (339) ,
+      (492) ,
+      (298) ,
+      (377) ,
+      (414) ,
+      (446) ,
+      (266) ,
+      (267) ,
+      (338) ,
+      (223) ,
+      (305) ,
+
+
+
+      (229) ,
+      (333) ,
+
+      (534) ,
+      (537) ,
+      (544) ,
+      (566) ,
+      (573) ,
+      (592) ,
+      (596)
+
+   ];
+   foreach pid in pids begin
+      if (obj_is_carrying_obj_pid(self_obj, pid) > 0) then begin
+         variable special_item := obj_carrying_pid_obj(self_obj, pid);
+         rm_obj_from_inven(self_obj, special_item);
+         add_obj_to_inven(tmp_box, special_item);
+      end
+   end
+   variable trash_box :=  create_object_sid( (128) ,0,0,-1) ;
+   move_obj_inven_to_obj(self_obj, trash_box);
+   destroy_object(trash_box);
+   return tmp_box;
+end
+
+procedure restore_critical_items(variable tmp_box) begin
+   if tmp_box == 0 then return;
+   move_obj_inven_to_obj(tmp_box, self_obj);
+   destroy_object(tmp_box);
+end
+#line 928 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/rpu.h"
+#line 21 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/rpu.h"
+procedure is_lockpick_elec(variable item) begin
+  switch (obj_pid(item)) begin
+    case  (77) : return true;
+    case  (411) : return true;
+    default: return false;
+  end
+end
+procedure is_lockpick_mech(variable item) begin
+  switch (obj_pid(item)) begin
+    case  (84) : return true;
+    case  (410) : return true;
+    default: return false;
+  end
+end
+procedure is_lockpick(variable item) begin
+  if is_lockpick_mech(item) then return true;
+  if is_lockpick_elec(item) then return true;
+  return false;
+end
+#line 44 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/rpu.h"
+procedure dude_is_addicted() begin
+  if global_var( (296) )
+    or global_var( (21) )
+    or global_var( (22) )
+    or global_var( (23) )
+    or global_var( (24) )
+    or global_var( (25) )
+    or global_var( (26) )
+    or global_var( (295) )
+  then return true;
+  return false;
+end
+#line 929 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party2.h"
+
+
+
+
+
+procedure party_size_humans begin
+   variable n := 0, type, who;
+   foreach who in  party_member_list(0)  begin
+      type :=  metarule( 51 , who) ;
+      if type ==  0  or type ==  1  then n+=1;
+   end
+   return n;
+end
+#line 20 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party2.h"
+procedure party_has_injured(variable only_organic = true) begin
+   foreach (variable who in  party_member_list(0) ) begin
+      if (who == dude_obj) then continue;
+      if (only_organic) then begin
+         variable pid;
+         pid = obj_pid(who);
+         if (pid ==  (16777352) ) or (pid ==  (16777687) ) or ( metarule( 51 , who)  ==  10 ) then continue;
+      end
+      if  (get_critter_stat(who, (35) ) < get_critter_stat(who, (7) ))  then return true;
+   end
+   return false;
+end
+#line 38 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/party2.h"
+procedure party_injured_count(variable only_organic = true) begin
+   variable count = 0;
+   foreach (variable who in  party_member_list(0) ) begin
+      if (who == dude_obj) then continue;
+      if (only_organic) then begin
+         variable pid;
+         pid = obj_pid(who);
+         if (pid ==  (16777352) ) or (pid ==  (16777687) ) or ( metarule( 51 , who)  ==  10 ) then continue;
+      end
+      if  (get_critter_stat(who, (35) ) < get_critter_stat(who, (7) ))  then count += 1;
+   end
+   return count;
+end
+#line 930 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/define.h"
+#line 13 "gl_highlighting_persistent.ssl"
+#line 1 "D:/AG games mods/fallout2-ultimate-wasteland-2026/tools/headers/sfall.h"
+#line 14 "gl_highlighting_persistent.ssl"
+#line 27 "gl_highlighting_persistent.ssl"
+variable persistent_active := 0;
+variable shift_hold_active := 0;
+variable last_dude_tile := -1;
+
+procedure ClearAllOutlines begin
+   variable obj;
+   foreach obj in list_as_array( (1) ) begin
+      if obj then  sfall_func2("set_outline", obj, 0) ;
+   end
+   foreach obj in list_as_array( (0) ) begin
+      if obj then  sfall_func2("set_outline", obj, 0) ;
+   end
+   foreach obj in list_as_array( (2) ) begin
+      if obj then  sfall_func2("set_outline", obj, 0) ;
+   end
+
+   sfall_func0("tile_refresh_display") ;
+end
+
+procedure ApplyOutlines begin
+   variable obj, isCorpse, sid;
+
+
+   foreach obj in list_as_array( (1) ) begin
+      if (obj and obj !=  sfall_func0("outlined_object")  and not  ( sfall_func1("get_flags", obj) bwand FLAG_NOHIGHLIGHT) ) then begin
+         if (obj_item_subtype(obj) ==  (1) ) then begin
+            if (obj_is_locked(obj)) then
+               sfall_func2("set_outline", obj, (2) ) ;
+            else if ( ( inven_cmds(obj, (13) ,0) == 0) ) then
+               sfall_func2("set_outline", obj, (4) ) ;
+            else
+               sfall_func2("set_outline", obj, (8) ) ;
+         end else begin
+            sfall_func2("set_outline", obj, (16) ) ;
+         end
+      end
+   end
+
+
+   foreach obj in list_as_array( (0) ) begin
+      if (obj and obj != dude_obj) then begin
+         isCorpse := (critter_state(obj) == 1);
+         if (isCorpse and not  (get_proto_data(obj_pid(obj), PROTO_CR_FLAGS) bwand CFLG_NOSTEAL) ) then begin
+            if (not  ( inven_cmds(obj, (13) ,0) == 0) ) then
+               sfall_func2("set_outline", obj, (16) ) ;
+            else
+               sfall_func2("set_outline", obj, (4) ) ;
+         end
+      end
+   end
+
+
+   foreach obj in list_as_array( (2) ) begin
+      if obj then begin
+         sid :=  sfall_func2("get_object_data", obj, OBJ_DATA_SID) ;
+         if (sid != -1 and not  ( sfall_func1("get_flags", obj) bwand FLAG_NOHIGHLIGHT) ) then begin
+            if (obj_is_locked(obj) and not obj_is_open(obj)) then
+               sfall_func2("set_outline", obj, (2) ) ;
+            else
+               sfall_func2("set_outline", obj, (64) ) ;
+         end
+      end
+   end
+
+end
+
+procedure ShowStatusMsg(variable is_on) begin
+   variable lang;
+   lang := get_ini_string("fallout2.cfg|system|language");
+   if (lang == "english") then begin
+      if is_on then
+         display_msg("Highlighting: ON");
+      else
+         display_msg("Highlighting: OFF");
+   end else begin
+      if is_on then
+         display_msg("Подсветка: ВКЛ");
+      else
+         display_msg("Подсветка: ВЫКЛ");
+   end
+end
+
+procedure KeyPressHandler begin
+   variable pressed := get_sfall_arg;
+   variable scanCode := get_sfall_arg;
+
+
+   if (get_game_mode bwand ( (0x40)  bwor  (0x800) )) then return;
+   if (get_game_mode != 0 and get_game_mode !=  (0x2) ) then return;
+
+
+   if (scanCode == 58 and pressed) then begin
+      persistent_active := not persistent_active;
+      set_sfall_global("GL_PERM_HIGH", persistent_active);
+      if persistent_active then begin
+         call ApplyOutlines;
+         call ShowStatusMsg(1);
+      end else begin
+         call ClearAllOutlines;
+         call ShowStatusMsg(0);
+      end
+      return;
+   end
+
+
+   if (scanCode == 42 or scanCode == 54) then begin
+      if (pressed and not shift_hold_active) then begin
+         shift_hold_active := 1;
+         call ApplyOutlines;
+      end else if (not pressed and shift_hold_active) then begin
+         shift_hold_active := 0;
+         if (not persistent_active) then call ClearAllOutlines;
+      end
+   end
+end
+
+procedure GameModeChangeHandler begin
+
+   if (persistent_active or shift_hold_active) then begin
+      if (get_game_mode == 0 or get_game_mode ==  (0x2) ) then begin
+         call ApplyOutlines;
+      end
+   end
+end
+
+procedure InventoryMoveHandler begin
+
+   if ((persistent_active or shift_hold_active) and get_sfall_arg == 7) then begin
+      sfall_func2("set_outline", get_sfall_arg, 0) ;
+   end
+end
+
+procedure start begin
+   if game_loaded then begin
+      if (sfall_ver_major < 4) then return;
+      persistent_active := get_sfall_global_int("GL_PERM_HIGH");
+
+      register_hook_proc( (19) , KeyPressHandler);
+      register_hook_proc( (31) , GameModeChangeHandler);
+      register_hook_proc( (24) , InventoryMoveHandler);
+
+      set_global_script_type(1);
+
+      set_global_script_repeat(20);
+
+      if persistent_active then call ApplyOutlines;
+   end else begin
+
+      if (persistent_active or shift_hold_active) then begin
+         if (get_game_mode == 0 or get_game_mode ==  (0x2) ) then begin
+            if (tile_num(dude_obj) != last_dude_tile) then begin
+               last_dude_tile := tile_num(dude_obj);
+               call ApplyOutlines;
+            end
+         end
+      end
+   end
+end

@@ -1,0 +1,595 @@
+/*
+   =============================================================================
+   [ÒÅÑÒÈÐÓÅÒÑß] DYNAMIC THEFT & WITNESS SYSTEM // sFall 4.5.1 Global Engine Script
+   Standalone Module for Fallout 2 (Ultimate Wasteland Edition 2026)
+   Lead Systems & Tactical CRPG Designer (Fail-Forward Architecture)
+   =============================================================================
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_dynamic_theft"
+#include "define.h"
+#include "command.h"
+#include "sfall.h"
+#include "sfall/lib.arrays.h"
+
+#define INI_FILE "dynamic_theft.ini"
+#define SAVED_ARRAY_NAME "dyn_theft_mem"
+
+// Procedures
+procedure start;
+procedure std_proc_handler;
+procedure steal_proc_handler;
+procedure use_skill_on_handler;
+procedure use_obj_on_handler;
+procedure description_obj_handler;
+procedure handle_container_theft(variable container_obj, variable action_type);
+procedure check_witnesses(variable targ, variable pock);
+procedure pick_warning_phrase(variable witness_obj, variable phase);
+procedure play_alert_reaction(variable witness_obj, variable phrase_id, variable phase);
+procedure is_immune_witness(variable critter_obj);
+procedure get_regional_group(variable town_id);
+procedure get_armor_stealth_mod;
+procedure has_active_stealth_boy;
+
+// Config variables
+variable cfg_enabled := 1;
+variable cfg_debug := 0;
+variable cfg_examine_status := 1;
+variable cfg_scan_radius := 10;
+variable cfg_base_timer := 4;
+variable cfg_memory_min := 5;
+variable cfg_safe_dist := 2;
+
+variable cfg_metal_penalty := 15;
+variable cfg_power_penalty := 30;
+variable cfg_stealth_boy_bonus := 40;
+variable cfg_lockpick_bonus := 15;
+
+variable cfg_luck_enabled := 1;
+variable cfg_luck_thresh := 6;
+variable cfg_sex_appeal := 1;
+variable cfg_ignore_kids := 1;
+variable cfg_ignore_slaves := 1;
+variable cfg_ignore_addicts := 1;
+
+// Global tracking arrays (sFall memory maps)
+// Key: container_obj / critter_obj -> Val: [alert_phase, last_trigger_time, witness_obj, last_dude_tile]
+variable theft_tracker_map := 0;
+
+procedure start begin
+   if game_loaded then begin
+      variable val;
+      val := get_ini_setting(INI_FILE + "|General|Enabled");
+      if (val >= 0) then cfg_enabled := val; else cfg_enabled := 1;
+
+      if (cfg_enabled == 0) then return;
+
+      val := get_ini_setting(INI_FILE + "|General|DebugLog");
+      if (val >= 0) then cfg_debug := val;
+
+      val := get_ini_setting(INI_FILE + "|General|EnableExamineStatus");
+      if (val >= 0) then cfg_examine_status := val;
+
+      val := get_ini_setting(INI_FILE + "|Detection|ScanRadius");
+      if (val > 0) then cfg_scan_radius := val;
+
+      val := get_ini_setting(INI_FILE + "|Detection|BaseWarningTimer");
+      if (val > 0) then cfg_base_timer := val;
+
+      val := get_ini_setting(INI_FILE + "|Detection|MemoryDurationMinutes");
+      if (val > 0) then cfg_memory_min := val;
+
+      val := get_ini_setting(INI_FILE + "|Detection|SafeRetreatDistance");
+      if (val > 0) then cfg_safe_dist := val;
+
+      val := get_ini_setting(INI_FILE + "|EquipmentAndNoise|MetalArmorPenalty");
+      if (val >= 0) then cfg_metal_penalty := val;
+
+      val := get_ini_setting(INI_FILE + "|EquipmentAndNoise|PowerArmorPenalty");
+      if (val >= 0) then cfg_power_penalty := val;
+
+      val := get_ini_setting(INI_FILE + "|EquipmentAndNoise|StealthBoyBonus");
+      if (val >= 0) then cfg_stealth_boy_bonus := val;
+
+      val := get_ini_setting(INI_FILE + "|EquipmentAndNoise|LockpickToolsBonus");
+      if (val >= 0) then cfg_lockpick_bonus := val;
+
+      val := get_ini_setting(INI_FILE + "|Roleplay|LuckSaveEnabled");
+      if (val >= 0) then cfg_luck_enabled := val;
+
+      val := get_ini_setting(INI_FILE + "|Roleplay|LuckThreshold");
+      if (val > 0) then cfg_luck_thresh := val;
+
+      val := get_ini_setting(INI_FILE + "|Roleplay|SexAppealBonus");
+      if (val >= 0) then cfg_sex_appeal := val;
+
+      val := get_ini_setting(INI_FILE + "|Immunity|IgnoreChildren");
+      if (val >= 0) then cfg_ignore_kids := val;
+
+      val := get_ini_setting(INI_FILE + "|Immunity|IgnoreSlaves");
+      if (val >= 0) then cfg_ignore_slaves := val;
+
+      val := get_ini_setting(INI_FILE + "|Immunity|IgnoreAddicts");
+      if (val >= 0) then cfg_ignore_addicts := val;
+
+      // Register hooks
+      register_hook_proc(HOOK_STDPROCEDURE, std_proc_handler);
+      register_hook_proc(HOOK_STEAL, steal_proc_handler);
+      register_hook_proc(HOOK_USESKILLON, use_skill_on_handler);
+      register_hook_proc(HOOK_USEOBJON, use_obj_on_handler);
+      register_hook_proc(HOOK_DESCRIPTIONOBJ, description_obj_handler);
+
+      // Load or create persistent runtime memory map for tracked suspicious objects
+      theft_tracker_map := load_array(SAVED_ARRAY_NAME);
+      if (theft_tracker_map == 0) then begin
+         theft_tracker_map := create_array_map;
+         save_array(SAVED_ARRAY_NAME, theft_tracker_map);
+      end
+   end
+end
+
+procedure is_immune_witness(variable critter_obj) begin
+   variable ai_packet;
+   if (critter_obj == 0) then return 1;
+   if (critter_obj == dude_obj) then return 1;
+   if (is_critter_dead(critter_obj)) then return 1;
+   if (is_critter_prone(critter_obj)) then return 1; // Sleeping, knocked out or crippled on the floor
+
+   // Ignore party members
+   foreach (variable member in party_member_list_critters) begin
+      if (member == critter_obj) then return 1;
+   end
+
+   ai_packet := has_trait(TRAIT_OBJECT, critter_obj, OBJECT_AI_PACKET);
+
+   // AI_CHILD
+   if (cfg_ignore_kids and (ai_packet == 15)) then return 1;
+   // AI_SLAVE
+   if (cfg_ignore_slaves and (ai_packet == 46)) then return 1;
+   // AI_ADDICT variants
+   if (cfg_ignore_addicts and ((ai_packet == 11) or (ai_packet == 52) or (ai_packet == 148) or (ai_packet == 179))) then return 1;
+
+   return 0;
+end
+
+procedure get_regional_group(variable town_id) begin
+   if ((town_id == 4) or (town_id == 5) or (town_id == 49)) then return 1; // Vault City & Gecko
+   if ((town_id == 7) or (town_id == 48) or (town_id == 30)) then return 2; // New Reno
+   if ((town_id == 10) or (town_id == 13) or (town_id == 6) or (town_id == 9) or (town_id == 11)) then return 3; // NCR / Law
+   if ((town_id == 15) or (town_id == 8) or (town_id == 12) or (town_id == 16)) then return 4; // High-tech / Military
+   return 0; // Default: Frontier / Wasteland (Klamath / Den)
+end
+
+procedure get_armor_stealth_mod begin
+   variable armor_obj;
+   variable armor_pid;
+
+   armor_obj := critter_inven_obj(dude_obj, INVEN_TYPE_WORN);
+   if (armor_obj == 0) then return 0;
+
+   armor_pid := obj_pid(armor_obj);
+
+   // Metal armor clatter penalty
+   if ((armor_pid == 2) or (armor_pid == 240) or (armor_pid == 380)) then begin
+      return cfg_metal_penalty;
+   end
+
+   // Power armor heavy servos penalty
+   if ((armor_pid == 3) or (armor_pid == 232) or (armor_pid == 348) or (armor_pid == 349)) then begin
+      return cfg_power_penalty;
+   end
+
+   return 0;
+end
+
+procedure has_active_stealth_boy begin
+   if (obj_is_carrying_obj_pid(dude_obj, 210) > 0) then return 1; // PID_ACTIVE_STEALTH_BOY
+   return 0;
+end
+
+procedure pick_warning_phrase(variable witness_obj, variable phase) begin
+   variable reg_group;
+   variable ch_val;
+   variable base_id;
+   variable offset;
+
+   reg_group := get_regional_group(cur_town);
+   ch_val := get_critter_stat(dude_obj, STAT_ch);
+
+   base_id := 7100 + (reg_group * 100);
+
+   if (phase == 1) then begin
+      if (ch_val <= 3) then begin
+         base_id := base_id + 0;
+         offset := random(0, 2);
+      end else if (ch_val <= 6) then begin
+         base_id := base_id + 10;
+         offset := random(0, 2);
+      end else begin
+         base_id := base_id + 20;
+         offset := random(0, 2);
+      end
+   end else begin
+      if (ch_val <= 3) then begin
+         base_id := base_id + 30;
+         offset := random(0, 1);
+      end else if (ch_val <= 6) then begin
+         base_id := base_id + 40;
+         offset := random(0, 1);
+      end else begin
+         base_id := base_id + 50;
+         offset := random(0, 1);
+      end
+   end
+
+   return (base_id + offset);
+end
+
+procedure play_alert_reaction(variable witness_obj, variable phrase_id, variable phase) begin
+   variable weapon_obj;
+   if (witness_obj == 0) then return;
+
+   anim(witness_obj, 1000, rotation_to_tile(tile_num(witness_obj), tile_num(dude_obj)));
+
+   if (phase == 1) then begin
+      float_msg(witness_obj, mstr_custom(phrase_id), FLOAT_MSG_LIGHT_RED);
+      display_msg(mstr_custom(7020));
+   end else if (phase == 2) then begin
+      if (not critter_is_armed(witness_obj)) then begin
+         weapon_obj := inven_ptr(witness_obj, 0);
+         if (weapon_obj != 0) then begin
+            if (obj_item_subtype(weapon_obj) == item_type_weapon) then begin
+               wield_obj_critter(witness_obj, weapon_obj);
+            end
+         end
+      end
+      float_msg(witness_obj, mstr_custom(phrase_id), FLOAT_MSG_RED);
+      display_msg(mstr_custom(7021));
+   end else begin
+      display_msg(mstr_custom(7022));
+      attack_setup(dude_obj, witness_obj);
+   end
+end
+
+procedure check_witnesses(variable targ, variable pock) begin
+   variable critter_list;
+   variable best_witness := 0;
+   variable best_detection := -999;
+   variable cur_dist;
+   variable rot_to_dude;
+   variable witness_rot;
+   variable angle_diff;
+   variable sector_mod;
+   variable light_mod := 0;
+   variable detection_val;
+   variable sneak_skill;
+   variable pe_val;
+   variable luck_val;
+   variable luck_roll;
+   variable armor_noise;
+
+   luck_val := get_critter_stat(dude_obj, STAT_lu);
+   if (cfg_luck_enabled and (luck_val >= cfg_luck_thresh)) then begin
+      luck_roll := random(1, 10);
+      if (luck_roll <= (luck_val - 2)) then begin
+         display_msg(mstr_custom(random(7000, 7004)));
+         return 0;
+      end
+   end
+
+   critter_list := objects_in_radius(tile_num(dude_obj), cfg_scan_radius, elevation(dude_obj), 0);
+   if (critter_list == 0) then return 0;
+
+   sneak_skill := has_skill(dude_obj, SKILL_SNEAK);
+
+   // Stealth Boy optical distortion
+   if (has_active_stealth_boy) then begin
+      sneak_skill := sneak_skill + cfg_stealth_boy_bonus;
+      display_msg(mstr_custom(7032));
+   end
+
+   // Night time stealth bonus
+   if ((game_time_hour >= 1900) or (game_time_hour < 600)) then begin
+      light_mod := 25;
+   end
+
+   armor_noise := get_armor_stealth_mod;
+   if (armor_noise > 0) then begin
+      display_msg(mstr_custom(7033));
+   end
+
+   foreach (variable cr in critter_list) begin
+      if (is_immune_witness(cr)) then continue;
+
+      if (not obj_can_see_obj(cr, dude_obj)) then continue;
+
+      cur_dist := tile_distance_objs(cr, dude_obj);
+      if (cur_dist > cfg_scan_radius) then continue;
+
+      pe_val := get_critter_stat(cr, STAT_pe);
+      rot_to_dude := rotation_to_tile(tile_num(cr), tile_num(dude_obj));
+      witness_rot := has_trait(TRAIT_OBJECT, cr, OBJECT_CUR_ROT);
+
+      angle_diff := (rot_to_dude - witness_rot);
+      if (angle_diff < 0) then angle_diff := -angle_diff;
+      if (angle_diff > 3) then angle_diff := 6 - angle_diff;
+
+      if (angle_diff == 0) then begin
+         sector_mod := 30;
+      end else if (angle_diff == 1) then begin
+         sector_mod := 0;
+      end else begin
+         sector_mod := -50;
+         if (dude_is_sneaking and (armor_noise == 0)) then continue;
+      end
+
+      detection_val := (pe_val * 10) - (sneak_skill * 7 / 10) - (cur_dist * 6) + sector_mod - light_mod + armor_noise;
+
+      if (cfg_sex_appeal and has_trait(TRAIT_TRAIT, dude_obj, TRAIT_sex_appeal)) then begin
+         if (get_critter_stat(dude_obj, STAT_gender) != get_critter_stat(cr, STAT_gender)) then begin
+            detection_val := detection_val - 25;
+         end
+      end
+
+      if (detection_val > best_detection) then begin
+         best_detection := detection_val;
+         best_witness := cr;
+      end
+   end
+
+   if ((best_witness != 0) and (best_detection > 0)) then begin
+      return best_witness;
+   end
+
+   return 0;
+end
+
+procedure handle_container_theft(variable container_obj, variable action_type) begin
+   variable witness;
+   variable track_info;
+   variable phase := 0;
+   variable last_time := 0;
+   variable elapsed_seconds;
+   variable phrase_id;
+   variable ch_val;
+   variable effective_timer;
+   variable recorded_tile;
+   variable dist_moved;
+
+   if (container_obj == 0) then return;
+   if (cur_town == 0) then return;
+
+   if (theft_tracker_map == 0) then begin
+      theft_tracker_map := load_array(SAVED_ARRAY_NAME);
+      if (theft_tracker_map == 0) then begin
+         theft_tracker_map := create_array_map;
+         save_array(SAVED_ARRAY_NAME, theft_tracker_map);
+      end
+   end
+
+   ch_val := get_critter_stat(dude_obj, STAT_ch);
+   effective_timer := cfg_base_timer + (ch_val - 5);
+   if (effective_timer < 2) then effective_timer := 2;
+
+   if (map_contains_key(theft_tracker_map, container_obj)) then begin
+      track_info := theft_tracker_map[container_obj];
+      phase := track_info[0];
+      last_time := track_info[1];
+      witness := track_info[2];
+      recorded_tile := track_info[3];
+
+      elapsed_seconds := (game_time - last_time) / 10;
+      dist_moved := tile_distance(tile_num(dude_obj), recorded_tile);
+
+      if (elapsed_seconds > (cfg_memory_min * 60)) then begin
+         phase := 0;
+      end else begin
+         if (phase == 1) then begin
+            if (dist_moved >= cfg_safe_dist) then begin
+               phase := 2;
+            end else begin
+               phase := 2;
+            end
+         end else if (phase == 2) then begin
+            phase := 3;
+         end
+      end
+   end
+
+   if (phase == 0) then begin
+      witness := check_witnesses(container_obj, 0);
+      if (witness == 0) then begin
+         if (dude_is_sneaking) then begin
+            display_msg(mstr_custom(7010));
+         end
+         return;
+      end
+      phase := 1;
+   end
+
+   track_info := create_array(4, 0);
+   track_info[0] := phase;
+   track_info[1] := game_time;
+   track_info[2] := witness;
+   track_info[3] := tile_num(dude_obj);
+   theft_tracker_map[container_obj] := track_info;
+
+   phrase_id := pick_warning_phrase(witness, phase);
+   call play_alert_reaction(witness, phrase_id, phase);
+
+   if ((phase == 1) or (phase == 2) or (phase == 3)) then begin
+      set_sfall_return(-1);
+   end
+end
+
+procedure std_proc_handler begin
+   variable proc_num := get_sfall_arg;
+   variable self_item := get_sfall_arg;
+   variable source_cr := get_sfall_arg;
+
+   if (source_cr != dude_obj) then return;
+   if (self_item == 0) then return;
+
+   if ((proc_num == 6) or (proc_num == 8)) then begin
+      if (obj_item_subtype(self_item) == item_type_container) then begin
+         call handle_container_theft(self_item, proc_num);
+      end
+   end
+end
+
+procedure use_skill_on_handler begin
+   variable user_cr    := get_sfall_arg;
+   variable targ_obj   := get_sfall_arg;
+   variable skill_id   := get_sfall_arg;
+
+   if (user_cr != dude_obj) then return;
+   if (targ_obj == 0) then return;
+
+   if ((skill_id == SKILL_STEAL) or (skill_id == SKILL_LOCKPICK)) then begin
+      if (obj_item_subtype(targ_obj) == item_type_container) then begin
+         call handle_container_theft(targ_obj, skill_id);
+      end
+   end
+end
+
+procedure use_obj_on_handler begin
+   variable user_cr    := get_sfall_arg;
+   variable item_used  := get_sfall_arg;
+   variable targ_obj   := get_sfall_arg;
+   variable item_pid;
+
+   if (user_cr != dude_obj) then return;
+   if (targ_obj == 0) then return;
+   if (item_used == 0) then return;
+
+   item_pid := obj_pid(item_used);
+
+   if ((item_pid == 84) or (item_pid == 410) or (item_pid == 77) or (item_pid == 411)) then begin
+      if (obj_item_subtype(targ_obj) == item_type_container) then begin
+         call handle_container_theft(targ_obj, item_pid);
+      end
+   end
+end
+
+procedure description_obj_handler begin
+   variable examined_obj := get_sfall_arg; // arg0: object
+   variable orig_desc    := get_sfall_arg; // arg1: original string
+   variable track_info;
+   variable phase;
+   variable last_time;
+   variable elapsed;
+
+   if (cfg_examine_status == 0) then return;
+   if (examined_obj == 0) then return;
+   if (theft_tracker_map == 0) then return;
+
+   if (map_contains_key(theft_tracker_map, examined_obj)) then begin
+      track_info := theft_tracker_map[examined_obj];
+      phase := track_info[0];
+      last_time := track_info[1];
+      elapsed := (game_time - last_time) / 10;
+
+      if (elapsed <= (cfg_memory_min * 60)) then begin
+         if (phase == 1) then begin
+            set_sfall_return(orig_desc + mstr_custom(7041));
+         end else if (phase == 2) then begin
+            set_sfall_return(orig_desc + mstr_custom(7042));
+         end
+      end
+   end
+end
+
+procedure steal_proc_handler begin
+   variable thief     := get_sfall_arg;
+   variable target    := get_sfall_arg;
+   variable item_obj  := get_sfall_arg;
+   variable is_plant  := get_sfall_arg;
+   variable count     := get_sfall_arg;
+
+   variable witness;
+   variable phrase_id;
+   variable ch_val;
+   variable steal_skill;
+   variable ag_val;
+   variable item_wt := 0;
+   variable hand_chance;
+   variable roll;
+   variable track_info;
+   variable phase := 0;
+   variable last_time := 0;
+   variable elapsed_seconds;
+
+   if (thief != dude_obj) then return;
+   if (target == 0) then return;
+
+   steal_skill := has_skill(dude_obj, SKILL_STEAL);
+   ag_val := get_critter_stat(dude_obj, STAT_ag);
+   if (item_obj != 0) then begin
+      item_wt := pid_weight(obj_pid(item_obj));
+   end
+
+   hand_chance := steal_skill + (ag_val * 4) - (item_wt * 8) + (has_skill(dude_obj, SKILL_LOCKPICK) / 5);
+   if (hand_chance < 5) then hand_chance := 5;
+   if (hand_chance > 95) then hand_chance := 95;
+
+   roll := random(1, 100);
+
+   if (roll <= hand_chance) then begin
+      display_msg(mstr_custom(7011));
+      set_sfall_return(1);
+      return;
+   end
+
+   if (theft_tracker_map == 0) then begin
+      theft_tracker_map := load_array(SAVED_ARRAY_NAME);
+      if (theft_tracker_map == 0) then begin
+         theft_tracker_map := create_array_map;
+         save_array(SAVED_ARRAY_NAME, theft_tracker_map);
+      end
+   end
+
+   if (map_contains_key(theft_tracker_map, target)) then begin
+      track_info := theft_tracker_map[target];
+      phase := track_info[0];
+      last_time := track_info[1];
+      witness := track_info[2];
+
+      elapsed_seconds := (game_time - last_time) / 10;
+      if (elapsed_seconds > (cfg_memory_min * 60)) then begin
+         phase := 0;
+      end else begin
+         if (phase == 1) then begin
+            phase := 2;
+         end else if (phase == 2) then begin
+            phase := 3;
+         end
+      end
+   end
+
+   if (phase == 0) then begin
+      witness := check_witnesses(target, 1);
+      if (witness == 0) then begin
+         display_msg(mstr_custom(7010));
+         set_sfall_return(2);
+         return;
+      end
+      phase := 1;
+   end
+
+   track_info := create_array(4, 0);
+   track_info[0] := phase;
+   track_info[1] := game_time;
+   track_info[2] := witness;
+   track_info[3] := tile_num(dude_obj);
+   theft_tracker_map[target] := track_info;
+
+   phrase_id := pick_warning_phrase(witness, phase);
+   call play_alert_reaction(witness, phrase_id, phase);
+
+   if (phase == 3) then begin
+      set_sfall_return(0);
+   end else begin
+      set_sfall_return(2);
+   end
+end

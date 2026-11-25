@@ -1,6 +1,19 @@
 # ☢️ КАНОН И ОПЕРАЦИОННЫЙ КОДЕКС ЛОРА // FALLOUT 2 LORE CANON & INVARIANTS
 # ТАЙМЛАЙН: 2241 ГОД // РЕГИОН: СЕВЕРНАЯ КАЛИФОРНИЯ (NEW CALIFORNIA)
 
+> 🧭 **ГЕНЕРАЛЬНАЯ НАВИГАЦИЯ ПО ПРОЕКТУ FALLOUT 2 ULTIMATE:**  
+> [🗺️ PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md) — Генеральная карта проекта, архитектура и статус модулей  
+> [📋 PATCHES_REGISTRY.md](file:///E:/FALLOUT%20Ult%20pjt/PATCHES_REGISTRY.md) — Реестр всех выполненных фиксов (FIX-01..FIX-67)  
+> [📜 MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md) — Подробный ченджлог нововведений и исправлений  
+> [📘 Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md) — Мастер-план, дорожная карта и журнал синхронизации чатов (Live Sync Log)  
+> [⚖️ FALLOUT_LORE_CANON.md](file:///E:/FALLOUT%20Ult%20pjt/FALLOUT_LORE_CANON.md) — Кодекс лора и канона 2241 года (Black Isle / Avellone)  
+> [🔬 FOXX_MATRIX.md](file:///E:/FALLOUT%20Ult%20pjt/Docs/FOXX_PORTING_AND_EXPANSION_MATRIX.md) — Матрица интеграции наследия Foxx ReBuild  
+
+> 🛡️ **ЗОЛОТОЙ РЕГЛАМЕНТ ДЛЯ ЛЮБОГО АГЕНТА И ЧАТА (ПРОВЕРКА ПЕРЕД РАБОТОЙ):**  
+> 1. **ПРОВЕРКА ВЫПОЛНЕННЫХ РАБОТ:** Перед тем как предлагать пользователю задачу или писать код, ОТКРОЙ [PATCHES_REGISTRY.md](file:///E:/FALLOUT%20Ult%20pjt/PATCHES_REGISTRY.md). Если задача уже есть в списке (FIX-01..FIX-67), ОНА УЖЕ ВНЕДРЕНА И ПРОТЕСТИРОВАНА. Категорически запрещено предлагать её повторно!  
+> 2. **ПРОВЕРКА АКТИВНОГО ФРОНТА:** Сверься с разделом «Активный фронт разработки» в [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md) и [Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md). Бери в работу ТОЛЬКО те задачи, которые имеют статус [В ОЧЕРЕДИ] или [В РАЗРАБОТКЕ].  
+> 3. **ФИКСАЦИЯ ИТОГОВ РАБОТЫ (CLOSED-LOOP):** Добавить строку FIX-XX в [PATCHES_REGISTRY.md](file:///E:/FALLOUT%20Ult%20pjt/PATCHES_REGISTRY.md), подробное описание в [MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md), закрыть чекбокс [ГОТОВО] в [Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md) и подтвердить тестом py tools/engine_full_audit.py (34/34 GREEN).
+
 > **Статус документа:** Генеральный кодекс лора и канонический фильтр проекта  
 > **Хронологический фокус:** 2241 год (События Fallout 2)  
 > **Первоисточники канона:** Fallout 1 (1997), Fallout 2 (1998), Fallout Bible (Chris Avellone, 2002), Fallout: New Vegas (Obsidian, 2010), дизайн-документы Tim Cain & Leonard Boyarsky  

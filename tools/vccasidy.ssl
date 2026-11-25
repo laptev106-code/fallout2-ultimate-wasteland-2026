@@ -80,6 +80,9 @@ procedure Node011;
 procedure Node012;
 procedure NodeHeartCure;
 procedure NodeHeartCureBar;
+procedure NodeVeteranStory;
+procedure NodeVeteranRangers;
+procedure NodeVeteranVault;
 procedure Node013;
 procedure Node014;
 procedure Node015;
@@ -780,15 +783,38 @@ procedure Node1101 begin
    if( Myron_Ptr != 0 ) then begin
       Reply(261);
       NOption(263, Node1110, 001);
-      //NOption(264, Node1102, 001);
+      NOption(264, Node1102, 001);
+      NOption(40100, NodeVeteranStory, 004);
       NOption(265, Node019, 001);
       NOption(268, Node1101a, 001);
    end else begin
       Reply(262);
+      NOption(264, Node1102, 001);
+      NOption(40100, NodeVeteranStory, 004);
       NOption(266, Node019, 001);
       NOption(267, Node1101a, 001);
    end
 end
+
+procedure NodeVeteranStory begin
+   Reply(40101);
+   NOption(40102, NodeVeteranRangers, 004);
+   NOption(40103, NodeVeteranVault, 004);
+   NOption(40104, Node019, 004);
+end
+
+procedure NodeVeteranRangers begin
+   Reply(40105);
+   NOption(40103, NodeVeteranVault, 004);
+   NOption(40104, Node019, 004);
+end
+
+procedure NodeVeteranVault begin
+   Reply(40106);
+   NOption(40102, NodeVeteranRangers, 004);
+   NOption(40104, Node019, 004);
+end
+
 
 procedure Node1101a begin
    //if( ( local_var( LVAR_Cassidy_Knows_Plan ) == 0 ) and ( not( Fallout2_fix_tanker ) ) ) then

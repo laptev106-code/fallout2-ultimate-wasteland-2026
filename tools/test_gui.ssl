@@ -1,0 +1,20 @@
+#pragma sce
+#define SCRIPT_REALNAME "test_gui"
+#include "define.h"
+#include "sfall.h"
+
+#define delete_win(winName) sfall_func1("delete_win", winName)
+
+procedure start;
+procedure test_win;
+
+procedure start begin
+   if game_loaded then begin
+      call test_win;
+   end
+end
+
+procedure test_win begin
+   create_win("TestWin", 100, 100, 200, 200);
+   delete_win("TestWin");
+end

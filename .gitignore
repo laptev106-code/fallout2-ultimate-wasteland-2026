@@ -5,6 +5,10 @@ __pycache__/
 
 # Cache and downloaded archives
 cache/
+downloads/
+_old_files/
+standalone_mods/armored_speech_staging/
+standalone_mods/foxx_rebuild_tribute/
 *.zip
 *.7z
 *.rar
@@ -20,6 +24,9 @@ cache/
 # Environment & Temporary
 .env
 *.log
+*.bak
+launcher_*err.txt
+launcher_*out.txt
 .test_write_perm
 test_config/
 

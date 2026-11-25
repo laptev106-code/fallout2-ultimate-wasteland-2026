@@ -1,0 +1,280 @@
+/*
+	Copyright 1998-2003 Interplay Entertainment Corp.  All rights reserved.
+*/
+
+/******************************************************************************************
+        Item: Mr. Bishop's Safe
+        Location: New Reno
+        Description:
+
+        Log:
+
+           Created:
+
+           Updated:
+******************************************************************************************/
+
+
+/* Include Files */
+#define SCRIPT_REALNAME "nimrsbsf"
+#include "../headers/define.h"
+#define NAME                    SCRIPT_NIMRSBSF
+#include "../headers/command.h"
+#include "../headers/newreno.h"
+
+/* Standard Script Procedures */
+procedure start;
+procedure map_enter_p_proc;
+procedure look_at_p_proc;
+procedure description_p_proc;
+procedure pickup_p_proc;
+procedure use_p_proc;
+procedure damage_p_proc;
+procedure map_exit_p_proc;
+procedure map_update_p_proc;
+procedure use_obj_on_p_proc;
+procedure Node999;
+procedure Node001;
+procedure NodeStupidKnock;
+procedure NodeStupidSpin;
+procedure NodeComboUnlock;
+procedure NodeLockpick;
+procedure NodeSpinRandom;
+procedure NodeFindCompartment;
+
+
+#define LVAR_Flags                           (0)
+
+#define found_compartment_bit                bit_10
+
+#define found_compartment                    lvar_bit(LVAR_Flags, found_compartment_bit)
+#define set_found_compartment                if (found_compartment == false) then begin         \
+                                                give_xp(EXP_NEW_RENO_MRS_B_SAFE_COMPARTMENT);   \
+                                                display_mstr(400);                              \
+                                             end                                                \
+                                             set_lvar_bit_on(LVAR_Flags, found_compartment_bit)
+
+variable prev_node;
+import variable mrs_bishop_safe_obj;
+import variable bishop_roof_guard_obj;
+import variable help_me_obj;
+
+procedure start begin
+   mrs_bishop_safe_obj := self_obj;
+end
+
+procedure timed_event_p_proc begin
+end
+
+procedure map_enter_p_proc begin
+   mrs_bishop_safe_obj := self_obj;
+   if (is_loading_game == false) then begin
+      if (mrs_bishop_dead == false) then begin
+         if (obj_is_open(self_obj)) then begin
+            obj_close(self_obj);
+         end
+         if (obj_is_locked(self_obj) == false) then begin
+            obj_lock(self_obj);
+         end
+      end
+   end
+end
+
+procedure map_exit_p_proc begin
+end
+
+
+procedure map_update_p_proc begin
+end
+
+procedure look_at_p_proc begin
+   script_overrides;
+   display_mstr(100 + (obj_is_open(self_obj)));
+end
+
+procedure description_p_proc begin
+   script_overrides;
+   display_mstr(100 + (obj_is_open(self_obj)));
+end
+
+procedure damage_p_proc begin
+variable set_off := false;
+   ndebug("safe damage_p_proc");
+   if (target_obj != 0) then begin
+      if (weapon_dmg_type(target_obj) == DMG_explosion) then begin
+         set_off := true;
+      end
+   end
+   if ((source_obj != 0) and (set_off == false)) then begin
+      if (weapon_dmg_type(target_obj) == DMG_explosion) then begin
+         set_off := true;
+      end
+   end
+   if (set_off) then begin
+      obj_unlock(self_obj);
+      call_bishop_safe_guard
+   end
+end
+
+procedure pickup_p_proc begin
+   if (compartment) then begin
+      set_found_compartment;
+   end
+end
+
+procedure use_p_proc begin
+   if (obj_is_open(self_obj)) then begin
+      if ((compartment) and (found_compartment == false)) then begin
+         script_overrides;
+         start_gdialog(NAME, self_obj, 4, -1, -1);
+         gsay_start;
+            call NodeFindCompartment;
+         gsay_end;
+         end_dialogue;
+      end
+   end else begin
+      script_overrides;
+      start_gdialog(NAME, self_obj, 4, -1, -1);
+      gsay_start;
+         call Node001;
+      gsay_end;
+      end_dialogue;
+   end
+end
+
+procedure use_obj_on_p_proc begin
+end
+
+procedure use_skill_on_p_proc begin
+variable the_roll;
+   if (obj_is_locked(self_obj)) then begin
+      if (action_being_used == SKILL_LOCKPICK) then begin
+         script_overrides;
+         if (know_mrs_bishop_combination) then begin
+            float_msg(dude_obj, mrs_bishop_combination, FLOAT_COLOR_NORMAL);
+            display_mstr(150);
+            obj_unlock(self_obj);
+         end else begin
+            gfade_out(ONE_GAME_SECOND);
+               game_time_advance(15 * ONE_GAME_MINUTE);
+               the_roll := roll_vs_skill(dude_obj, SKILL_LOCKPICK, 0);
+               if (is_success(the_roll)) then begin
+                  display_mstr(150);
+                  obj_unlock(self_obj);
+               end else if ((random(1,100) <= dude_luck) and (is_critical(the_roll) == false)) then begin
+                  display_mstr(160);
+                  obj_unlock(self_obj);
+               end else begin
+                  display_mstr(170 + (has_skill(source_obj,SKILL_LOCKPICK) < 50));
+               end
+            gfade_in(ONE_GAME_SECOND);
+         end
+      end else if (action_being_used == SKILL_STEAL) then begin
+         script_overrides;
+      end
+   end
+end
+
+
+procedure Node999 begin
+end
+
+procedure Node001 begin
+   if (dude_is_stupid) then begin
+      Reply(500);
+      NLowOption(502, NodeStupidKnock);
+      NLowOption(503, NodeStupidSpin);
+      NLowOption(504, Node999);
+   end else begin
+      Reply(510);
+      if (know_mrs_bishop_combination) then begin
+         NOption(512, NodeComboUnlock, 004);
+      end
+      NOption(513, NodeLockpick, 004);
+      NOption(514, NodeSpinRandom, 004);
+      if (obj_is_open(self_obj)) then begin
+         if (found_compartment == false) then begin
+            if ((compartment) or (dude_perception >= 8) or (has_skill(dude_obj, SKILL_REPAIR) >= 60)) then begin
+               NOption(515, NodeFindCompartment, 004);
+            end
+         end
+         NOption(516, Node999, 004);
+      end
+      NOption(519, Node999, 004);
+   end
+end
+
+procedure NodeStupidKnock begin
+   Reply(520);
+   NLowOption(503, NodeStupidSpin);
+   NLowOption(504, Node999);
+end
+
+procedure NodeStupidSpin begin
+   if (random(1, 100) <= dude_luck) then begin
+      give_xp(150);
+      obj_unlock(self_obj);
+      obj_open(self_obj);
+      Reply(525);
+      NLowOption(526, Node999);
+   end else begin
+      Reply(527);
+      NLowOption(504, Node999);
+   end
+end
+
+procedure NodeComboUnlock begin
+   obj_unlock(self_obj);
+   obj_open(self_obj);
+   Reply(535);
+   if (found_compartment == false) then begin
+      if ((compartment) or (dude_perception >= 8) or (has_skill(dude_obj, SKILL_REPAIR) >= 60)) then begin
+         NOption(515, NodeFindCompartment, 004);
+      end
+   end
+   NOption(536, Node999, 004);
+end
+
+procedure NodeLockpick begin
+   variable the_roll;
+   the_roll := roll_vs_skill(dude_obj, SKILL_LOCKPICK, -15);
+   if (is_success(the_roll)) then begin
+      give_xp(200);
+      obj_unlock(self_obj);
+      obj_open(self_obj);
+      Reply(540);
+      if (found_compartment == false) then begin
+         if ((compartment) or (dude_perception >= 8) or (has_skill(dude_obj, SKILL_REPAIR) >= 60)) then begin
+            NOption(515, NodeFindCompartment, 004);
+         end
+      end
+      NOption(542, Node999, 004);
+   end else begin
+      Reply(541);
+      NOption(519, Node999, 004);
+   end
+end
+
+procedure NodeSpinRandom begin
+   if (random(1, 100) <= dude_luck) then begin
+      give_xp(100);
+      obj_unlock(self_obj);
+      obj_open(self_obj);
+      Reply(545);
+      if (found_compartment == false) then begin
+         if ((compartment) or (dude_perception >= 8) or (has_skill(dude_obj, SKILL_REPAIR) >= 60)) then begin
+            NOption(515, NodeFindCompartment, 004);
+         end
+      end
+      NOption(546, Node999, 004);
+   end else begin
+      Reply(547);
+      NOption(519, Node999, 004);
+   end
+end
+
+procedure NodeFindCompartment begin
+   set_found_compartment;
+   Reply(530);
+   NOption(531, Node999, 004);
+end

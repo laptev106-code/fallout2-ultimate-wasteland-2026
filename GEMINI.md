@@ -121,26 +121,34 @@
   - NO placeholder metrics, mock counters, or duplicated navigation.
   - Grayscale-first architecture: layout and contrast precede color. One primary action per view.
 
-## 9. Fallout 2 Ultimate Wasteland Edition (Canon, Architecture & Lore Invariants)
-- **Mandatory Directive**: In any conversation or task involving Fallout 2, mods, scripts, dialogues, balance, or launcher development, the agent MUST strictly adhere to and reference these primary sources:
-  1. [Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md) — Product Blueprint, Master Roadmap, Dual-Engine Architecture & Inter-Agent Sync.
-  2. [FALLOUT_LORE_CANON.md](file:///E:/FALLOUT%20Ult%20pjt/FALLOUT_LORE_CANON.md) — Canonical Lore Bible (2241 timeline, Northern California, strict Interplay/Black Isle/Avellone canon, zero Bethesda retcons).
-  3. [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md) — Master Architecture Map & Curated Modlist.
-  4. [MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md) — Complete Changelog & Feature Registry.
-  5. [AUDIT_FALLOUT_MODDING_ARCHITECTURE.md](file:///E:/FALLOUT%20Ult%20pjt/Docs/AUDIT_FALLOUT_MODDING_ARCHITECTURE.md) — Devil's Advocate Architecture & Progressive Skill Audit.
-- **Hierarchical Skill Routing (Fallout Engine Craft, Audit & Narrative)**:
-  - Architecture, VFS & Test Audit: [`fallout-audit-god`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-audit-god/SKILL.md).
-  - Engine, Bytecode & sFall Scripting: [`fallout-engine-craft`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/SKILL.md) and drill down into its references:
-    - Scripting & Hooks: [`sfall-scripting.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/sfall-scripting.md)
-    - Dialogues & Lip-Sync: [`dialogue-canon.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/dialogue-canon.md)
-    - ID Registry & Balance: [`id-registry.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/id-registry.md)
-    - Data Formats & VFS: [`vfs-formats.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-engine-craft/references/vfs-formats.md)
-  - Lore, Dialogues & Character Narrative: [`fallout-narrative-craft`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/SKILL.md) and drill down into its references:
-    - Companion Voices & Profiles: [`companion-voices.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/references/companion-voices.md)
-    - Replica Matrix & Reactivity: [`replica-matrix.md`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout-narrative-craft/references/replica-matrix.md)
-  - Execute all compilation, ID checks, and profile deployment strictly through closed-loop pipeline: [`tools/mod_pipeline.py`](file:///E:/FALLOUT%20Ult%20pjt/tools/mod_pipeline.py).
-- **The Authentic Developer Test (Anti-Fan-Slop Filter)**:
-  - Any added quest, dialogue line, companion behavior, or item MUST pass the developer authenticity test: it must look, sound, and play exactly as if Tim Cain, Leonard Boyarsky, or Chris Avellone designed it for Black Isle in 1998.
-  - Absolute ban on amateur fan-fiction, silly memes, out-of-place modern weapons, and random quest-dumping.
-  - Maximum canonical expansion without bloat: preserve RPU + EcCo balance, enforce closed-loop testing, and ensure commercial-grade stability for the final release.
+## 9. Fallout 2 Ultimate Wasteland Edition (Canon & Unified Modding Skill)
+- **Primary Sources (Lazy-Loaded on Demand)**:
+  - Do NOT read all documentation files on every turn. Query only the specific file/section needed for the active task (`E:\FALLOUT Ult pjt\` holds live Section 0 sync & latest `PATCHES_REGISTRY.md`):
+    1. [Fallout.md](file:///E:/FALLOUT%20Ult%20pjt/Fallout.md) — Master Roadmap & Live Sync Log (read only Section 0 for inter-chat status).
+    2. [FALLOUT_LORE_CANON.md](file:///E:/FALLOUT%20Ult%20pjt/FALLOUT_LORE_CANON.md) — Canon Bible (read only when writing new lore/characters).
+    3. [PROJECT_MAP.md](file:///E:/FALLOUT%20Ult%20pjt/PROJECT_MAP.md) — Architecture & VFS load order.
+    4. [MASTER_CHANGELOG.md](file:///E:/FALLOUT%20Ult%20pjt/MASTER_CHANGELOG.md) & [PATCHES_REGISTRY.md](file:///E:/FALLOUT%20Ult%20pjt/PATCHES_REGISTRY.md) — Query existing fixes (FIX-XX) via targeted search, never bulk read.
+- **Unified Modding Skill (Single Gateway + Lazy `references/`)**:
+  - Load [`fallout2-modder`](file:///C:/Users/Геннадий/.gemini/config/skills/fallout2-modder/SKILL.md) for any Fallout 2 modding task (SSL/sFall 5.1.5.1, Dual-Engine, VFS, Launcher sync, CP1251 `{ID}{LipTag}{Text}`, 1998 Black Isle canon, EcCo balance, foxx porting & Closed-Loop QA). Read only the required sub-file inside `fallout2-modder/references/`.
+- **The Authentic Developer Test (1998 Black Isle Standard)**:
+  - Added text/quests must match Tim Cain, Leonard Boyarsky, and Chris Avellone's writing style. Zero fan-fiction, zero Bethesda retcons, zero modern memes.
 
+## 10. Обязательный регламент синхронизации правок (Multi-Agent Patch Protocol)
+> [!IMPORTANT]
+> **ПРАВИЛО БЫСТРОЙ СИНХРОНИЗАЦИИ БЕЗ ПЕРЕГРУЗКИ КОНТЕКСТА:**
+> 1. **PRE-FLIGHT ПРОВЕРКА ЧЕРЕЗ СКРИПТ / ПОИСК:** Перед предложением фикса проверь, нет ли его уже в базе (поиск по ключевому слову в `PATCHES_REGISTRY.md` или `git grep`). Читать 100 КБ файл целиком запрещено.
+> 2. **ТОЧЕЧНАЯ ФИКСАЦИЯ РЕЗУЛЬТАТОВ:** При внесении изменений в проект:
+>    - Добавить строку в конец таблицы `PATCHES_REGISTRY.md` (`FIX-XX`).
+>    - Добавить блок описания в соответствующий раздел `MASTER_CHANGELOG.md`.
+>    - Внести запись в `Live Sync Log` в начале `Fallout.md` (секция 0).
+>    - **Closed-Loop Verification**: Проверить результат тестом `py tools/engine_full_audit.py` (34/34 GREEN).
+
+
+## 11. Регламент маркировки крупных авторских геймплейных доработок ([ТЕСТИРУЕТСЯ])
+> [!IMPORTANT]
+> **ЖЕЛЕЗНОЕ ПРАВИЛО ДЛЯ НАШИХ АВТОРСКИХ ГЕЙМПЛЕЙНЫХ МОДУЛЕЙ:**
+> Все НАШИ крупные доработки, которые прямо меняют геймплей (новые механики стелса, воровства, тактики боя, диалоговые надстройки, переработка SPECIAL), **ОБЯЗАНЫ** на этапе разработки и первичного развертывания подписываться и маркироваться как **[ТЕСТИРУЕТСЯ]**:
+> 1. В README.md и документации модуля: [ТЕСТИРУЕТСЯ] Название Модуля.
+> 2. В .ini-конфигураторах: комментарий в заголовке ; [ТЕСТИРУЕТСЯ] ....
+> 3. В реестрах PATCHES_REGISTRY.md, MASTER_CHANGELOG.md и Fallout.md: статус [ТЕСТИРУЕТСЯ].
+> 4. При выводе в лаунчер (Fallout2_NextGen_Launcher): плашка/суффикс (ТЕСТИРУЕТСЯ) в списке модов и тумблерах для наглядности игроку.

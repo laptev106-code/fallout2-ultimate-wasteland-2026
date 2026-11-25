@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+gvars = [
+    "GVAR_QUEST_RAT_GOD", "GVAR_SMILEY_STATUS", "GVAR_TORR_GUARD_SUCCESS",
+    "GVAR_DEN_VIC_STATUS", "GVAR_DEN_GANGWAR", "GVAR_DEN_ANNA_STATUS",
+    "GVAR_MODOC_GHOST_FARM_SEED", "GVAR_MODOC_JONNY_HOME",
+    "GVAR_QUEST_REPAIR_POWER_PLANT", "GVAR_QUEST_OPTIMIZE_POWER_PLANT",
+    "GVAR_BH_MINE", "GVAR_BH_CONSPIRACY", "GVAR_BH_CHAD",
+    "GVAR_REDDING_WANAMINGO_QUEEN", "GVAR_REDDING_JET_LEVEL",
+    "GVAR_START_ARROYO_TRIAL", "GVAR_KILL_EVIL_PLANTS",
+    "GVAR_NEW_RENO_WRIGHT_MYSTERY", "GVAR_NEW_RENO_STOLEN_CAR",
+    "GVAR_NCR_V15_DARION_DEAD", "GVAR_NCR_SQUAT_DEAL", "GVAR_NCR_SPY_KNOWN",
+    "GVAR_SAN_FRAN_TANKER", "GVAR_SAN_FRAN_DRAGON_KLOPAN_QST", "GVAR_SAN_FRAN_LOPAN_KDRAGON_QST", "GVAR_SAN_FRAN_KILL_OZ9_QST"
+]
+with open("E:/FALLOUT Ult pjt/tools/headers/global.h", "r") as f:
+    content = f.read()
+missing = []
+for g in gvars:
+    if g not in content:
+        missing.append(g)
+    else:
+        print(f"OK: {g}")
+if missing:
+    print("MISSING:", missing)
+else:
+    print("ALL GVARS VERIFIED IN global.h!")

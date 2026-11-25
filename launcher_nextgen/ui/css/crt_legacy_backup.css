@@ -1,0 +1,180 @@
+/* CRT & Retro-Phosphor Display Shader Effects */
+
+.crt-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* 1. Hardware Canvas Background for Wasteland Particles */
+#particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+/* 2. CRT Scanline Raster (Смягчено на 8-10% для комфорта глаз) */
+.crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 90;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.28) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.015),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.015)
+  );
+  background-size: 100% 3px, 4px 100%;
+}
+
+/* 3. Spherical Vignette & Convex Glass Curvature (Изогнутость кинескопа) */
+.crt-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 91;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 65%,
+    rgba(0, 0, 0, 0.35) 82%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  box-shadow: 
+    inset 0 0 100px rgba(0, 0, 0, 0.8),
+    inset 0 0 24px rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(0, 255, 102, 0.12);
+}
+
+/* 4. Физический безель электронно-лучевой трубки с закругленными углами */
+.crt-tube-bezel {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  pointer-events: none;
+  border-radius: 14px;
+  box-shadow: 
+    inset 0 0 45px rgba(0, 0, 0, 0.85),
+    inset 0 0 120px rgba(0, 0, 0, 0.65),
+    0 0 0 4px #060a08,
+    0 0 0 8px #020403;
+}
+
+/* 5. Мягкое мерцание люминофора (Screen Flicker) */
+@keyframes crt-flicker {
+  0% { opacity: 0.995; }
+  50% { opacity: 1.0; }
+  100% { opacity: 0.997; }
+}
+
+.crt-flicker {
+  animation: crt-flicker 0.18s infinite;
+}
+
+/* 6. Анимированный экран Пип-Боя в боковом меню (Pip-Boy Hologram & Sweep Bar) */
+.crt-screen-frame {
+  position: relative;
+  border-radius: 6px;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 36, 16, 0.65) 0%, rgba(2, 8, 4, 0.95) 100%);
+  border: 1px solid rgba(0, 255, 102, 0.22);
+  box-shadow: inset 0 0 14px rgba(0, 255, 102, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  overflow: hidden;
+}
+
+.crt-screen-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.crt-scanline-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.6;
+}
+
+.crt-beam-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 22px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 255, 102, 0.3), transparent);
+  pointer-events: none;
+  z-index: 3;
+  animation: crtSweep 3.6s linear infinite;
+}
+
+.vaultboy-preview-img.crt-hologram {
+  width: 125px;
+  height: 125px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.75)) drop-shadow(0 0 20px rgba(0, 255, 102, 0.3));
+  animation: crtFloatBreathe 4.2s ease-in-out infinite, crtPhosphorPulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes crtSweep {
+  0% { top: -25px; opacity: 0; }
+  10% { opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes crtFloatBreathe {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-3px) scale(1.02); }
+}
+
+@keyframes crtPhosphorPulse {
+  0% { filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.7)) brightness(0.98); }
+  50% { filter: drop-shadow(0 0 14px rgba(0, 255, 102, 0.95)) brightness(1.06); }
+  100% { filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.7)) brightness(0.98); }
+}
+
+.crt-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--phosphor-primary);
+  box-shadow: 0 0 6px var(--phosphor-glow);
+  display: inline-block;
+}
+
+/* 7. Phosphor Bloom Glow */
+.glow-text {
+  text-shadow: 0 0 6px var(--phosphor-glow), 0 0 12px var(--phosphor-primary);
+}
+
+.glow-amber {
+  text-shadow: 0 0 6px var(--amber-glow), 0 0 12px var(--amber-primary);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.5), 0 0 12px var(--cyan-primary);
+}

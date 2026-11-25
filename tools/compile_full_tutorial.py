@@ -1,0 +1,159 @@
+import subprocess, os
+from build_dual_language_pack import write_dual
+
+tools_dir = r"d:\AG games mods\fallout2-ultimate-wasteland-2026\tools"
+compiler = os.path.join(tools_dir, "compile.exe")
+
+ssl_code = """/*
+    Temple of Trials Authentic Atmospheric Tutorial & Survival Hints
+    Spirit: Classic Fallout & Authentic Gritty Fargus (No Slop, Pure Wasteland Wisdom)
+    Bilingual: English & Russian
+    Script: gl_temple_hints.ssl
+*/
+
+#pragma sce
+#define SCRIPT_REALNAME "gl_temple_hints"
+#include "define.h"
+#include "sfall.h"
+
+#define MAP_ARROYO_TEMPLE       (126)
+#define SGVAR_TEMPLE_TUT_FLAGS  "SGVAR_TEMPLE_TUT_FLAGS"
+
+#define FLAG_ENTRANCE_SEEN      (1)
+#define FLAG_COMBAT_SEEN        (2)
+#define FLAG_TRAPS_SEEN         (4)
+#define FLAG_CAMERON_SEEN       (8)
+
+procedure start;
+procedure map_enter_p_proc;
+procedure combatturn_handler;
+procedure map_update_p_proc;
+
+procedure is_tutorial_enabled begin
+   variable enabled;
+   enabled := get_ini_setting("ddraw.ini|Misc|TempleTutorial");
+   // If setting missing, default to enabled (1)
+   if (enabled == -1) then return 1;
+   return enabled;
+end
+
+procedure start begin
+   if game_loaded then begin
+      register_hook_proc(HOOK_COMBATTURN, combatturn_handler);
+   end
+end
+
+procedure map_enter_p_proc begin
+   variable flags, lang;
+
+   if (not is_tutorial_enabled) then return;
+
+   if (cur_map_index == MAP_ARROYO_TEMPLE) then begin
+      flags := get_sfall_global_int(SGVAR_TEMPLE_TUT_FLAGS);
+      if ((flags bwand FLAG_ENTRANCE_SEEN) == 0) then begin
+         set_sfall_global(SGVAR_TEMPLE_TUT_FLAGS, flags bwor FLAG_ENTRANCE_SEEN);
+         lang := get_ini_string("fallout2.cfg|system|language");
+
+         if (lang == "english") then begin
+            display_msg("Keep your eyes peeled in the gloom. Press TAB to spot gear and containers, and F1 for key controls.");
+            display_msg("Check every clay urn and pot along the walls. The tribal elders loved tucking away supplies in old pottery.");
+         end else begin
+            display_msg("В полумраке святилища держи ухо востро. Клавиша TAB подсветит вещи и сундуки, а F1 откроет памятку по кнопкам.");
+            display_msg("Не проходи мимо глиняных ваз и урн. Старики в деревне любят прятать полезные пожитки в старую посуду.");
+         end
+      end
+   end
+end
+
+procedure combatturn_handler begin
+   variable flags, lang, turn_critter;
+
+   if (not is_tutorial_enabled) then return;
+
+   if (cur_map_index == MAP_ARROYO_TEMPLE) then begin
+      turn_critter := get_sfall_arg;
+      if (turn_critter == dude_obj) then begin
+         flags := get_sfall_global_int(SGVAR_TEMPLE_TUT_FLAGS);
+         if ((flags bwand FLAG_COMBAT_SEEN) == 0) then begin
+            set_sfall_global(SGVAR_TEMPLE_TUT_FLAGS, flags bwor FLAG_COMBAT_SEEN);
+            lang := get_ini_string("fallout2.cfg|system|language");
+
+            if (lang == "english") then begin
+               display_msg("Every action in combat costs Action Points (AP). Hit and move: strike the beast, then step back so it wastes its turn reaching you.");
+            end else begin
+               display_msg("В бою каждое действие стоит Очков Действия (ОД). Бей и отходи: ударил тварь — сделай шаг назад, пусть тратит ход, чтобы до тебя доползти.");
+            end
+         end
+      end
+   end
+end
+
+procedure map_update_p_proc begin
+   variable flags, lang, cur_tile, cur_elev;
+
+   if (not is_tutorial_enabled) then return;
+
+   if (cur_map_index == MAP_ARROYO_TEMPLE) then begin
+      flags := get_sfall_global_int(SGVAR_TEMPLE_TUT_FLAGS);
+      cur_elev := elevation(dude_obj);
+      cur_tile := tile_num(dude_obj);
+
+      // Traps section on elevation 1 or middle hallway
+      if (((flags bwand FLAG_TRAPS_SEEN) == 0) and (cur_elev == 1 or cur_elev == 2)) then begin
+         set_sfall_global(SGVAR_TEMPLE_TUT_FLAGS, flags bwor FLAG_TRAPS_SEEN);
+         lang := get_ini_string("fallout2.cfg|system|language");
+
+         if (lang == "english") then begin
+            display_msg("Watch your step! Raised floor plates mean spring-loaded dart traps. Step around them carefully or disarm with the Traps skill.");
+         end else begin
+            display_msg("Смотри под ноги! Приподнятые каменные плиты в полу — верный признак ловушки. Обходи их по стеночке или обезвреживай навыком «Ловушки».");
+         end
+      end
+
+      // Cameron challenge room on elevation 2
+      if (((flags bwand FLAG_CAMERON_SEEN) == 0) and (cur_elev == 2)) then begin
+         if (tile_distance(cur_tile, 19115) < 15 or cur_tile > 18000) then begin
+            flags := get_sfall_global_int(SGVAR_TEMPLE_TUT_FLAGS);
+            set_sfall_global(SGVAR_TEMPLE_TUT_FLAGS, flags bwor FLAG_CAMERON_SEEN);
+            lang := get_ini_string("fallout2.cfg|system|language");
+
+            if (lang == "english") then begin
+               display_msg("Fists aren't the only law in the wastes. You can talk your way past the guardian with Speech or lift the key right out of his pocket.");
+            end else begin
+               display_msg("Кулаки — не единственный аргумент в Пустошах. С хранителем можно договориться словом через Красноречие или незаметно вытащить ключ из кармана.");
+            end
+         end
+      end
+   end
+end
+"""
+
+ssl_file = os.path.join(tools_dir, "gl_temple_hints.ssl")
+with open(ssl_file, "w", encoding="cp1251") as f:
+    f.write(ssl_code)
+
+out_int = "gl_temple_hints.int"
+cmd = [
+    compiler,
+    "-p",
+    "-q",
+    "-s",
+    "-Iheaders",
+    "-O2",
+    "gl_temple_hints.ssl",
+    "-o", out_int
+]
+
+print("Compiling full gl_temple_hints...")
+res = subprocess.run(cmd, cwd=tools_dir, capture_output=True, text=True)
+print("STDOUT:", res.stdout)
+print("STDERR:", res.stderr)
+print("Return code:", res.returncode)
+
+int_path = os.path.join(tools_dir, out_int)
+if os.path.exists(int_path):
+    print("SUCCESS! Compiled:", int_path, "Size:", os.path.getsize(int_path))
+    with open(int_path, "rb") as f:
+        write_dual(r"scripts\gl_temple_hints.int", f.read())
+else:
+    print("FAILED!")

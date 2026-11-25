@@ -18,6 +18,7 @@
 procedure start;
 procedure invenmove_handler;
 procedure useobjon_handler;
+procedure useobj_handler;
 procedure removeinven_handler;
 procedure toggle_glasses(variable pid);
 procedure apply_glasses(variable pid);
@@ -27,6 +28,7 @@ procedure start begin
    if game_loaded then begin
       register_hook_proc(HOOK_INVENTORYMOVE, invenmove_handler);
       register_hook_proc(HOOK_USEOBJON, useobjon_handler);
+      register_hook_proc(HOOK_USEOBJ, useobj_handler);
       register_hook_proc(HOOK_REMOVEINVENOBJ, removeinven_handler);
    end
 end
@@ -105,6 +107,20 @@ procedure useobjon_handler begin
    item := get_sfall_arg;
 
    if (target == dude_obj and user == dude_obj and item != 0) then begin
+      pid := obj_pid(item);
+      if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
+         call toggle_glasses(pid);
+         set_sfall_return(0);
+      end
+   end
+end
+
+procedure useobj_handler begin
+   variable user, item, pid;
+   user := get_sfall_arg;
+   item := get_sfall_arg;
+
+   if (user == dude_obj and item != 0) then begin
       pid := obj_pid(item);
       if (pid == PID_MIRROR_SHADES or pid == PID_SPECTACLES) then begin
          call toggle_glasses(pid);

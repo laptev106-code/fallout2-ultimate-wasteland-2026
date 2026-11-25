@@ -1,7 +1,6 @@
 ; Fallout 2: Ultimate Wasteland 2026 - Master Priority Order
 ; Base RPU Core
 rpu.dat
-
 ; Additional Animations & Effects
 rpu_alternative_explosions.dat
 rpu_enhanced_worldmap.dat
@@ -9,34 +8,30 @@ rpu_extended_flamer.dat
 rpu_improved_mysterious_stranger.dat
 rpu_rifle_animations.dat
 rpu_wakizashi_animations.dat
-
 ; Upscaled UI & Pip-Boy Notes
 fo2_interface_upscaled.dat
 resurrection_interface.dat
 fo2_pip_timers.dat
 ; MapBlurFX.dat
-
 ; Talking Heads Models & Audio
 cassidy_head.dat
 cassidy_voice_joey_bracken_hq.dat
 talking_heads.dat
+armored_talking_heads_speech.dat
 npc_armor.dat
 DB_Enchanced_Miria.dat
-
 ; Tactical & Quality of Life
 party_orders.dat
 fo2tweaks.dat
 InventoryFilter.dat
-
 ; Overhaul & Mechanics
 rpu_y_ecco.dat
-
 ; Translations (Base Russian Text)
 rpu_russian.dat
 upu_russian_sound.dat
-
 ; Talking Heads Compatibility & Russian Lip-Sync (Top Priority)
 talking_heads_that_rpu_map_update_patch.dat
-
 ; Authentic Uncensored Translation & Dialogue Rework (Final Override)
+foxx_rebuild_tribute.dat
 rpu_russian_uncensored.dat
+wasteland_voices.dat

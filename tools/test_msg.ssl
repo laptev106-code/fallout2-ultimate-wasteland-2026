@@ -1,0 +1,11 @@
+#include "headers/define.h"
+#include "headers/command.h"
+#include "headers/sfall/sfall.h"
+
+procedure start begin
+   variable msg_id, text;
+   if game_loaded then begin
+      msg_id := add_extra_msg_file("wv_dialog.msg");
+      text := message_str_game(msg_id, 5000);
+   end
+end
